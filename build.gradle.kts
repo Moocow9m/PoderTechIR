@@ -36,7 +36,7 @@ tasks {
         from(sourceSets.main.get().allSource)
     }
 
-    build {
+    jar {
         dependsOn(sourcesJar)
     }
 
