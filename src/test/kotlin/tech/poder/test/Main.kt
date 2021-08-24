@@ -14,12 +14,14 @@ object Main {
         var bench = BigDecimal.ZERO
         val iterations = 10_000_000L
         val libA = Method.create("printHelloKat") {
-            it.push("Hello Kat")
-            it.sysCall(SpecialCalls.PRINTLN)
+            it.push("Hello Kat\n")
+            it.sysCall(SpecialCalls.PRINT)
         }
         val libB = Method.create("printHelloWorld") {
+            it.push("\n")
             it.push("Hello World")
-            it.sysCall(SpecialCalls.PRINTLN)
+            it.add()
+            it.sysCall(SpecialCalls.PRINT)
         }
         val main = Method.create("main") {
             val elseLabel = it.newLabel()

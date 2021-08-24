@@ -85,6 +85,17 @@ object Machine {
         instruction: Instruction
     ): Int {
         when (instruction.opcode) {
+            Simple.ADD -> {
+                val a = stack.pop()
+                val b = stack.pop()
+                stack.push(
+                    if (a is String || b is String) {
+                        "$a$b"
+                    } else {
+                        addNumbers(a as Number, b as Number)
+                    }
+                )
+            }
             Simple.DUP -> {
                 stack.push(stack.peek())
             }
@@ -106,9 +117,6 @@ object Machine {
                 when (val call = instruction.extra.first() as SpecialCalls) {
                     SpecialCalls.PRINT -> {
                         print(stack.pop())
-                    }
-                    SpecialCalls.PRINTLN -> {
-                        println(stack.pop())
                     }
                     SpecialCalls.RANDOM_INT -> {
                         var max = Int.MAX_VALUE
@@ -205,6 +213,22 @@ object Machine {
         } else {
             a.toInt()
                 .compareTo(b.toInt()) //int is a default case in cpu, so this may be easier than using smaller numbers... larger memory though
+        }
+    }
+
+    private fun addNumbers(a: Number, b: Number): Number {
+        return if (a is Double || b is Double) {
+            a.toDouble() + b.toDouble()
+        } else if (a is Float || b is Float) {
+            a.toFloat() + b.toFloat()
+        } else if (a is Long || b is Long) {
+            a.toLong() + b.toLong()
+        } else if (a is Int || b is Int) {
+            a.toInt() + b.toInt()
+        } else if (a is Short || b is Short) {
+            a.toShort() + b.toShort()
+        } else {
+            a.toByte() + b.toByte()
         }
     }
 }
