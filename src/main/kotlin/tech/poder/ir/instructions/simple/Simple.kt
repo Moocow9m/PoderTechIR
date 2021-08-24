@@ -24,7 +24,7 @@ enum class Simple : Command {
     DUP,
     JMP,
     ARRAY_SET,
-    ARRAY_LOAD,
+    ARRAY_GET,
     ARRAY_CREATE,
     STORE_VAR,
     GET_VAR,
@@ -33,5 +33,6 @@ enum class Simple : Command {
     INVOKE_METHOD,
     SWITCH,
     SUSPEND,
+    LAUNCH,
     NEW_OBJECT
 }

@@ -11,6 +11,18 @@ import java.util.*
 class CodeBuilder(val returnItem: Boolean) {
     private val base = ArrayList<Instruction>()
 
+    fun setVar(name: String) {
+        base.add(Instruction.create(Simple.STORE_VAR, name))
+    }
+
+    fun getVar(name: String) {
+        base.add(Instruction.create(Simple.GET_VAR, name))
+    }
+
+    fun fromArray(index: Int) {
+        base.add(Instruction.create(Simple.ARRAY_GET, index))
+    }
+
     fun push(constant: Any) {
         base.add(Instruction.create(Simple.PUSH, constant))
     }
@@ -136,7 +148,28 @@ class CodeBuilder(val returnItem: Boolean) {
             return_()
         }
         val unmatched = mutableListOf<UShort>()
+        val dictionary = mutableMapOf<String, UByte>()
+        var newId: UByte = 2u
+        dictionary["object"] = 0u
+        dictionary["args"] = 1u
         base.forEachIndexed { index, instruction ->
+            when (instruction.opcode) {
+                Simple.STORE_VAR, Simple.GET_VAR -> {
+                    val key = instruction.extra.first() as String
+                    if (instruction.opcode == Simple.GET_VAR && !dictionary.containsKey(key)) {
+                        throw IllegalStateException(
+                            "GetVar done before StoreVar!\nStackTrace:\n\tIndex: $index\n\tVariable: $key\n\tFullProgram:\n\t\t${
+                                base.joinToString(
+                                    "\n\t\t"
+                                )
+                            }"
+                        )
+                    }
+                    instruction.extra[0] = dictionary.getOrPut(key) {
+                        newId++
+                    }
+                }
+            }
             if (instruction.extra.isNotEmpty()) {
                 val potentialLabel = instruction.extra.first()
                 if (potentialLabel is Label) {
@@ -157,6 +190,11 @@ class CodeBuilder(val returnItem: Boolean) {
 
     private fun validateStack() {
         val stack = Stack<Any>()
-        //todo
+
+        //todo validate stack
+
+        if (returnItem) {
+            //todo check that stack has 1 item left
+        }
     }
 }

@@ -46,16 +46,18 @@ object Machine {
     private fun execute(method: Method, vararg args: Any): Any? {
         val data = loadStruct(method.parent.struct)
         val tmpStack = Stack<Any>()
+        val variables = mutableMapOf<UByte, Any>()
         if (data != null) {
-            tmpStack.push(data)
+            variables[0u] = data
         }
-        args.forEach {
-            tmpStack.push(it)
+
+        if (args.isNotEmpty()) {
+            variables[1u] = args
         }
 
         var index = 0
         while (index < method.code.size) {
-            index += executeInstruction(tmpStack, method.code[index])
+            index += executeInstruction(tmpStack, variables, method.code.size, method.code[index])
             index++
         }
 
@@ -76,7 +78,12 @@ object Machine {
         }
     }
 
-    private fun executeInstruction(stack: Stack<Any>, instruction: Instruction): Int {
+    private fun executeInstruction(
+        stack: Stack<Any>,
+        localVars: MutableMap<UByte, Any>,
+        end: Int,
+        instruction: Instruction
+    ): Int {
         when (instruction.opcode) {
             Simple.DUP -> {
                 stack.push(stack.peek())
@@ -125,14 +132,14 @@ object Machine {
                 stack.push(compareNumbers(aNum, bNum))
             }
             Simple.IF_GT -> {
-                executeInstruction(stack, compare)
+                executeInstruction(stack, localVars, end, compare)
                 val num = stack.pop()
                 if (num as Int <= 0) {
                     return instruction.extra.first() as Int
                 }
             }
             Simple.IF_EQ -> {
-                executeInstruction(stack, compare)
+                executeInstruction(stack, localVars, end, compare)
                 val num = stack.pop()
                 if (num as Int != 0) {
                     return instruction.extra.first() as Int
@@ -142,10 +149,20 @@ object Machine {
                 return instruction.extra.first() as Int
             }
             Simple.RETURN -> {
-                //NO_OP
+                return Int.MAX_VALUE
             }
             Simple.POP -> {
                 stack.pop()
+            }
+            Simple.STORE_VAR -> {
+                localVars[instruction.extra.first() as UByte] = stack.pop()
+            }
+            Simple.GET_VAR -> {
+                stack.push(localVars[instruction.extra.first() as UByte])
+            }
+            Simple.ARRAY_GET -> {
+                val array = stack.pop() as Array<out Any>
+                stack.push(array[instruction.extra.first() as Int])
             }
             else -> {
                 TODO("Instruction: ${instruction.opcode}")
