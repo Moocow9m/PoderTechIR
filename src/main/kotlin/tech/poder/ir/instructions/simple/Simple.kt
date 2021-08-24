@@ -4,7 +4,6 @@ import tech.poder.ir.instructions.Command
 
 enum class Simple : Command {
     BREAKPOINT,
-    MARKER,
     RETURN,
     INC,
     DEC,

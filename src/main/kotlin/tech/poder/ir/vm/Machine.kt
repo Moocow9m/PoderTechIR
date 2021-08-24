@@ -12,6 +12,7 @@ import java.util.concurrent.ThreadLocalRandom
 
 object Machine {
     private val loadedMethods = mutableMapOf<String, Method>()
+    private val loadedObjects = mutableMapOf<String, Object>()
 
     fun loadCode(vararg methods: Method) {
         methods.forEach {
@@ -31,6 +32,10 @@ object Machine {
         val methods = mutableListOf<Method>()
         objects.forEach {
             methods.addAll(it.methods)
+            check(!loadedObjects.containsKey(it.nameSpace)) {
+                "Duplicate object: ${it.nameSpace}"
+            }
+            loadedObjects[it.nameSpace] = it
         }
         loadCode(*methods.toTypedArray())
     }
@@ -44,7 +49,7 @@ object Machine {
     }
 
     private fun execute(method: Method, vararg args: Any): Any? {
-        val data = loadStruct(method.parent.struct)
+        val data = method.parent.struct
         val tmpStack = Stack<Any>()
         val variables = mutableMapOf<UByte, Any>()
         if (data != null) {
@@ -181,6 +186,16 @@ object Machine {
                 val array = stack.pop() as Array<out Any>
                 stack.push(array[stack.pop() as Int])
             }
+            Simple.NEW_OBJECT -> {
+                val objName = instruction.extra.first() as String
+                val obj = loadedObjects[objName]
+                check(obj != null) {
+                    "Could not find: $objName!"
+                }
+                stack.push(obj.createInstance())
+                executeInstruction(stack, localVars, end, dup)
+                executeInstruction(stack, localVars, end, Instruction.create(Simple.INVOKE_METHOD, "init", 1))
+            }
             else -> {
                 TODO("Instruction: ${instruction.opcode}")
             }
@@ -189,6 +204,7 @@ object Machine {
     }
 
     private val compare = Instruction(Complex.COMPARE)
+    private val dup = Instruction(Simple.DUP)
 
     private fun loadStruct(struct: Struct?): ByteArray? {
         return if (struct == null) {

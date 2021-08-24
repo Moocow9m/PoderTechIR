@@ -56,8 +56,11 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String, val methodName
     }
 
     fun new(obj: Object) {
-        base.add(Instruction.create(Simple.NEW_OBJECT, obj))
-        base.add(Instruction(Complex.INCREMENT_REFERENCE))
+        new(obj.nameSpace)
+    }
+
+    fun new(objNameSpace: String) {
+        base.add(Instruction.create(Simple.NEW_OBJECT, objNameSpace))
     }
 
     fun invoke(method: Method) {
@@ -68,6 +71,24 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String, val methodName
         base.add(
             Instruction.create(
                 Simple.INVOKE_METHOD,
+                name,
+                args
+            )
+        )
+    }
+
+    fun suspend() {
+        base.add(Instruction(Simple.SUSPEND))
+    }
+
+    fun launch(method: Method) {
+        launch("${method.parent.nameSpace}.${method.name}", method.argCount.toInt())
+    }
+
+    fun launch(name: String, args: Int) {
+        base.add(
+            Instruction.create(
+                Simple.LAUNCH,
                 name,
                 args
             )
@@ -134,10 +155,6 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String, val methodName
 
     fun sub() {
         base.add(Instruction(Simple.SUB))
-    }
-
-    fun suspend() {
-        base.add(Instruction(Simple.SUSPEND))
     }
 
     fun div() {

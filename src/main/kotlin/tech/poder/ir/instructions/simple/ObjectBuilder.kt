@@ -5,12 +5,16 @@ import tech.poder.ir.instructions.common.Object
 import tech.poder.ir.instructions.common.Struct
 import tech.poder.ir.instructions.common.types.Type
 
-class ObjectBuilder(private val nameSpace: String) {
+class ObjectBuilder(private val nameSpace: String, init: (CodeBuilder) -> Unit) {
     private val methods = mutableListOf<Method>()
     private var nextId = 0u
     private val fieldsId = mutableMapOf<String, UInt>()
     private val fields = mutableMapOf<UInt, Pair<String, Type>>()
     private val dummyObject = Object(nameSpace, null, emptyList())
+
+    init {
+        createMethod("init", code = init)
+    }
 
     fun createMethod(
         name: String,
@@ -18,7 +22,7 @@ class ObjectBuilder(private val nameSpace: String) {
         returns: Boolean = false,
         code: (CodeBuilder) -> Unit
     ): ObjectBuilder {
-        val method = Method.create(name, argCount, returns, dummyObject, code)
+        val method = Method.create(name, (argCount + 1u).toUByte(), returns, dummyObject, code)
         method.code.forEach {
             if (it.opcode == Simple.GET_FIELD || it.opcode == Simple.SET_FIELD) {
                 val fieldName = it.extra[0] as String
