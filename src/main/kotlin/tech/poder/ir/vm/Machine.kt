@@ -120,18 +120,9 @@ object Machine {
             Complex.COMPARE -> {
                 val a = stack.pop()
                 val b = stack.pop()
-                val aNum = if (a is Object) {
-                    a.hashCode()
-                } else {
-                    a as Number
-                }
-
-                val bNum = if (b is Object) {
-                    b.hashCode()
-                } else {
-                    b as Number
-                }
-                stack.push(aNum.toDouble().compareTo(bNum.toDouble()))
+                val aNum = processToNumeric(a)
+                val bNum = processToNumeric(b)
+                stack.push(compareNumbers(aNum, bNum))
             }
             Simple.IF_GT -> {
                 executeInstruction(stack, compare)
@@ -170,6 +161,33 @@ object Machine {
             null
         } else {
             TODO("STUCTS NOT SUPPORTED YET")
+        }
+    }
+
+    private fun processToNumeric(item: Any): Number {
+        return if (item is Number) {
+            item
+        } else if (item is Boolean) {
+            if (item) {
+                1
+            } else {
+                0
+            }
+        } else {
+            item.hashCode()
+        }
+    }
+
+    private fun compareNumbers(a: Number, b: Number): Int {
+        return if (a is Double || b is Double) {
+            a.toDouble().compareTo(b.toDouble())
+        } else if (a is Float || b is Float) {
+            a.toFloat().compareTo(b.toFloat())
+        } else if (a is Long || b is Long) {
+            a.toLong().compareTo(b.toLong())
+        } else {
+            a.toInt()
+                .compareTo(b.toInt()) //int is a default case in cpu, so this may be easier than using smaller numbers... larger memory though
         }
     }
 }
