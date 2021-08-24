@@ -36,6 +36,10 @@ tasks {
         from(sourceSets.main.get().allSource)
     }
 
+    build {
+        dependsOn(sourcesJar)
+    }
+
     artifacts {
         archives(sourcesJar)
         archives(jar)
