@@ -19,8 +19,12 @@ class CodeBuilder(val returnItem: Boolean) {
         base.add(Instruction.create(Simple.GET_VAR, name))
     }
 
-    fun fromArray(index: Int) {
-        base.add(Instruction.create(Simple.ARRAY_GET, index))
+    fun getArrayItem() {
+        base.add(Instruction(Simple.ARRAY_GET))
+    }
+
+    fun setArrayItem() {
+        base.add(Instruction(Simple.ARRAY_SET))
     }
 
     fun push(constant: Any) {

@@ -162,7 +162,7 @@ object Machine {
             }
             Simple.ARRAY_GET -> {
                 val array = stack.pop() as Array<out Any>
-                stack.push(array[instruction.extra.first() as Int])
+                stack.push(array[stack.pop() as Int])
             }
             else -> {
                 TODO("Instruction: ${instruction.opcode}")
