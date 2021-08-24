@@ -127,14 +127,14 @@ object Machine {
             Simple.IF_GT -> {
                 executeInstruction(stack, compare)
                 val num = stack.pop()
-                if (num as Int > 0) {
+                if (num as Int <= 0) {
                     return instruction.extra.first() as Int
                 }
             }
             Simple.IF_EQ -> {
                 executeInstruction(stack, compare)
                 val num = stack.pop()
-                if (num as Int == 0) {
+                if (num as Int != 0) {
                     return instruction.extra.first() as Int
                 }
             }
