@@ -118,6 +118,15 @@ object Machine {
                     SpecialCalls.PRINT -> {
                         print(stack.pop())
                     }
+                    SpecialCalls.SYSTEM_IN -> {
+                        if (instruction.extra.isNotEmpty()) {
+                            val byteArray = ByteArray(instruction.extra.first() as Int)
+                            System.`in`.read(byteArray)
+                            stack.push(byteArray)
+                        } else {
+                            stack.push(System.`in`.read())
+                        }
+                    }
                     SpecialCalls.RANDOM_INT -> {
                         var max = Int.MAX_VALUE
                         var min = Int.MIN_VALUE
