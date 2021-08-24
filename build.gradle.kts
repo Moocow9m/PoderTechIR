@@ -15,17 +15,19 @@ dependencies {
 
 tasks {
 
-    withType<JavaCompile> {
-        sourceCompatibility = "16"
-        targetCompatibility = "16"
-    }
+    val javaVersion = JavaVersion.VERSION_16.toString()
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "16"
-        kotlinOptions.apiVersion = "1.6"
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+        kotlinOptions.jvmTarget = javaVersion
         kotlinOptions.languageVersion = "1.6"
+        kotlinOptions.apiVersion = "1.6"
         kotlinOptions.useFir = true
-        sourceCompatibility = "16"
-        targetCompatibility = "16"
+    }
+
+    withType<JavaCompile> {
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
     }
 }
