@@ -8,7 +8,7 @@ import tech.poder.ir.instructions.common.special.SpecialCalls
 import tech.poder.ir.instructions.complex.Complex
 import java.util.*
 
-class CodeBuilder(val returnItem: Boolean) {
+class CodeBuilder(val returnItem: Boolean, val nameSpace: String, val methodName: String) {
     private val base = ArrayList<Instruction>()
 
     fun setVar(name: String) {
@@ -17,6 +17,10 @@ class CodeBuilder(val returnItem: Boolean) {
 
     fun getVar(name: String) {
         base.add(Instruction.create(Simple.GET_VAR, name))
+    }
+
+    fun createArray() {
+        base.add(Instruction(Simple.ARRAY_CREATE))
     }
 
     fun getArrayItem() {
@@ -35,13 +39,29 @@ class CodeBuilder(val returnItem: Boolean) {
         base.add(Instruction.create(Complex.SYS_CALL, call, *args))
     }
 
+    fun getLocalField(name: String) {
+        base.add(Instruction.create(Simple.GET_FIELD, "$nameSpace$name"))
+    }
+
+    fun setLocalField(name: String) {
+        base.add(Instruction.create(Simple.SET_FIELD, "$nameSpace$name"))
+    }
+
+    fun getField(name: String) {
+        base.add(Instruction.create(Simple.GET_FIELD, name))
+    }
+
+    fun setField(name: String) {
+        base.add(Instruction.create(Simple.SET_FIELD, name))
+    }
+
     fun new(obj: Object) {
         base.add(Instruction.create(Simple.NEW_OBJECT, obj))
         base.add(Instruction(Complex.INCREMENT_REFERENCE))
     }
 
     fun invoke(method: Method) {
-        invoke(method.parent.nameSpace + "." + method.name, method.argCount.toInt())
+        invoke("${method.parent.nameSpace}.${method.name}", method.argCount.toInt())
     }
 
     fun invoke(name: String, args: Int) {

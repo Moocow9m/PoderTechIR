@@ -17,13 +17,10 @@ data class Method(
             parent: Object? = null,
             code: (CodeBuilder) -> Unit
         ): Method {
-            val builder = CodeBuilder(returns)
+            val trueParent = parent ?: Object("static", null, emptyList())
+            val builder = CodeBuilder(returns, trueParent.nameSpace, name)
             code.invoke(builder)
-            return if (parent == null) {
-                Method(argCount = argCount, name = name, returns = returns, code = builder.code())
-            } else {
-                Method(parent, argCount, name, returns, builder.code())
-            }
+            return Method(trueParent, argCount, name, returns, builder.code())
         }
     }
 }
