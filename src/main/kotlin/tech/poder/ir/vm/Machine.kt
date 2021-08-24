@@ -149,7 +149,7 @@ object Machine {
                 return instruction.extra.first() as Int
             }
             Simple.RETURN -> {
-                return Int.MAX_VALUE
+                return end
             }
             Simple.POP -> {
                 stack.pop()
