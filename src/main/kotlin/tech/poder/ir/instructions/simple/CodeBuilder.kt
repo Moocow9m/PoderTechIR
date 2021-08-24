@@ -25,11 +25,15 @@ class CodeBuilder(val returnItem: Boolean) {
     }
 
     fun invoke(method: Method) {
+        invoke(method.parent.nameSpace + "." + method.name, method.argCount.toInt())
+    }
+
+    fun invoke(name: String, args: Int) {
         base.add(
             Instruction.create(
                 Simple.INVOKE_METHOD,
-                method.parent.nameSpace + "." + method.name,
-                method.argCount.toInt()
+                name,
+                args
             )
         )
     }
