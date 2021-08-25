@@ -20,7 +20,7 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String) {
     }
 
     fun getArg(name: String) {
-        push(manualArgs[name]!!)
+        push(manualArgs[name]!!.toInt())
         getVar("args")
         getArrayItem()
     }
