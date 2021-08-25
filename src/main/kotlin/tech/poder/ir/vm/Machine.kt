@@ -94,7 +94,7 @@ object Machine {
                 val b = stack.pop()
                 val a = stack.pop()
                 stack.push(
-                    if (a is String || b is String) {
+                    if (a is String || b is String || a is Char || b is Char) {
                         "$a$b"
                     } else {
                         addNumbers(a as Number, b as Number)
@@ -109,6 +109,10 @@ object Machine {
             Simple.DEC -> {
                 val a = stack.pop()
                 stack.push(subNumbers(a as Number, 1))
+            }
+            Simple.INC -> {
+                val a = stack.pop()
+                stack.push(addNumbers(a as Number, 1))
             }
             Simple.MUL -> {
                 val b = stack.pop()
