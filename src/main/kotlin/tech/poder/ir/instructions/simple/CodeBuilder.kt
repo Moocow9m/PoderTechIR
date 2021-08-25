@@ -63,7 +63,7 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String) {
     }
 
     fun invoke(method: Method) {
-        invoke("${method.parent.nameSpace}.${method.name}", method.argCount.toInt(), method.returns)
+        invoke(method.fullName, method.argCount.toInt(), method.returns)
     }
 
     fun invoke(name: String, args: Int, returns: Boolean) {
@@ -82,7 +82,7 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String) {
     }
 
     fun launch(method: Method) {
-        launch("${method.parent.nameSpace}.${method.name}", method.argCount.toInt())
+        launch(method.fullName, method.argCount.toInt())
     }
 
     fun launch(name: String, args: Int) {

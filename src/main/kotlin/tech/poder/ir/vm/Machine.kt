@@ -16,7 +16,7 @@ object Machine {
 
     fun loadCode(vararg methods: Method) {
         methods.forEach {
-            val key = "${it.parent.nameSpace}.${it.name}"
+            val key = it.fullName
             check(!loadedMethods.containsKey(key)) {
                 "Duplicate method: $key"
             }
