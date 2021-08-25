@@ -93,17 +93,6 @@ object Machine {
         instruction: Instruction
     ): Int {
         when (instruction.opcode) {
-            Simple.ADD -> {
-                val b = stack.pop()
-                val a = stack.pop()
-                stack.push(
-                    if (a is String || b is String || a is Char || b is Char) {
-                        "$a$b"
-                    } else {
-                        addNumbers(a as Number, b as Number)
-                    }
-                )
-            }
             Simple.SAL -> {
                 val b = stack.pop() as Int
                 val a = stack.pop() as Number
@@ -144,10 +133,25 @@ object Machine {
                 val a = stack.pop() as Number
                 stack.push(xorNumbers(a, b))
             }
+            Simple.ADD -> {
+                val b = stack.pop()
+                val a = stack.pop()
+                stack.push(
+                    if (a is String || b is String || a is Char || b is Char) {
+                        "$a$b"
+                    } else {
+                        val e = addNumbers(a as Number, b as Number)
+                        System.err.println("$a + $b = $e")
+                        e
+                    }
+                )
+
+            }
             Simple.SUB -> {
                 val b = stack.pop()
                 val a = stack.pop()
                 stack.push(subNumbers(a as Number, b as Number))
+                System.err.println("$a - $b = ${stack.peek()}")
             }
             Simple.DEC -> {
                 val a = stack.pop()
@@ -161,11 +165,13 @@ object Machine {
                 val b = stack.pop()
                 val a = stack.pop()
                 stack.push(mulNumbers(a as Number, b as Number))
+                System.err.println("$a * $b = ${stack.peek()}")
             }
             Simple.DIV -> {
                 val b = stack.pop()
                 val a = stack.pop()
                 stack.push(divNumbers(a as Number, b as Number))
+                System.err.println("$a / $b = ${stack.peek()}")
             }
             Simple.DUP -> {
                 stack.push(stack.peek())
@@ -189,9 +195,12 @@ object Machine {
                 repeat(instruction.extra[1] as Int) {
                     args.add(stack.pop())
                 }
-                val tmp = execute(method, *args.toTypedArray())
+                val tmp = execute(method, *args.reversed().toTypedArray())
                 if (tmp != null) {
                     stack.push(tmp)
+                }
+                if (method.contains("pow")) {
+                    System.err.println("${args[1]} ^ ${args[0]} = ${stack.peek()}")
                 }
             }
             Complex.SYS_CALL -> {

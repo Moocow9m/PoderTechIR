@@ -45,10 +45,31 @@ object Main {
             it.placeLabel(afterLabel)
             it.return_()
         }
+        val testMath = Method.create("test2") { builder ->
+            builder.push(1.0)
+            builder.push(1.0)
+            builder.add()
+            builder.push(1.0)
+            builder.push(10.0)
+            builder.div()
+            builder.add()
+            builder.push(1000.0)
+            builder.push(10.0)
+            builder.mul()
+            builder.push(10.0)
+            builder.push(10.0)
+            builder.invoke(Basic.math.methods.first { it.name == "pow" })
+            builder.div()
+            builder.add()
+            builder.push("\n")
+            builder.add()
+            builder.sysCall(SpecialCalls.PRINT)
+        }
         Machine.loadCode(Basic.math)
-        Machine.loadCode(test1, libA, libB, main)
-        Machine.execute("static.test1")
+        Machine.loadCode(test1, testMath, libA, libB, main)
         Machine.execute("static.main")
+        Machine.execute("static.test1")
+        Machine.execute("static.test2")
         /*repeat(iterations.toInt()) {
             warmup += measureTimeMillis {
                 Machine.execute("static.main")
