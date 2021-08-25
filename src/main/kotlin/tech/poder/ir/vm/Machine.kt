@@ -140,9 +140,7 @@ object Machine {
                     if (a is String || b is String || a is Char || b is Char) {
                         "$a$b"
                     } else {
-                        val e = addNumbers(a as Number, b as Number)
-                        System.err.println("$a + $b = $e")
-                        e
+                        addNumbers(a as Number, b as Number)
                     }
                 )
 
@@ -151,7 +149,6 @@ object Machine {
                 val b = stack.pop()
                 val a = stack.pop()
                 stack.push(subNumbers(a as Number, b as Number))
-                System.err.println("$a - $b = ${stack.peek()}")
             }
             Simple.DEC -> {
                 val a = stack.pop()
@@ -165,13 +162,11 @@ object Machine {
                 val b = stack.pop()
                 val a = stack.pop()
                 stack.push(mulNumbers(a as Number, b as Number))
-                System.err.println("$a * $b = ${stack.peek()}")
             }
             Simple.DIV -> {
                 val b = stack.pop()
                 val a = stack.pop()
                 stack.push(divNumbers(a as Number, b as Number))
-                System.err.println("$a / $b = ${stack.peek()}")
             }
             Simple.DUP -> {
                 stack.push(stack.peek())
@@ -198,9 +193,6 @@ object Machine {
                 val tmp = execute(method, *args.reversed().toTypedArray())
                 if (tmp != null) {
                     stack.push(tmp)
-                }
-                if (method.contains("pow")) {
-                    System.err.println("${args[1]} ^ ${args[0]} = ${stack.peek()}")
                 }
             }
             Complex.SYS_CALL -> {
