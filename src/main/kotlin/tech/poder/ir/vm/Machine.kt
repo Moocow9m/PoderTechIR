@@ -197,6 +197,14 @@ object Machine {
                     return instruction.extra.first() as Int
                 }
             }
+
+            Simple.IF_NEQ -> {
+                executeInstruction(stack, localVars, end, compare)
+                val num = stack.pop()
+                if (num as Int == 0) {
+                    return instruction.extra.first() as Int
+                }
+            }
             Simple.JMP -> {
                 return instruction.extra.first() as Int
             }
