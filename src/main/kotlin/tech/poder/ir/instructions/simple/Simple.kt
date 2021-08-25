@@ -5,6 +5,15 @@ import tech.poder.ir.instructions.Command
 enum class Simple : Command {
     BREAKPOINT,
     RETURN,
+    OR,
+    AND,
+    XOR,
+    SHL,
+    SHR,
+    SAL,
+    SAR,
+    ROL,
+    ROR,
     INC,
     DEC,
     ADD,
@@ -27,11 +36,11 @@ enum class Simple : Command {
     ARRAY_CREATE,
     STORE_VAR,
     GET_VAR,
-    SET_FIELD,
-    GET_FIELD,
+    SET_FIELD, //todo
+    GET_FIELD, //todo
     INVOKE_METHOD,
     SWITCH,
-    SUSPEND,
-    LAUNCH,
+    SUSPEND, //todo
+    LAUNCH, //todo
     NEW_OBJECT
 }

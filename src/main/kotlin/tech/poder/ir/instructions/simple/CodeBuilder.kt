@@ -25,6 +25,42 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String) {
         getArrayItem()
     }
 
+    fun and() {
+        base.add(Instruction(Simple.AND))
+    }
+
+    fun or() {
+        base.add(Instruction(Simple.OR))
+    }
+
+    fun xor() {
+        base.add(Instruction(Simple.XOR))
+    }
+
+    fun unsignedShiftLeft() {
+        base.add(Instruction(Simple.SHL))
+    }
+
+    fun signedShiftLeft() {
+        base.add(Instruction(Simple.SAL))
+    }
+
+    fun signedShiftRight() {
+        base.add(Instruction(Simple.SAR))
+    }
+
+    fun unsignedShiftRight() {
+        base.add(Instruction(Simple.SHR))
+    }
+
+    fun rotateRight() {
+        base.add(Instruction(Simple.ROR))
+    }
+
+    fun rotateLeft() {
+        base.add(Instruction(Simple.ROL))
+    }
+
     fun getVar(name: String) {
         base.add(Instruction.create(Simple.GET_VAR, name))
     }

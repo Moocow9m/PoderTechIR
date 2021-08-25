@@ -9,6 +9,9 @@ import tech.poder.ir.instructions.complex.Complex
 import tech.poder.ir.instructions.simple.Simple
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
+import kotlin.experimental.and
+import kotlin.experimental.or
+import kotlin.experimental.xor
 
 object Machine {
     private val loadedMethods = mutableMapOf<String, Method>()
@@ -101,6 +104,46 @@ object Machine {
                     }
                 )
             }
+            Simple.SAL -> {
+                val b = stack.pop() as Int
+                val a = stack.pop() as Number
+                stack.push(shlNumbers(a, b))
+            }
+            Simple.SHR -> {
+                val b = stack.pop() as Int
+                val a = stack.pop() as Number
+                stack.push(ushrNumbers(a, b))
+            }
+            Simple.SAR -> {
+                val b = stack.pop() as Int
+                val a = stack.pop() as Number
+                stack.push(shrNumbers(a, b))
+            }
+            Simple.ROR -> {
+                val b = stack.pop() as Int
+                val a = stack.pop() as Number
+                stack.push(rorNumbers(a, b))
+            }
+            Simple.ROL -> {
+                val b = stack.pop() as Int
+                val a = stack.pop() as Number
+                stack.push(rolNumbers(a, b))
+            }
+            Simple.AND -> {
+                val b = stack.pop() as Number
+                val a = stack.pop() as Number
+                stack.push(andNumbers(a, b))
+            }
+            Simple.OR -> {
+                val b = stack.pop() as Number
+                val a = stack.pop() as Number
+                stack.push(orNumbers(a, b))
+            }
+            Simple.XOR -> {
+                val b = stack.pop() as Number
+                val a = stack.pop() as Number
+                stack.push(xorNumbers(a, b))
+            }
             Simple.SUB -> {
                 val b = stack.pop()
                 val a = stack.pop()
@@ -129,6 +172,16 @@ object Machine {
             }
             Simple.PUSH -> {
                 stack.push(instruction.extra.first())
+            }
+            Simple.POP -> {
+                stack.pop()
+            }
+            Simple.NEG -> {
+                val a = stack.pop() as Number
+                stack.push(negNumber(a))
+            }
+            Simple.BREAKPOINT -> {
+                println("Instruction Breakpoint!")
             }
             Simple.INVOKE_METHOD -> {
                 val method = instruction.extra[0] as String
@@ -224,9 +277,6 @@ object Machine {
             Simple.RETURN -> {
                 return end
             }
-            Simple.POP -> {
-                stack.pop()
-            }
             Simple.STORE_VAR -> {
                 localVars[instruction.extra.first() as UByte] = stack.pop()
             }
@@ -234,8 +284,17 @@ object Machine {
                 stack.push(localVars[instruction.extra.first() as UByte])
             }
             Simple.ARRAY_GET -> {
-                val array = stack.pop() as Array<out Any>
+                val array = stack.pop() as Array<*>
                 stack.push(array[stack.pop() as Int])
+            }
+            Simple.ARRAY_SET -> {
+                val array = stack.pop() as Array<Any>
+                val index = stack.pop() as Int
+                val v = stack.pop()
+                array[index] = v
+            }
+            Simple.ARRAY_CREATE -> {
+                stack.push(Array<Any>(stack.pop() as Int) { 0 })
             }
             Simple.NEW_OBJECT -> {
                 val objName = instruction.extra.first() as String
@@ -408,6 +467,165 @@ object Machine {
             }
             else -> {
                 a.toByte() / b.toByte()
+            }
+        }
+    }
+
+    private fun negNumber(a: Number): Number {
+        return when (a) {
+            is Double -> {
+                -a.toDouble()
+            }
+            is Float -> {
+                -a.toFloat()
+            }
+            is Long -> {
+                -a.toLong()
+            }
+            is Int -> {
+                -a.toInt()
+            }
+            is Short -> {
+                -a.toShort()
+            }
+            else -> {
+                -a.toByte()
+            }
+        }
+    }
+
+    private fun toSimilar(input: Number, similar: Number): Number {
+        return when (similar) {
+            is Double -> {
+                input.toDouble()
+            }
+            is Float -> {
+                input.toFloat()
+            }
+            is Long -> {
+                input.toLong()
+            }
+            is Int -> {
+                input.toInt()
+            }
+            is Short -> {
+                input.toShort()
+            }
+            else -> {
+                input.toByte()
+            }
+        }
+    }
+
+    private fun shlNumbers(a: Number, b: Int): Number {
+        val x = when (a) {
+            is Long -> {
+                a.toLong() shl b
+            }
+            else -> {
+                a.toInt() shl b
+            }
+        }
+        return toSimilar(x, a)
+    }
+
+    private fun shrNumbers(a: Number, b: Int): Number {
+        val x = when (a) {
+            is Long -> {
+                a.toLong() shr b
+            }
+            else -> {
+                a.toInt() shr b
+            }
+        }
+        return toSimilar(x, a)
+    }
+
+    private fun ushrNumbers(a: Number, b: Int): Number {
+        val x = when (a) {
+            is Long -> {
+                a.toLong() ushr b
+            }
+            else -> {
+                a.toInt() ushr b
+            }
+        }
+        return toSimilar(x, a)
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun rorNumbers(a: Number, b: Int): Number {
+        val x = when (a) {
+            is Long -> {
+                a.toLong().rotateRight(b)
+            }
+            else -> {
+                a.toInt().rotateRight(b)
+            }
+        }
+        return toSimilar(x, a)
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun rolNumbers(a: Number, b: Int): Number {
+        val x = when (a) {
+            is Long -> {
+                a.toLong().rotateLeft(b)
+            }
+            else -> {
+                a.toInt().rotateLeft(b)
+            }
+        }
+        return toSimilar(x, a)
+    }
+
+    private fun xorNumbers(a: Number, b: Number): Number {
+        return when (a) {
+            is Long -> {
+                a.toLong() xor b.toLong()
+            }
+            is Int -> {
+                a.toInt() xor b.toInt()
+            }
+            is Short -> {
+                a.toShort() xor b.toShort()
+            }
+            else -> {
+                a.toByte() xor b.toByte()
+            }
+        }
+    }
+
+    private fun orNumbers(a: Number, b: Number): Number {
+        return when (a) {
+            is Long -> {
+                a.toLong() or b.toLong()
+            }
+            is Int -> {
+                a.toInt() or b.toInt()
+            }
+            is Short -> {
+                a.toShort() or b.toShort()
+            }
+            else -> {
+                a.toByte() or b.toByte()
+            }
+        }
+    }
+
+    private fun andNumbers(a: Number, b: Number): Number {
+        return when (a) {
+            is Long -> {
+                a.toLong() and b.toLong()
+            }
+            is Int -> {
+                a.toInt() and b.toInt()
+            }
+            is Short -> {
+                a.toShort() and b.toShort()
+            }
+            else -> {
+                a.toByte() and b.toByte()
             }
         }
     }
