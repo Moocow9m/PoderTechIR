@@ -170,8 +170,8 @@ object Machine {
                 }
             }
             Complex.COMPARE -> {
-                val a = stack.pop()
                 val b = stack.pop()
+                val a = stack.pop()
                 val aNum = processToNumeric(a)
                 val bNum = processToNumeric(b)
                 stack.push(compareNumbers(aNum, bNum))
