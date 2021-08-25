@@ -8,10 +8,21 @@ import tech.poder.ir.instructions.common.special.SpecialCalls
 import tech.poder.ir.instructions.complex.Complex
 
 class CodeBuilder(val returnItem: Boolean, val nameSpace: String) {
+    private val manualArgs = mutableMapOf<String, UByte>()
     private val base = ArrayList<Instruction>()
 
     fun setVar(name: String) {
         base.add(Instruction.create(Simple.STORE_VAR, name))
+    }
+
+    fun idArg(name: String) {
+        manualArgs[name] = (manualArgs.size + 1).toUByte()
+    }
+
+    fun getArg(name: String) {
+        push(manualArgs[name]!!)
+        getVar("args")
+        getArrayItem()
     }
 
     fun getVar(name: String) {
