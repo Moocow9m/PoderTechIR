@@ -6,9 +6,8 @@ import tech.poder.ir.instructions.common.Object
 import tech.poder.ir.instructions.common.special.Label
 import tech.poder.ir.instructions.common.special.SpecialCalls
 import tech.poder.ir.instructions.complex.Complex
-import java.util.*
 
-class CodeBuilder(val returnItem: Boolean, val nameSpace: String, val methodName: String) {
+class CodeBuilder(val returnItem: Boolean, val nameSpace: String) {
     private val base = ArrayList<Instruction>()
 
     fun setVar(name: String) {
@@ -64,15 +63,16 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String, val methodName
     }
 
     fun invoke(method: Method) {
-        invoke("${method.parent.nameSpace}.${method.name}", method.argCount.toInt())
+        invoke("${method.parent.nameSpace}.${method.name}", method.argCount.toInt(), method.returns)
     }
 
-    fun invoke(name: String, args: Int) {
+    fun invoke(name: String, args: Int, returns: Boolean) {
         base.add(
             Instruction.create(
                 Simple.INVOKE_METHOD,
                 name,
-                args
+                args,
+                returns
             )
         )
     }
@@ -225,17 +225,8 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String, val methodName
         check(unmatched.isEmpty()) {
             "Label(s) Mismatched: ${unmatched.joinToString(", ")}"
         }
-        validateStack()
-        return base
-    }
-
-    private fun validateStack() {
-        val stack = Stack<Any>()
 
         //todo validate stack
-
-        if (returnItem) {
-            //todo check that stack has 1 item left
-        }
+        return base
     }
 }

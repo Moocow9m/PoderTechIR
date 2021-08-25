@@ -228,32 +228,67 @@ object Machine {
         }
     }
 
+    internal fun toLarger(a: Number, b: Number): Number {
+        return when {
+            a is Double || b is Double -> {
+                a.toDouble()
+            }
+            a is Float || b is Float -> {
+                a.toFloat()
+            }
+            a is Long || b is Long -> {
+                a.toLong()
+            }
+            a is Int || b is Int -> {
+                a.toInt()
+            }
+            a is Short || b is Short -> {
+                a.toShort()
+            }
+            else -> {
+                a.toByte()
+            }
+        }
+    }
+
     private fun compareNumbers(a: Number, b: Number): Int {
-        return if (a is Double || b is Double) {
-            a.toDouble().compareTo(b.toDouble())
-        } else if (a is Float || b is Float) {
-            a.toFloat().compareTo(b.toFloat())
-        } else if (a is Long || b is Long) {
-            a.toLong().compareTo(b.toLong())
-        } else {
-            a.toInt()
-                .compareTo(b.toInt()) //int is a default case in cpu, so this may be easier than using smaller numbers... larger memory though
+        return when (toLarger(a, b)) {
+            is Double -> {
+                a.toDouble().compareTo(b.toDouble())
+            }
+            is Float -> {
+                a.toFloat().compareTo(b.toFloat())
+            }
+            is Long -> {
+                a.toLong().compareTo(b.toLong())
+            }
+            else -> {
+                a.toInt()
+                    .compareTo(b.toInt()) //int is a default case in cpu, so this may be easier than using smaller numbers... larger memory though
+            }
         }
     }
 
     private fun addNumbers(a: Number, b: Number): Number {
-        return if (a is Double || b is Double) {
-            a.toDouble() + b.toDouble()
-        } else if (a is Float || b is Float) {
-            a.toFloat() + b.toFloat()
-        } else if (a is Long || b is Long) {
-            a.toLong() + b.toLong()
-        } else if (a is Int || b is Int) {
-            a.toInt() + b.toInt()
-        } else if (a is Short || b is Short) {
-            a.toShort() + b.toShort()
-        } else {
-            a.toByte() + b.toByte()
+        return when (toLarger(a, b)) {
+            is Double -> {
+                a.toDouble() + b.toDouble()
+            }
+            is Float -> {
+                a.toFloat() + b.toFloat()
+            }
+            is Long -> {
+                a.toLong() + b.toLong()
+            }
+            is Int -> {
+                a.toInt() + b.toInt()
+            }
+            is Short -> {
+                a.toShort() + b.toShort()
+            }
+            else -> {
+                a.toByte() + b.toByte()
+            }
         }
     }
 }

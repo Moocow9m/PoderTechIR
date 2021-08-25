@@ -18,7 +18,7 @@ data class Method(
             code: (CodeBuilder) -> Unit
         ): Method {
             val trueParent = parent ?: Object("static", null, emptyList())
-            val builder = CodeBuilder(returns, trueParent.nameSpace, name)
+            val builder = CodeBuilder(returns, trueParent.nameSpace)
             code.invoke(builder)
             return Method(trueParent, argCount, name, returns, builder.code())
         }

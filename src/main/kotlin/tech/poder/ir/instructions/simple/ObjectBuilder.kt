@@ -47,7 +47,7 @@ class ObjectBuilder(private val nameSpace: String, init: (CodeBuilder) -> Unit) 
 
     fun build(): Object {
         val names = Array(fields.size) { "" }
-        val types = Array(fields.size) { Type.BYTE }
+        val types = Array(fields.size) { Type.values()[0] }
         fields.toSortedMap().forEach {
             names[it.key.toInt()] = it.value.first
             types[it.key.toInt()] = it.value.second
