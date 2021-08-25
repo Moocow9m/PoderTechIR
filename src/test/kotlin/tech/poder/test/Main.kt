@@ -10,10 +10,10 @@ object Main {
     @JvmStatic
     fun main(args: Array<String>) {
         val test1 = Method.create("test1") { builder ->
-            builder.push("\n")
             builder.push(2)
             builder.push(5)
             builder.invoke(Basic.math.methods.first { it.name == "pow" })
+            builder.push("\n")
             builder.add()
             builder.sysCall(SpecialCalls.PRINT)
             builder.return_()
@@ -27,8 +27,8 @@ object Main {
             it.sysCall(SpecialCalls.PRINT)
         }
         val libB = Method.create("printHelloWorld") {
-            it.push("\n")
             it.push("Hello World")
+            it.push("\n")
             it.add()
             it.sysCall(SpecialCalls.PRINT)
         }
@@ -48,6 +48,7 @@ object Main {
         Machine.loadCode(Basic.math)
         Machine.loadCode(test1, libA, libB, main)
         Machine.execute("static.test1")
+        Machine.execute("static.main")
         /*repeat(iterations.toInt()) {
             warmup += measureTimeMillis {
                 Machine.execute("static.main")
