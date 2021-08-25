@@ -91,8 +91,8 @@ object Machine {
     ): Int {
         when (instruction.opcode) {
             Simple.ADD -> {
-                val a = stack.pop()
                 val b = stack.pop()
+                val a = stack.pop()
                 stack.push(
                     if (a is String || b is String) {
                         "$a$b"
@@ -102,8 +102,8 @@ object Machine {
                 )
             }
             Simple.SUB -> {
-                val a = stack.pop()
                 val b = stack.pop()
+                val a = stack.pop()
                 stack.push(subNumbers(a as Number, b as Number))
             }
             Simple.DEC -> {
@@ -111,13 +111,13 @@ object Machine {
                 stack.push(subNumbers(a as Number, 1))
             }
             Simple.MUL -> {
-                val a = stack.pop()
                 val b = stack.pop()
+                val a = stack.pop()
                 stack.push(mulNumbers(a as Number, b as Number))
             }
             Simple.DIV -> {
-                val a = stack.pop()
                 val b = stack.pop()
+                val a = stack.pop()
                 stack.push(divNumbers(a as Number, b as Number))
             }
             Simple.DUP -> {
