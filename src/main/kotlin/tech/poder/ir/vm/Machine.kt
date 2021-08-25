@@ -101,6 +101,21 @@ object Machine {
                     }
                 )
             }
+            Simple.SUB -> {
+                val a = stack.pop()
+                val b = stack.pop()
+                subNumbers(a as Number, b as Number)
+            }
+            Simple.MUL -> {
+                val a = stack.pop()
+                val b = stack.pop()
+                mulNumbers(a as Number, b as Number)
+            }
+            Simple.DIV -> {
+                val a = stack.pop()
+                val b = stack.pop()
+                divNumbers(a as Number, b as Number)
+            }
             Simple.DUP -> {
                 stack.push(stack.peek())
             }
@@ -288,6 +303,75 @@ object Machine {
             }
             else -> {
                 a.toByte() + b.toByte()
+            }
+        }
+    }
+
+    private fun subNumbers(a: Number, b: Number): Number {
+        return when (toLarger(a, b)) {
+            is Double -> {
+                a.toDouble() - b.toDouble()
+            }
+            is Float -> {
+                a.toFloat() - b.toFloat()
+            }
+            is Long -> {
+                a.toLong() - b.toLong()
+            }
+            is Int -> {
+                a.toInt() - b.toInt()
+            }
+            is Short -> {
+                a.toShort() - b.toShort()
+            }
+            else -> {
+                a.toByte() - b.toByte()
+            }
+        }
+    }
+
+    private fun mulNumbers(a: Number, b: Number): Number {
+        return when (toLarger(a, b)) {
+            is Double -> {
+                a.toDouble() * b.toDouble()
+            }
+            is Float -> {
+                a.toFloat() * b.toFloat()
+            }
+            is Long -> {
+                a.toLong() * b.toLong()
+            }
+            is Int -> {
+                a.toInt() * b.toInt()
+            }
+            is Short -> {
+                a.toShort() * b.toShort()
+            }
+            else -> {
+                a.toByte() * b.toByte()
+            }
+        }
+    }
+
+    private fun divNumbers(a: Number, b: Number): Number {
+        return when (toLarger(a, b)) {
+            is Double -> {
+                a.toDouble() / b.toDouble()
+            }
+            is Float -> {
+                a.toFloat() / b.toFloat()
+            }
+            is Long -> {
+                a.toLong() / b.toLong()
+            }
+            is Int -> {
+                a.toInt() / b.toInt()
+            }
+            is Short -> {
+                a.toShort() / b.toShort()
+            }
+            else -> {
+                a.toByte() / b.toByte()
             }
         }
     }
