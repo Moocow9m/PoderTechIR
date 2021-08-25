@@ -48,7 +48,7 @@ object Machine {
         if (method == null) {
             throw IllegalStateException("Method does not exist: $method")
         }
-        return execute(method, *args)
+        return execute(method, *args.reversed().toTypedArray())
     }
 
     private fun execute(method: Method, vararg args: Any): Any? {
@@ -186,11 +186,12 @@ object Machine {
             }
             Simple.INVOKE_METHOD -> {
                 val method = instruction.extra[0] as String
-                val args = mutableListOf<Any>()
+                val arg = Stack<Any>()
+
                 repeat(instruction.extra[1] as Int) {
-                    args.add(stack.pop())
+                    arg.push(stack.pop())
                 }
-                val tmp = execute(method, *args.reversed().toTypedArray())
+                val tmp = execute(method, *arg.toTypedArray())
                 if (tmp != null) {
                     stack.push(tmp)
                 }

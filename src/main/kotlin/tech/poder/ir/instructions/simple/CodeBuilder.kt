@@ -15,8 +15,10 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String) {
         base.add(Instruction.create(Simple.STORE_VAR, name))
     }
 
-    fun idArg(name: String) {
-        manualArgs[name] = (manualArgs.size).toUByte()
+    fun idArgs(vararg names: String) {
+        names.reversed().forEach {
+            manualArgs[it] = (manualArgs.size).toUByte()
+        }
     }
 
     fun getArg(name: String) {
