@@ -104,17 +104,17 @@ object Machine {
             Simple.SUB -> {
                 val a = stack.pop()
                 val b = stack.pop()
-                subNumbers(a as Number, b as Number)
+                stack.push(subNumbers(a as Number, b as Number))
             }
             Simple.MUL -> {
                 val a = stack.pop()
                 val b = stack.pop()
-                mulNumbers(a as Number, b as Number)
+                stack.push(mulNumbers(a as Number, b as Number))
             }
             Simple.DIV -> {
                 val a = stack.pop()
                 val b = stack.pop()
-                divNumbers(a as Number, b as Number)
+                stack.push(divNumbers(a as Number, b as Number))
             }
             Simple.DUP -> {
                 stack.push(stack.peek())

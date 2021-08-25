@@ -10,6 +10,13 @@ import kotlin.system.measureTimeMillis
 object Main {
     @JvmStatic
     fun main(args: Array<String>) {
+        val test1 = Method.create("test1") {
+            it.push(5)
+            it.push(2)
+            it.sub()
+            it.sysCall(SpecialCalls.PRINT)
+            it.return_()
+        }
         var warmup = BigDecimal.ZERO
         var bench = BigDecimal.ZERO
         val iterations = 10_000_000L
@@ -36,8 +43,8 @@ object Main {
             it.placeLabel(afterLabel)
             it.return_()
         }
-        Machine.loadCode(libA, libB, main)
-
+        Machine.loadCode(test1, libA, libB, main)
+        Machine.execute("static.test1")
         repeat(iterations.toInt()) {
             warmup += measureTimeMillis {
                 Machine.execute("static.main")
