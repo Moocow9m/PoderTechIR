@@ -9,14 +9,14 @@ import java.math.BigDecimal
 object Main {
     @JvmStatic
     fun main(args: Array<String>) {
-        val test1 = Method.create("test1") {
-            it.push("\n")
-            it.push(2)
-            it.push(5)
-            it.invoke(Basic.math.methods[1])
-            it.add()
-            it.sysCall(SpecialCalls.PRINT)
-            it.return_()
+        val test1 = Method.create("test1") { builder ->
+            builder.push("\n")
+            builder.push(2)
+            builder.push(5)
+            builder.invoke(Basic.math.methods.first { it.name == "pow" })
+            builder.add()
+            builder.sysCall(SpecialCalls.PRINT)
+            builder.return_()
         }
 
         var warmup = BigDecimal.ZERO

@@ -6,11 +6,11 @@ import tech.poder.ir.instructions.common.Struct
 import tech.poder.ir.instructions.common.types.Type
 
 class ObjectBuilder(private val nameSpace: String, val hasFields: Boolean = true, init: (CodeBuilder) -> Unit) {
-    private val methods = mutableListOf<Method>()
+    private val methods = mutableSetOf<Method>()
     private var nextId = 0u
     private val fieldsId = mutableMapOf<String, UInt>()
     private val fields = mutableMapOf<UInt, Pair<String, Type>>()
-    private val dummyObject = Object(nameSpace, null, emptyList())
+    private val dummyObject = Object(nameSpace, null, emptySet())
 
     init {
         createMethod("init", code = init)

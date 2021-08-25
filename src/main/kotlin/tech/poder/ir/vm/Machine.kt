@@ -29,7 +29,7 @@ object Machine {
     }
 
     fun loadCode(vararg objects: Object) {
-        val methods = mutableListOf<Method>()
+        val methods = mutableSetOf<Method>()
         objects.forEach {
             methods.addAll(it.methods)
             check(!loadedObjects.containsKey(it.nameSpace)) {
