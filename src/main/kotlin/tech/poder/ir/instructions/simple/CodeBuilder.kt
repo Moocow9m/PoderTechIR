@@ -16,7 +16,7 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String) {
     }
 
     fun idArg(name: String) {
-        manualArgs[name] = (manualArgs.size + 1).toUByte()
+        manualArgs[name] = (manualArgs.size).toUByte()
     }
 
     fun getArg(name: String) {
