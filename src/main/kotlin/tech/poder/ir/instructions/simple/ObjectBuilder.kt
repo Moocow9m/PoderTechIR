@@ -5,7 +5,7 @@ import tech.poder.ir.instructions.common.Object
 import tech.poder.ir.instructions.common.Struct
 import tech.poder.ir.instructions.common.types.Type
 
-class ObjectBuilder(private val nameSpace: String, init: (CodeBuilder) -> Unit) {
+class ObjectBuilder(private val nameSpace: String, val hasFields: Boolean = true, init: (CodeBuilder) -> Unit) {
     private val methods = mutableListOf<Method>()
     private var nextId = 0u
     private val fieldsId = mutableMapOf<String, UInt>()
@@ -22,22 +22,29 @@ class ObjectBuilder(private val nameSpace: String, init: (CodeBuilder) -> Unit) 
         returns: Boolean = false,
         code: (CodeBuilder) -> Unit
     ): ObjectBuilder {
-        val method = Method.create(name, (argCount + 1u).toUByte(), returns, dummyObject, code)
-        method.code.forEach {
-            if (it.opcode == Simple.GET_FIELD || it.opcode == Simple.SET_FIELD) {
-                val fieldName = it.extra[0] as String
-                if (fieldName.startsWith(nameSpace)) {
-                    val type = it.extra[1] as Type
-                    val id = fieldsId.getOrPut(fieldName) {
-                        nextId++
+        val realArgCount: UByte = if (hasFields) {
+            (argCount + 1u).toUByte()
+        } else {
+            argCount
+        }
+        val method = Method.create(name, realArgCount, returns, dummyObject, code)
+        if (hasFields) {
+            method.code.forEach {
+                if (it.opcode == Simple.GET_FIELD || it.opcode == Simple.SET_FIELD) {
+                    val fieldName = it.extra[0] as String
+                    if (fieldName.startsWith(nameSpace)) {
+                        val type = it.extra[1] as Type
+                        val id = fieldsId.getOrPut(fieldName) {
+                            nextId++
+                        }
+                        val tmp = fields.getOrPut(id) {
+                            Pair(fieldName, it.extra[1] as Type)
+                        }
+                        check(tmp.second == type) {
+                            "Field type error: $tmp != $type for field: $fieldName"
+                        }
+                        it.extra = arrayOf(id)
                     }
-                    val tmp = fields.getOrPut(id) {
-                        Pair(fieldName, it.extra[1] as Type)
-                    }
-                    check(tmp.second == type) {
-                        "Field type error: $tmp != $type for field: $fieldName"
-                    }
-                    it.extra = arrayOf(id)
                 }
             }
         }

@@ -106,6 +106,10 @@ object Machine {
                 val b = stack.pop()
                 stack.push(subNumbers(a as Number, b as Number))
             }
+            Simple.DEC -> {
+                val a = stack.pop()
+                stack.push(subNumbers(a as Number, 1))
+            }
             Simple.MUL -> {
                 val a = stack.pop()
                 val b = stack.pop()
@@ -172,6 +176,13 @@ object Machine {
                 executeInstruction(stack, localVars, end, compare)
                 val num = stack.pop()
                 if (num as Int <= 0) {
+                    return instruction.extra.first() as Int
+                }
+            }
+            Simple.IF_GT_EQ -> {
+                executeInstruction(stack, localVars, end, compare)
+                val num = stack.pop()
+                if ((num as Int) < 0) {
                     return instruction.extra.first() as Int
                 }
             }
