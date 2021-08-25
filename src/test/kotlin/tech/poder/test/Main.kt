@@ -4,7 +4,6 @@ import tech.poder.ir.instructions.common.Method
 import tech.poder.ir.instructions.common.special.SpecialCalls
 import tech.poder.ir.std.Basic
 import tech.poder.ir.vm.Machine
-import java.math.BigDecimal
 
 object Main {
     @JvmStatic
@@ -18,10 +17,6 @@ object Main {
             builder.sysCall(SpecialCalls.PRINT)
             builder.return_()
         }
-
-        var warmup = BigDecimal.ZERO
-        var bench = BigDecimal.ZERO
-        val iterations = 10_000_000L
         val libA = Method.create("printHelloKat") {
             it.push("Hello Kat\n")
             it.sysCall(SpecialCalls.PRINT)
@@ -45,47 +40,9 @@ object Main {
             it.placeLabel(afterLabel)
             it.return_()
         }
-        val testMath = Method.create("test2") { builder ->
-            builder.push(1.0)
-            builder.push(1.0)
-            builder.add()
-            builder.push(1.0)
-            builder.push(10.0)
-            builder.div()
-            builder.add()
-            builder.push(1000.0)
-            builder.push(10.0)
-            builder.mul()
-            builder.push(10.0)
-            builder.push(10.0)
-            builder.invoke(Basic.math.methods.first { it.name == "pow" })
-            builder.div()
-            builder.add()
-            builder.push("\n")
-            builder.add()
-            builder.sysCall(SpecialCalls.PRINT)
-        }
         Machine.loadCode(Basic.math)
-        Machine.loadCode(test1, testMath, libA, libB, main)
+        Machine.loadCode(test1, libA, libB, main)
         Machine.execute("static.main")
         Machine.execute("static.test1")
-        Machine.execute("static.test2")
-        /*repeat(iterations.toInt()) {
-            warmup += measureTimeMillis {
-                Machine.execute("static.main")
-            }.toBigDecimal()
-        }
-        repeat(iterations.toInt()) {
-            bench += measureTimeMillis {
-                Machine.execute("static.main")
-            }.toBigDecimal()
-        }
-        println(
-            "Iterations:$iterations" +
-                    "\n[WARMUP] Time: ${warmup}ms" +
-                    "\n[WARMUP] Ops per milli: ${iterations.toBigDecimal().divide(warmup, MathContext.DECIMAL32)}" +
-                    "\n[BENCH] Time: ${bench}ms" +
-                    "\n[BENCH] Ops per milli: ${iterations.toBigDecimal().divide(bench, MathContext.DECIMAL32)}"
-        )*/
     }
 }
