@@ -145,7 +145,7 @@ class CodeBuilder(val returnItem: Boolean, private val nameSpace: String) {
         )
     }
 
-    fun compare() {//compare is int on 64 bit... I think
+    fun compare() {
         base.add(Instruction(Complex.COMPARE))
     }
 
@@ -156,7 +156,7 @@ class CodeBuilder(val returnItem: Boolean, private val nameSpace: String) {
     }
 
     fun ifEquals(elseJump: Label) {
-        base.add(Instruction.create(Simple.IF_EQ, elseJump)) //Compare gives 0 for equal
+        base.add(Instruction.create(Simple.IF_EQ, elseJump))
     }
 
     fun ifNotEquals(elseJump: Label) {
