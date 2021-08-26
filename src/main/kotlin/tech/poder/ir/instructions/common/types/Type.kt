@@ -7,5 +7,6 @@ enum class Type(val sizeBits: ULong, val default: Any?) {
     LONG(Long.SIZE_BITS.toULong(), 0.toLong()),
     FLOAT(Float.SIZE_BITS.toULong(), 0.toFloat()),
     DOUBLE(Double.SIZE_BITS.toULong(), 0.toDouble()),
-    POINTER(Long.SIZE_BITS.toULong(), null)
+    POINTER(Long.SIZE_BITS.toULong(), null),
+    STRING(POINTER.sizeBits, "")
 }

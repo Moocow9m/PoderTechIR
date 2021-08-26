@@ -6,8 +6,9 @@ import tech.poder.ir.instructions.common.Object
 import tech.poder.ir.instructions.common.special.Label
 import tech.poder.ir.instructions.common.special.SpecialCalls
 import tech.poder.ir.instructions.complex.Complex
+import java.util.*
 
-class CodeBuilder(val returnItem: Boolean, val nameSpace: String) {
+class CodeBuilder(val returnItem: Boolean, private val nameSpace: String) {
     private val manualArgs = mutableMapOf<String, UByte>()
     private val base = ArrayList<Instruction>()
 
@@ -276,6 +277,7 @@ class CodeBuilder(val returnItem: Boolean, val nameSpace: String) {
         }
 
         //todo validate stack
+        val stack = Stack<Any>()
         return base
     }
 }
