@@ -69,7 +69,7 @@ class CodeBuilder(val returnItem: Boolean, private val nameSpace: String) {
     }
 
     fun createArray() {
-        base.add(Instruction(Simple.ARRAY_CREATE))
+        base.add(Instruction.create(Simple.ARRAY_CREATE))
     }
 
     fun getArrayItem() {

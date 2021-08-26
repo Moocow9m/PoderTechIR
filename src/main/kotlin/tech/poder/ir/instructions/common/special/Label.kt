@@ -1,6 +1,6 @@
 package tech.poder.ir.instructions.common.special
 
-data class Label(val id: UShort, internal var offset: Int = -1) {
+data class Label(val id: UShort, internal var offset: Int = -2) {
     fun use(index: Int) {
         check(!isUsed()) {
             "Label already in use!"
@@ -9,6 +9,6 @@ data class Label(val id: UShort, internal var offset: Int = -1) {
     }
 
     fun isUsed(): Boolean {
-        return offset > -1
+        return offset > -2
     }
 }
