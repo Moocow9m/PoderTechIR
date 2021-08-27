@@ -1,6 +1,6 @@
 package tech.poder.ptir.data.storage
 
-data class Label(val id: UShort, internal var offset: Int = -2) {
+data class Label internal constructor(val id: UShort, internal var offset: Int = -2) {
     fun use(index: Int) {
         check(!isUsed()) {
             "Label already in use!"

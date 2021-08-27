@@ -10,7 +10,7 @@ data class MultiSegment(
     val stackChanges: ArrayList<Type> = arrayListOf()
 ) : Segment {
     companion object {
-        fun buildSegments(raw: ArrayList<Instruction>?): MultiSegment? {
+        fun buildSegments(raw: ArrayList<Instruction>?, startIndex: Int = 0): MultiSegment? {
             if (raw == null) {
                 return null
             }
@@ -21,14 +21,14 @@ data class MultiSegment(
                 if (instruction.opCode == Simple.JMP) {
                     val offset = (instruction.extra as Label).offset
                     if (offset < index) {
-                        loopIndexes[index] = offset
+                        loopIndexes[index] = offset + 1
                     }
                 }
             }
             var internalIndex = 0
             var tmpStorage = SegmentPart()
             while (internalIndex < raw.size) {
-                if (loopIndexes.values.contains(internalIndex)) {
+                if (loopIndexes.values.contains(startIndex + internalIndex)) {
                     val jumpTo = loopIndexes.filter { it.value == internalIndex }.map { it.toPair() }
                     check(jumpTo.size == 1) {
                         "Loop detection failed! Jump point had multiple labels pointing to it: ${jumpTo.joinToString(", ") { "Jump from ${it.first} to ${it.second}" }}"
@@ -41,7 +41,7 @@ data class MultiSegment(
 
                     val newRaw = ArrayList<Instruction>()
                     (internalIndex..first.first).forEach { newRaw.add(raw[it]) }
-                    head.instructions.add(buildSegments(newRaw)!!)
+                    head.instructions.add(buildSegments(newRaw, startIndex + internalIndex + 1)!!)
 
                     if (tmpStorage.data.isNotEmpty()) {
                         tmpStorage = SegmentPart()
@@ -61,6 +61,7 @@ data class MultiSegment(
                             val ifRaw = ArrayList<Instruction>()
                             (internalIndex until potentialElse.offset).forEach { ifRaw.add(raw[it]) }
                             internalIndex = potentialElse.offset - 1
+                            val savedA = internalIndex
                             val last = ifRaw.last()
                             var elseRaw: ArrayList<Instruction>? = null
                             if (last.opCode == Simple.JMP && (last.extra as Label).offset > internalIndex) {
@@ -69,7 +70,12 @@ data class MultiSegment(
                                 internalIndex = (last.extra as Label).offset - 1
                             }
 
-                            head.instructions.add(BranchHolder(buildSegments(ifRaw)!!, buildSegments(elseRaw)))
+                            head.instructions.add(
+                                BranchHolder(
+                                    buildSegments(ifRaw, startIndex + savedA)!!,
+                                    buildSegments(elseRaw, startIndex + internalIndex)
+                                )
+                            )
 
                             if (tmpStorage.data.isNotEmpty()) {
                                 tmpStorage = SegmentPart()

@@ -21,4 +21,23 @@ class Packaging {
         }
         println(meth)
     }
+
+    @Test
+    fun loop() {
+        val meth = package_.newFloatingMethod("loop") {
+            val jump = it.newLabel()
+            it.push("{\n")
+            it.sysCall(SysCommand.PRINT)
+            it.placeLabel(jump)
+            it.push("Hello World")
+            it.push("\n")
+            it.add()
+            it.sysCall(SysCommand.PRINT)
+            it.jmp(jump)
+            it.push("}\n")
+            it.sysCall(SysCommand.PRINT)
+            it.return_()
+        }
+        println(meth)
+    }
 }

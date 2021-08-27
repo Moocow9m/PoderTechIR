@@ -182,7 +182,8 @@ data class CodeBuilder(
                         val objType = instruction.extra as ObjectHolder
                         stack.push(Type.TStruct(objType.fields))
                     }
-
+                    Simple.JMP -> {
+                    }
                     Simple.INC, Simple.DEC, Simple.SUB, Simple.MUL, Simple.DIV,
                     Simple.ADD, Simple.OR, Simple.XOR, Simple.AND, Simple.SAR,
                     Simple.SAL, Simple.SHR, Simple.ROR, Simple.ROL, Simple.NEG,
