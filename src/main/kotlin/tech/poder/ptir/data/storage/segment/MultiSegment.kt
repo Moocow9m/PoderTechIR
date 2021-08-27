@@ -61,7 +61,6 @@ data class MultiSegment(
                             val ifRaw = ArrayList<Instruction>()
                             (index until potentialElse.offset).forEach { ifRaw.add(raw[it]) }
                             index = potentialElse.offset - 1
-                            //todo package if
                             val last = ifRaw.last()
                             var elseRaw: ArrayList<Instruction>? = null
                             if (last.opCode == Simple.JMP && (last.extra as Label).offset > index) {
