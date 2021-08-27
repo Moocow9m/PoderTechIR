@@ -91,7 +91,7 @@ data class CodeBuilder(
                         }
                     }
                     Simple.ARRAY_CREATE -> {
-                        val size = stack.pop()
+                        val size = safePop(stack, "ARRAY_CREATE")
                         check(size is Type.Constant.TInt) {
                             "Array creation without Int type! Got: $size"
                         }
@@ -99,20 +99,25 @@ data class CodeBuilder(
                         if (arrayType is Type.Constant) {
                             arrayType.constant = false
                         }
-                        stack.push(Type.TArray(arrayType, 0)) //size is unknown at this time... will be a runtime check
+                        stack.push(
+                            Type.TArray(
+                                arrayType,
+                                0
+                            )
+                        ) //todo size is unknown at this time... will be a runtime check to prevent illegal access
                     }
                     Simple.ARRAY_GET -> {
-                        val array = stack.pop() as Type.TArray
-                        val arrayIndex = stack.pop()
+                        val array = safePop(stack, "ARRAY_GET1") as Type.TArray
+                        val arrayIndex = safePop(stack, "ARRAY_GET2")
                         check(arrayIndex is Type.Constant.TInt) {
                             "Array get without Int type! Got: $arrayIndex"
                         }
                         stack.push(array.type)
                     }
                     Simple.ARRAY_SET -> {
-                        val array = stack.pop() as Type.TArray
-                        val arrayIndex = stack.pop()
-                        val arrayItem = stack.pop()
+                        val array = safePop(stack, "ARRAY_SET1") as Type.TArray
+                        val arrayIndex = safePop(stack, "ARRAY_SET2")
+                        val arrayItem = safePop(stack, "ARRAY_SET3")
                         check(arrayIndex is Type.Constant.TInt) {
                             "Array set without Int type! Got: $arrayIndex"
                         }
@@ -123,6 +128,22 @@ data class CodeBuilder(
                             "Array set with incorrect type: $arrayItem! Wanted: ${array.type}"
                         }
                         stack.push(array.type)
+                    }
+                    Simple.LAUNCH, Simple.INVOKE_METHOD -> {
+                        val holder = instruction.extra as MethodHolder
+                        holder.args.forEach {
+                            val popped = safePop(stack, "${instruction.opCode}_ARG_${it.name}")
+                            if (popped is Type.Constant) {
+                                popped.constant = false
+                            }
+                            check(popped == it.type) {
+                                "Invalid type supplied to method! Wanted: ${it.type}, Got: $popped"
+                            }
+                        }
+
+                        if (holder.returnType != null) {
+                            stack.push(holder.returnType)
+                        }
                     }
                     Simple.INC, Simple.DEC, Simple.SUB, Simple.MUL, Simple.DIV,
                     Simple.ADD, Simple.OR, Simple.XOR, Simple.AND, Simple.SAR,
