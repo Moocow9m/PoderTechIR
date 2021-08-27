@@ -410,7 +410,7 @@ data class CodeBuilder(
     }
 
     //Statements
-    fun ifEquals(elseJump: Label) {
+    fun ifEquals(elseJump: Label) { //todo all statements should have fragments for parsing ease
         instructions.add(Instruction(Simple.IF_EQ, elseJump))
     }
 
