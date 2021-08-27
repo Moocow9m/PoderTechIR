@@ -39,8 +39,15 @@ data class CodeBuilder(
             }
         }
 
-        private fun validateStack(builder: CodeBuilder, instructions: ArrayList<Instruction>): Stack<Type> {
-            val stack = Stack<Type>()
+        private fun validateStack(
+            builder: CodeBuilder,
+            instructions: ArrayList<Instruction>,
+            currentStack: Stack<Type>? = null,
+            currentVars: ArrayList<Type>? = null
+        ): Stack<Type> {
+            val stack = currentStack ?: Stack()
+            val vars: ArrayList<Type> = currentVars ?: arrayListOf(*builder.storage.args.map { it.type }.toTypedArray())
+
             var index = 0
             val labels = mutableMapOf<Int, Label>()
             instructions.forEachIndexed { index, instruction ->
@@ -203,8 +210,8 @@ data class CodeBuilder(
     private var localVars = ArrayList<String>()
 
     init {
-        if (storage.args.isNotEmpty()) {
-            localVars.add("args")
+        storage.args.forEach {
+            localVars.add(it.name)
         }
     }
 
@@ -306,22 +313,6 @@ data class CodeBuilder(
             "Variable $name does not have a value on get!\n\tKnown Variables:\n\t\t${localVars.joinToString("\n\t\t")}"
         }
         instructions.add(Instruction(Simple.GET_VAR, localVars.indexOf(name)))
-    }
-
-    //Arguments
-    private fun indexOfArg(name: String): Int {
-        val index = storage.args.indexOfFirst { it.name == name }
-        check(index > -1) {
-            "Arg $name does not exist!\n\tKnown Args:\n\t\t${storage.args.joinToString("\n\t\t")}"
-        }
-        return index
-    }
-
-    fun getArg(name: String) {
-        val index = indexOfArg(name)
-        push(index)
-        getVar("args")
-        getArrayItem()
     }
 
     //Array
