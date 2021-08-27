@@ -1,4 +1,4 @@
-package tech.poder.ptir.data
+package tech.poder.ptir.data.storage
 
 sealed interface Type {
     data class TArray(val types: Array<Type>, val size: UInt) : Type {

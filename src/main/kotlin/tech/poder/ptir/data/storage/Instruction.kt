@@ -1,4 +1,4 @@
-package tech.poder.ptir.data
+package tech.poder.ptir.data.storage
 
 import tech.poder.ptir.commands.Command
 
