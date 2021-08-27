@@ -37,6 +37,184 @@ data class CodeBuilder(
                 Instruction(command)
             }
         }
+
+        private fun validateStack(builder: CodeBuilder, instructions: ArrayList<Instruction>): Stack<Type> {
+            val stack = Stack<Type>()
+            var index = 0
+            while (index < instructions.size) {
+                val instruction = instructions[index]
+                when (instruction.opCode) {
+                    Simple.POP -> {
+                        safePop(stack, "POP")
+                    }
+                    Simple.PUSH -> {
+                        stack.push(toType(instruction.extra!!))
+                    }
+                    Simple.INC -> {
+                        val popped = safePop(stack, "INC")
+                        check(popped is Type.Constant && popped !is Type.Constant.TString) {
+                            "INC called on illegal type: $popped!"
+                        }
+                        if (popped.constant) {
+                            val prev = instructions[index - 1]
+                            prev.extra = addNumbers(prev.extra as Number, toSameNumbers(1, prev.extra as Number))
+                            instructions.removeAt(index) //todo this will make labels fail!
+                            index--
+                        } else {
+                            popped.constant = false
+                        }
+                        stack.push(popped)
+                    }
+                    Simple.DEC -> {
+                        val popped = safePop(stack, "DEC")
+                        check(popped is Type.Constant && popped !is Type.Constant.TString) {
+                            "DEC called on illegal type: $popped!"
+                        }
+                        if (popped.constant) {
+                            val prev = instructions[index - 1]
+                            prev.extra = subNumbers(prev.extra as Number, toSameNumbers(1, prev.extra as Number))
+                            instructions.removeAt(index) //todo this will make labels fail!
+                            index--
+                        } else {
+                            popped.constant = false
+                        }
+                        stack.push(popped)
+                    }
+                    Simple.SUB -> {
+                        val poppedB = safePop(stack, "SUB1")
+                        check(poppedB is Type.Constant && poppedB !is Type.Constant.TString) {
+                            "SUB called on illegal type: $poppedB!"
+                        }
+                        val poppedA = safePop(stack, "SUB2")
+                        check(poppedA is Type.Constant && poppedA !is Type.Constant.TString) {
+                            "SUB called on illegal type: $poppedA!"
+                        }
+                        stack.push(
+                            if (poppedB.constant && poppedA.constant) {
+                                val prevB = instructions[index - 1]
+                                val prevA = instructions[index - 2]
+                                prevA.extra = subNumbers(prevA.extra as Number, prevB.extra as Number)
+                                instructions.removeAt(index) //todo this will make labels fail!
+                                instructions.removeAt(index - 1) //todo this will make labels fail!
+                                index -= 2
+                                toLarger(poppedA, poppedB)
+                            } else {
+                                val tmp = toLarger(poppedA, poppedB)
+                                tmp.constant = false
+                                tmp
+                            }
+                        )
+                    }
+                    Simple.ADD -> {
+                        val poppedB = safePop(stack, "ADD1")
+                        check(poppedB is Type.Constant) {
+                            "ADD called on illegal type: $poppedB!"
+                        }
+                        val poppedA = safePop(stack, "ADD2")
+                        check(poppedA is Type.Constant) {
+                            "ADD called on illegal type: $poppedA!"
+                        }
+                        stack.push(
+                            if (poppedB.constant && poppedA.constant) {
+                                val prevB = instructions[index - 1]
+                                val prevA = instructions[index - 2]
+                                if (poppedB is Type.Constant.TString || poppedA is Type.Constant.TString) {
+                                    prevA.extra = "${prevA.extra}${prevB.extra}"
+                                } else {
+                                    prevA.extra = addNumbers(prevA.extra as Number, prevB.extra as Number)
+                                }
+                                instructions.removeAt(index) //todo this will make labels fail!
+                                instructions.removeAt(index - 1) //todo this will make labels fail!
+                                index -= 2
+                                toLarger(poppedA, poppedB)
+                            } else {
+                                val tmp = toLarger(poppedA, poppedB)
+                                tmp.constant = false
+                                tmp
+                            }
+                        )
+                    }
+                    else -> error("Unknown command: ${instruction.opCode}")
+                }
+                index++
+            }
+            return stack
+        }
+
+        private fun toType(any: Any): Type {
+            return when (any) {
+                is Byte -> Type.Constant.TByte(true)
+                is Short -> Type.Constant.TShort(true)
+                is Int -> Type.Constant.TInt(true)
+                is Long -> Type.Constant.TLong(true)
+                is Float -> Type.Constant.TFloat(true)
+                is Double -> Type.Constant.TDouble(true)
+                is String -> Type.Constant.TString(true)
+                else -> error("Unknown push: ${any::class.java}")
+            }
+        }
+
+        private fun safePop(stack: Stack<Type>, message: String): Type {
+            check(stack.isNotEmpty()) {
+                "$message could not be executed because stack was empty!"
+            }
+            return stack.pop()
+        }
+
+        private fun toLarger(a: Number, b: Number): Number {
+            return when {
+                a is Double || b is Double -> a.toDouble()
+                a is Float || b is Float -> a.toFloat()
+                a is Long || b is Long -> a.toLong()
+                a is Int || b is Int -> a.toInt()
+                a is Short || b is Short -> a.toShort()
+                else -> a.toByte()
+            }
+        }
+
+        private fun toLarger(a: Type.Constant, b: Type.Constant): Type.Constant {
+            return when {
+                a is Type.Constant.TDouble || b is Type.Constant.TDouble -> Type.Constant.TDouble(true)
+                a is Type.Constant.TFloat || b is Type.Constant.TFloat -> Type.Constant.TFloat(true)
+                a is Type.Constant.TLong || b is Type.Constant.TLong -> Type.Constant.TLong(true)
+                a is Type.Constant.TInt || b is Type.Constant.TInt -> Type.Constant.TInt(true)
+                a is Type.Constant.TShort || b is Type.Constant.TShort -> Type.Constant.TShort(true)
+                else -> Type.Constant.TByte(true)
+            }
+        }
+
+        private fun toSameNumbers(from: Number, to: Number): Number {
+            return when (to) {
+                is Double -> from.toDouble()
+                is Float -> from.toFloat()
+                is Long -> from.toLong()
+                is Int -> from.toInt()
+                is Short -> from.toShort()
+                else -> from.toByte()
+            }
+        }
+
+        private fun addNumbers(a: Number, b: Number): Number {
+            return when (toLarger(a, b)) {
+                is Double -> a.toDouble() + b.toDouble()
+                is Float -> a.toFloat() + b.toFloat()
+                is Long -> a.toLong() + b.toLong()
+                is Int -> a.toInt() + b.toInt()
+                is Short -> a.toShort() + b.toShort()
+                else -> a.toByte() + b.toByte()
+            }
+        }
+
+        private fun subNumbers(a: Number, b: Number): Number {
+            return when (toLarger(a, b)) {
+                is Double -> a.toDouble() - b.toDouble()
+                is Float -> a.toFloat() - b.toFloat()
+                is Long -> a.toLong() - b.toLong()
+                is Int -> a.toInt() - b.toInt()
+                is Short -> a.toShort() - b.toShort()
+                else -> a.toByte() - b.toByte()
+            }
+        }
     }
 
     private var localVars = ArrayList<String>()
@@ -296,9 +474,26 @@ data class CodeBuilder(
             return_()
         }
 
-        val stack = Stack<Type>()
-
-
+        val result = validateStack(this, instructions)
+        if (storage.returnType == null) {
+            check(result.isEmpty()) {
+                "Stack not empty on return!\n" +
+                        "\tStack:\n" +
+                        "\t\t${result.joinToString("\n\t\t")}"
+            }
+        } else {
+            check(result.isNotEmpty()) {
+                "Stack empty on return when should be ${storage.returnType}"
+            }
+            check(result.size == 1) {
+                "Stack has more than 1 item on return!\n" +
+                        "\tStack:\n" +
+                        "\t\t${result.joinToString("\n\t\t")}"
+            }
+            check(result.peek() == storage.returnType) {
+                "Stack had ${result.pop()} instead of ${storage.returnType}!"
+            }
+        }
 
         return instructions.toTypedArray()
     }

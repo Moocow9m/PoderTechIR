@@ -35,10 +35,15 @@ sealed interface Type {
 
     }
 
-    data class TByte(val constant: Boolean) : Type
-    data class TShort(val constant: Boolean) : Type
-    data class TInt(val constant: Boolean) : Type
-    data class TLong(val constant: Boolean) : Type
-    data class TFloat(val constant: Boolean) : Type
-    data class TDouble(val constant: Boolean) : Type
+    sealed interface Constant : Type {
+        var constant: Boolean
+
+        data class TByte(override var constant: Boolean) : Constant
+        data class TShort(override var constant: Boolean) : Constant
+        data class TInt(override var constant: Boolean) : Constant
+        data class TLong(override var constant: Boolean) : Constant
+        data class TFloat(override var constant: Boolean) : Constant
+        data class TDouble(override var constant: Boolean) : Constant
+        data class TString(override var constant: Boolean) : Constant
+    }
 }
