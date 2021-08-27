@@ -13,12 +13,8 @@ data class Method internal constructor(
     var instructions: Array<Instruction>
 ) {
     val fullName by lazy {
-        val builder = StringBuilder(package_.namespace)
-        if (parent != null) {
-            builder.append(parent.name)
-        }
-        builder.append(name)
-        builder.toString()
+        val start = parent?.fullName ?: package_.namespace
+        "$start.$name"
     }
 
     override fun equals(other: Any?): Boolean {

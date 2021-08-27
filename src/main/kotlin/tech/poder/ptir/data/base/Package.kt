@@ -16,8 +16,8 @@ data class Package(
         floating.add(CodeBuilder.createMethod(this, name, returnType, args.toSet(), null, code))
     }
 
-    fun newObject(name: String): Object {
-        val obj = Object(this, name, mutableSetOf(), mutableSetOf())
+    fun newObject(name: String, vararg fields: NamedType): Object {
+        val obj = Object(this, name, mutableSetOf(), fields.toSet().toTypedArray())
         objects.add(obj)
         return obj
     }
