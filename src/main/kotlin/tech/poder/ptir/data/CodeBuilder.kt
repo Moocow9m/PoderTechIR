@@ -8,6 +8,7 @@ import tech.poder.ptir.data.base.Object
 import tech.poder.ptir.data.base.Package
 import tech.poder.ptir.data.math.StackNumberParse.parse
 import tech.poder.ptir.data.storage.*
+import tech.poder.ptir.data.storage.segment.MultiSegment
 import java.util.*
 
 data class CodeBuilder(
@@ -49,16 +50,16 @@ data class CodeBuilder(
             val vars: Array<Type?> = currentVars ?: Array(builder.localVars.size) {
                 null
             }
-            if (vars[0] == null && builder.storage.args.isNotEmpty()) {
+            if (builder.storage.args.isNotEmpty() && vars[0] == null && builder.storage.args.isNotEmpty()) {
                 builder.storage.args.forEach {
                     vars[builder.localVars.indexOf(it.name)] = it.type
                 }
             }
             var index = 0
             val labels = mutableMapOf<Int, Label>()
-            instructions.forEachIndexed { index, instruction ->
+            instructions.forEachIndexed { i, instruction ->
                 if (instruction.extra is Label) {
-                    labels[index] = instruction.extra as Label
+                    labels[i] = instruction.extra as Label
                 }
             }
             while (index < instructions.size) {
@@ -481,6 +482,8 @@ data class CodeBuilder(
             return_()
         }
 
+        val segment = MultiSegment.buildSegments(instructions)!!
+        segment.eval()
         validateStack(this, instructions)
 
         return instructions.toTypedArray()

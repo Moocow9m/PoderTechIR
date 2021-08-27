@@ -38,4 +38,8 @@ data class Method internal constructor(
         result = 31 * result + args.hashCode()
         return result
     }
+
+    override fun toString(): String {
+        return "$fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size} }"
+    }
 }

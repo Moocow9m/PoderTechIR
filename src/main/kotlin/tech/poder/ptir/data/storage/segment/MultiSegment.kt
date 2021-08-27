@@ -25,11 +25,11 @@ data class MultiSegment(
                     }
                 }
             }
-            var index = 0
+            var internalIndex = 0
             var tmpStorage = SegmentPart()
-            while (index < raw.size) {
-                if (loopIndexes.values.contains(index)) {
-                    val jumpTo = loopIndexes.filter { it.value == index }.map { it.toPair() }
+            while (internalIndex < raw.size) {
+                if (loopIndexes.values.contains(internalIndex)) {
+                    val jumpTo = loopIndexes.filter { it.value == internalIndex }.map { it.toPair() }
                     check(jumpTo.size == 1) {
                         "Loop detection failed! Jump point had multiple labels pointing to it: ${jumpTo.joinToString(", ") { "Jump from ${it.first} to ${it.second}" }}"
                     }
@@ -40,33 +40,33 @@ data class MultiSegment(
                     }
 
                     val newRaw = ArrayList<Instruction>()
-                    (index..first.first).forEach { newRaw.add(raw[it]) }
+                    (internalIndex..first.first).forEach { newRaw.add(raw[it]) }
                     head.instructions.add(buildSegments(newRaw)!!)
 
                     if (tmpStorage.data.isNotEmpty()) {
                         tmpStorage = SegmentPart()
                     }
 
-                    index = first.first
+                    internalIndex = first.first
                 } else {
-                    when (raw[index].opCode) {
+                    when (raw[internalIndex].opCode) {
                         Simple.IF_EQ, Simple.IF_LT_EQ,
                         Simple.IF_LT, Simple.IF_NOT_EQ,
                         Simple.IF_GT, Simple.IF_GT_EQ -> {
-                            val potentialElse = raw[index].extra as Label
+                            val potentialElse = raw[internalIndex].extra as Label
 
                             if (tmpStorage.data.isNotEmpty()) {
                                 head.instructions.add(tmpStorage)
                             }
                             val ifRaw = ArrayList<Instruction>()
-                            (index until potentialElse.offset).forEach { ifRaw.add(raw[it]) }
-                            index = potentialElse.offset - 1
+                            (internalIndex until potentialElse.offset).forEach { ifRaw.add(raw[it]) }
+                            internalIndex = potentialElse.offset - 1
                             val last = ifRaw.last()
                             var elseRaw: ArrayList<Instruction>? = null
-                            if (last.opCode == Simple.JMP && (last.extra as Label).offset > index) {
+                            if (last.opCode == Simple.JMP && (last.extra as Label).offset > internalIndex) {
                                 elseRaw = arrayListOf()
-                                (index until (last.extra as Label).offset).forEach { elseRaw.add(raw[it]) }
-                                index = (last.extra as Label).offset - 1
+                                (internalIndex until (last.extra as Label).offset).forEach { elseRaw.add(raw[it]) }
+                                internalIndex = (last.extra as Label).offset - 1
                             }
 
                             head.instructions.add(BranchHolder(buildSegments(ifRaw)!!, buildSegments(elseRaw)))
@@ -78,10 +78,10 @@ data class MultiSegment(
                         Simple.SWITCH -> {
                             TODO("SWITCH STATEMENTS NOT SUPPORTED YET!")
                         }
-                        else -> tmpStorage.data.add(raw[index])
+                        else -> tmpStorage.data.add(raw[internalIndex])
                     }
                 }
-                index++
+                internalIndex++
             }
             if (tmpStorage.data.isNotEmpty()) {
                 head.instructions.add(tmpStorage)

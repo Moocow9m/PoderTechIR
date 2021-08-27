@@ -15,17 +15,17 @@ data class Object internal constructor(
         "${parent.namespace}.$name"
     }
 
-    fun newMethod(name: String, returnType: Type?, vararg args: NamedType, code: (CodeBuilder) -> Unit) {
-        methods.add(
-            CodeBuilder.createMethod(
-                parent,
-                name,
-                returnType,
-                setOf(NamedType("this", Type.TStruct(fields)), *args),
-                this,
-                code
-            )
+    fun newMethod(name: String, returnType: Type?, vararg args: NamedType, code: (CodeBuilder) -> Unit): Method {
+        val meth = CodeBuilder.createMethod(
+            parent,
+            name,
+            returnType,
+            setOf(NamedType("this", Type.TStruct(fields)), *args),
+            this,
+            code
         )
+        methods.add(meth)
+        return meth
     }
 
     override fun equals(other: Any?): Boolean {
@@ -42,5 +42,9 @@ data class Object internal constructor(
         var result = parent.hashCode()
         result = 31 * result + name.hashCode()
         return result
+    }
+
+    override fun toString(): String {
+        return "class $fullName {\n\t${fields.joinToString("\n\t")}\n\n\t${methods.joinToString("\n\t")}\n}"
     }
 }

@@ -7,13 +7,20 @@ import tech.poder.ptir.data.storage.Type
 
 data class Package(
     val namespace: String,
-    val objects: MutableSet<Object>,
-    val floating: MutableSet<Method>,
-    val constPool: ConstantPool,
-    val requiredLibs: MutableSet<String>
+    val objects: MutableSet<Object> = mutableSetOf(),
+    val floating: MutableSet<Method> = mutableSetOf(),
+    val constPool: ConstantPool = ConstantPool(mutableMapOf()),
+    val requiredLibs: MutableSet<String> = mutableSetOf()
 ) {
-    fun newFloatingMethod(name: String, returnType: Type?, vararg args: NamedType, code: (CodeBuilder) -> Unit) {
-        floating.add(CodeBuilder.createMethod(this, name, returnType, args.toSet(), null, code))
+    fun newFloatingMethod(
+        name: String,
+        returnType: Type? = null,
+        vararg args: NamedType,
+        code: (CodeBuilder) -> Unit
+    ): Method {
+        val meth = CodeBuilder.createMethod(this, name, returnType, args.toSet(), null, code)
+        floating.add(meth)
+        return meth
     }
 
     fun newObject(name: String, vararg fields: NamedType): Object {
@@ -25,5 +32,9 @@ data class Package(
         )
         objects.add(obj)
         return obj
+    }
+
+    override fun toString(): String {
+        return "package $namespace {\n\t${floating.joinToString("\n\t")}\n\n\t${objects.joinToString("\n\t")}\n}"
     }
 }

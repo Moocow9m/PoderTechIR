@@ -20,7 +20,7 @@ object StackNumberParse {
         labels: MutableMap<Int, Label>
     ): Int {
         var index = cIndex
-        when (instruction.extra) {
+        when (instruction.opCode) {
             Simple.INC -> {
                 val popped = CodeBuilder.safePop(stack, "INC")
                 check(popped is Type.Constant && popped !is Type.Constant.TString) {
@@ -88,7 +88,9 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
+                        val tmp = toLarger(poppedA, poppedB)
+                        tmp.constant = true
+                        tmp
                     } else {
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
                             instructions.removeAt(index - 1)
@@ -98,9 +100,7 @@ object StackNumberParse {
                             instructions.removeAt(index - 2)
                             instruction.opCode = Simple.DEC
                         }
-                        val tmp = toLarger(poppedA, poppedB)
-                        tmp.constant = false
-                        tmp
+                        toLarger(poppedA, poppedB)
                     }
                 )
             }
@@ -123,7 +123,9 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
+                        val tmp = toLarger(poppedA, poppedB)
+                        tmp.constant = true
+                        tmp
                     } else {
                         val tmp = toLarger(poppedA, poppedB)
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
@@ -145,7 +147,6 @@ object StackNumberParse {
                             scanLabels(index - 2, labels)
                             instruction.opCode = Simple.NEG
                         }
-                        tmp.constant = false
                         tmp
                     }
                 )
@@ -169,7 +170,9 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
+                        val tmp = toLarger(poppedA, poppedB)
+                        tmp.constant = true
+                        tmp
                     } else {
                         val tmp = toLarger(poppedA, poppedB)
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
@@ -178,7 +181,6 @@ object StackNumberParse {
                             instructions.removeAt(index)
                             scanLabels(index, labels)
                         }
-                        tmp.constant = false
                         tmp
                     }
                 )
@@ -206,7 +208,9 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
+                        val tmp = toLarger(poppedA, poppedB)
+                        tmp.constant = true
+                        tmp
                     } else {
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
                             instructions.removeAt(index - 1)
@@ -218,9 +222,7 @@ object StackNumberParse {
                             scanLabels(index - 2, labels)
                             instruction.opCode = Simple.INC
                         }
-                        val tmp = toLarger(poppedA, poppedB)
-                        tmp.constant = false
-                        tmp
+                        toLarger(poppedA, poppedB)
                     }
                 )
             }
@@ -243,11 +245,11 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
-                    } else {
                         val tmp = toLarger(poppedA, poppedB)
-                        tmp.constant = false
+                        tmp.constant = true
                         tmp
+                    } else {
+                        toLarger(poppedA, poppedB)
                     }
                 )
             }
@@ -270,11 +272,11 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
-                    } else {
                         val tmp = toLarger(poppedA, poppedB)
-                        tmp.constant = false
+                        tmp.constant = true
                         tmp
+                    } else {
+                        toLarger(poppedA, poppedB)
                     }
                 )
             }
@@ -297,11 +299,11 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
-                    } else {
                         val tmp = toLarger(poppedA, poppedB)
-                        tmp.constant = false
+                        tmp.constant = true
                         tmp
+                    } else {
+                        toLarger(poppedA, poppedB)
                     }
                 )
             }
@@ -324,11 +326,11 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
-                    } else {
                         val tmp = toLarger(poppedA, poppedB)
-                        tmp.constant = false
+                        tmp.constant = true
                         tmp
+                    } else {
+                        toLarger(poppedA, poppedB)
                     }
                 )
             }
@@ -351,11 +353,11 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
-                    } else {
                         val tmp = toLarger(poppedA, poppedB)
-                        tmp.constant = false
+                        tmp.constant = true
                         tmp
+                    } else {
+                        toLarger(poppedA, poppedB)
                     }
                 )
             }
@@ -378,11 +380,11 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
-                    } else {
                         val tmp = toLarger(poppedA, poppedB)
-                        tmp.constant = false
+                        tmp.constant = true
                         tmp
+                    } else {
+                        toLarger(poppedA, poppedB)
                     }
                 )
             }
@@ -405,11 +407,11 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
-                    } else {
                         val tmp = toLarger(poppedA, poppedB)
-                        tmp.constant = false
+                        tmp.constant = true
                         tmp
+                    } else {
+                        toLarger(poppedA, poppedB)
                     }
                 )
             }
@@ -432,11 +434,11 @@ object StackNumberParse {
                         instructions.removeAt(index - 1)
                         scanLabels(index - 1, labels)
                         index -= 2
-                        toLarger(poppedA, poppedB)
-                    } else {
                         val tmp = toLarger(poppedA, poppedB)
-                        tmp.constant = false
+                        tmp.constant = true
                         tmp
+                    } else {
+                        toLarger(poppedA, poppedB)
                     }
                 )
             }
@@ -458,12 +460,13 @@ object StackNumberParse {
 
     internal fun toLarger(a: Type.Constant, b: Type.Constant): Type.Constant {
         return when {
-            a is Type.Constant.TDouble || b is Type.Constant.TDouble -> Type.Constant.TDouble(true)
-            a is Type.Constant.TFloat || b is Type.Constant.TFloat -> Type.Constant.TFloat(true)
-            a is Type.Constant.TLong || b is Type.Constant.TLong -> Type.Constant.TLong(true)
-            a is Type.Constant.TInt || b is Type.Constant.TInt -> Type.Constant.TInt(true)
-            a is Type.Constant.TShort || b is Type.Constant.TShort -> Type.Constant.TShort(true)
-            else -> Type.Constant.TByte(true)
+            a is Type.Constant.TString || b is Type.Constant.TString -> Type.Constant.TString()
+            a is Type.Constant.TDouble || b is Type.Constant.TDouble -> Type.Constant.TDouble()
+            a is Type.Constant.TFloat || b is Type.Constant.TFloat -> Type.Constant.TFloat()
+            a is Type.Constant.TLong || b is Type.Constant.TLong -> Type.Constant.TLong()
+            a is Type.Constant.TInt || b is Type.Constant.TInt -> Type.Constant.TInt()
+            a is Type.Constant.TShort || b is Type.Constant.TShort -> Type.Constant.TShort()
+            else -> Type.Constant.TByte()
         }
     }
 
