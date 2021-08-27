@@ -19,22 +19,20 @@ sealed interface Type {
         }
     }
 
-    data class TStruct(val types: TArray, val names: Array<String>) : Type {
+    data class TStruct(val types: Array<NamedType>) : Type {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is TStruct) return false
 
-            if (types != other.types) return false
-            if (!names.contentEquals(other.names)) return false
+            if (!types.contentEquals(other.types)) return false
 
             return true
         }
 
         override fun hashCode(): Int {
-            var result = types.hashCode()
-            result = 31 * result + names.contentHashCode()
-            return result
+            return types.contentHashCode()
         }
+
     }
 
     data class TByte(val constant: Boolean) : Type

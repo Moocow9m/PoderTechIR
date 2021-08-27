@@ -3,8 +3,8 @@ package tech.poder.ptir.data
 import tech.poder.ptir.data.base.Method
 import tech.poder.ptir.data.base.Object
 import tech.poder.ptir.data.base.Package
-import tech.poder.ptir.data.storage.Arg
 import tech.poder.ptir.data.storage.Instruction
+import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
 import java.util.*
 
@@ -18,7 +18,7 @@ data class CodeBuilder(
             package_: Package,
             name: String,
             returnType: Type? = null,
-            args: Set<Arg> = emptySet(),
+            args: Set<NamedType> = emptySet(),
             parent: Object? = null,
             block: (CodeBuilder) -> Unit
         ): Method {

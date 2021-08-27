@@ -1,7 +1,7 @@
 package tech.poder.ptir.data.base
 
-import tech.poder.ptir.data.storage.Arg
 import tech.poder.ptir.data.storage.Instruction
+import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
 
 data class Method internal constructor(
@@ -9,7 +9,7 @@ data class Method internal constructor(
     val parent: Object?,
     val name: String,
     val returnType: Type?,
-    val args: Set<Arg>,
+    val args: Set<NamedType>,
     var instructions: Array<Instruction>
 ) {
     val fullName by lazy {

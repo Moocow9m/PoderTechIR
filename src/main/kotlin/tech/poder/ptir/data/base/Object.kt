@@ -1,7 +1,7 @@
 package tech.poder.ptir.data.base
 
 import tech.poder.ptir.data.CodeBuilder
-import tech.poder.ptir.data.storage.Arg
+import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
 
 data class Object internal constructor(
@@ -10,7 +10,7 @@ data class Object internal constructor(
     val methods: MutableSet<Method>,
     val fields: MutableSet<Field>
 ) {
-    fun newMethod(name: String, returnType: Type?, vararg args: Arg, code: (CodeBuilder) -> Unit) {
+    fun newMethod(name: String, returnType: Type?, vararg args: NamedType, code: (CodeBuilder) -> Unit) {
         methods.add(CodeBuilder.createMethod(parent, name, returnType, args.toSet(), this, code))
     }
 }
