@@ -8,6 +8,9 @@ import tech.poder.ptir.data.base.Object
 import tech.poder.ptir.data.base.Package
 import tech.poder.ptir.data.storage.*
 import java.util.*
+import kotlin.experimental.and
+import kotlin.experimental.or
+import kotlin.experimental.xor
 
 data class CodeBuilder(
     private val storage: Method,
@@ -91,7 +94,7 @@ data class CodeBuilder(
                         if (popped.constant) {
                             val prev = instructions[index - 1]
                             prev.extra = addNumbers(prev.extra as Number, toSameNumbers(1, prev.extra as Number))
-                            instructions.removeAt(index) //todo this will make labels fail!
+                            instructions.removeAt(index)
                             index--
                         } else {
                             popped.constant = false
@@ -106,7 +109,7 @@ data class CodeBuilder(
                         if (popped.constant) {
                             val prev = instructions[index - 1]
                             prev.extra = subNumbers(prev.extra as Number, toSameNumbers(1, prev.extra as Number))
-                            instructions.removeAt(index) //todo this will make labels fail!
+                            instructions.removeAt(index)
                             index--
                         } else {
                             popped.constant = false
@@ -122,16 +125,24 @@ data class CodeBuilder(
                         check(poppedA is Type.Constant && poppedA !is Type.Constant.TString) {
                             "SUB called on illegal type: $poppedA!"
                         }
+                        val prevB = instructions[index - 1]
+                        val prevA = instructions[index - 2]
                         stack.push(
                             if (poppedB.constant && poppedA.constant) {
-                                val prevB = instructions[index - 1]
-                                val prevA = instructions[index - 2]
                                 prevA.extra = subNumbers(prevA.extra as Number, prevB.extra as Number)
-                                instructions.removeAt(index) //todo this will make labels fail!
-                                instructions.removeAt(index - 1) //todo this will make labels fail!
+                                instructions.removeAt(index)
+                                instructions.removeAt(index - 1)
                                 index -= 2
                                 toLarger(poppedA, poppedB)
                             } else {
+                                if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
+                                    instructions.removeAt(index - 1)
+                                    instruction.opCode = Simple.DEC
+                                }
+                                if (poppedA.constant && (prevA.extra as Number).toDouble() == 1.0) {
+                                    instructions.removeAt(index - 2)
+                                    instruction.opCode = Simple.DEC
+                                }
                                 val tmp = toLarger(poppedA, poppedB)
                                 tmp.constant = false
                                 tmp
@@ -147,17 +158,175 @@ data class CodeBuilder(
                         check(poppedA is Type.Constant) {
                             "ADD called on illegal type: $poppedA!"
                         }
+                        val prevB = instructions[index - 1]
+                        val prevA = instructions[index - 2]
                         stack.push(
                             if (poppedB.constant && poppedA.constant) {
-                                val prevB = instructions[index - 1]
-                                val prevA = instructions[index - 2]
                                 if (poppedB is Type.Constant.TString || poppedA is Type.Constant.TString) {
                                     prevA.extra = "${prevA.extra}${prevB.extra}"
                                 } else {
                                     prevA.extra = addNumbers(prevA.extra as Number, prevB.extra as Number)
                                 }
-                                instructions.removeAt(index) //todo this will make labels fail!
-                                instructions.removeAt(index - 1) //todo this will make labels fail!
+                                instructions.removeAt(index)
+                                instructions.removeAt(index - 1)
+                                index -= 2
+                                toLarger(poppedA, poppedB)
+                            } else {
+                                if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
+                                    instructions.removeAt(index - 1)
+                                    instruction.opCode = Simple.INC
+                                }
+                                if (poppedA.constant && (prevA.extra as Number).toDouble() == 1.0) {
+                                    instructions.removeAt(index - 2)
+                                    instruction.opCode = Simple.INC
+                                }
+                                val tmp = toLarger(poppedA, poppedB)
+                                tmp.constant = false
+                                tmp
+                            }
+                        )
+                    }
+                    Simple.OR -> {
+                        val poppedB = safePop(stack, "OR1")
+                        check(poppedB is Type.Constant) {
+                            "OR called on illegal type: $poppedB!"
+                        }
+                        val poppedA = safePop(stack, "OR2")
+                        check(poppedA is Type.Constant) {
+                            "OR called on illegal type: $poppedA!"
+                        }
+                        stack.push(
+                            if (poppedB.constant && poppedA.constant) {
+                                val prevB = instructions[index - 1]
+                                val prevA = instructions[index - 2]
+                                prevA.extra = orNumbers(prevA.extra as Number, prevB.extra as Number)
+                                instructions.removeAt(index)
+                                instructions.removeAt(index - 1)
+                                index -= 2
+                                toLarger(poppedA, poppedB)
+                            } else {
+                                val tmp = toLarger(poppedA, poppedB)
+                                tmp.constant = false
+                                tmp
+                            }
+                        )
+                    }
+                    Simple.XOR -> {
+                        val poppedB = safePop(stack, "XOR1")
+                        check(poppedB is Type.Constant) {
+                            "XOR called on illegal type: $poppedB!"
+                        }
+                        val poppedA = safePop(stack, "XOR2")
+                        check(poppedA is Type.Constant) {
+                            "XOR called on illegal type: $poppedA!"
+                        }
+                        stack.push(
+                            if (poppedB.constant && poppedA.constant) {
+                                val prevB = instructions[index - 1]
+                                val prevA = instructions[index - 2]
+                                prevA.extra = xorNumbers(prevA.extra as Number, prevB.extra as Number)
+                                instructions.removeAt(index)
+                                instructions.removeAt(index - 1)
+                                index -= 2
+                                toLarger(poppedA, poppedB)
+                            } else {
+                                val tmp = toLarger(poppedA, poppedB)
+                                tmp.constant = false
+                                tmp
+                            }
+                        )
+                    }
+                    Simple.AND -> {
+                        val poppedB = safePop(stack, "AND1")
+                        check(poppedB is Type.Constant) {
+                            "AND called on illegal type: $poppedB!"
+                        }
+                        val poppedA = safePop(stack, "AND2")
+                        check(poppedA is Type.Constant) {
+                            "AND called on illegal type: $poppedA!"
+                        }
+                        stack.push(
+                            if (poppedB.constant && poppedA.constant) {
+                                val prevB = instructions[index - 1]
+                                val prevA = instructions[index - 2]
+                                prevA.extra = andNumbers(prevA.extra as Number, prevB.extra as Number)
+                                instructions.removeAt(index)
+                                instructions.removeAt(index - 1)
+                                index -= 2
+                                toLarger(poppedA, poppedB)
+                            } else {
+                                val tmp = toLarger(poppedA, poppedB)
+                                tmp.constant = false
+                                tmp
+                            }
+                        )
+                    }
+                    Simple.SAR -> {
+                        val poppedB = safePop(stack, "SHR1")
+                        check(poppedB is Type.Constant.TInt) {
+                            "SHR called on illegal type: $poppedB!"
+                        }
+                        val poppedA = safePop(stack, "SHR2")
+                        check(poppedA is Type.Constant) {
+                            "SHR called on illegal type: $poppedA!"
+                        }
+                        stack.push(
+                            if (poppedB.constant && poppedA.constant) {
+                                val prevB = instructions[index - 1]
+                                val prevA = instructions[index - 2]
+                                prevA.extra = shrNumbers(prevA.extra as Number, prevB.extra as Int)
+                                instructions.removeAt(index)
+                                instructions.removeAt(index - 1)
+                                index -= 2
+                                toLarger(poppedA, poppedB)
+                            } else {
+                                val tmp = toLarger(poppedA, poppedB)
+                                tmp.constant = false
+                                tmp
+                            }
+                        )
+                    }
+                    Simple.SAL -> {
+                        val poppedB = safePop(stack, "SHL1")
+                        check(poppedB is Type.Constant.TInt) {
+                            "SHL called on illegal type: $poppedB!"
+                        }
+                        val poppedA = safePop(stack, "SHL2")
+                        check(poppedA is Type.Constant) {
+                            "SHL called on illegal type: $poppedA!"
+                        }
+                        stack.push(
+                            if (poppedB.constant && poppedA.constant) {
+                                val prevB = instructions[index - 1]
+                                val prevA = instructions[index - 2]
+                                prevA.extra = shlNumbers(prevA.extra as Number, prevB.extra as Int)
+                                instructions.removeAt(index)
+                                instructions.removeAt(index - 1)
+                                index -= 2
+                                toLarger(poppedA, poppedB)
+                            } else {
+                                val tmp = toLarger(poppedA, poppedB)
+                                tmp.constant = false
+                                tmp
+                            }
+                        )
+                    }
+                    Simple.SHR -> {
+                        val poppedB = safePop(stack, "USHR1")
+                        check(poppedB is Type.Constant.TInt) {
+                            "USHR called on illegal type: $poppedB!"
+                        }
+                        val poppedA = safePop(stack, "SHL2")
+                        check(poppedA is Type.Constant) {
+                            "USHR called on illegal type: $poppedA!"
+                        }
+                        stack.push(
+                            if (poppedB.constant && poppedA.constant) {
+                                val prevB = instructions[index - 1]
+                                val prevA = instructions[index - 2]
+                                prevA.extra = ushrNumbers(prevA.extra as Number, prevB.extra as Int)
+                                instructions.removeAt(index)
+                                instructions.removeAt(index - 1)
                                 index -= 2
                                 toLarger(poppedA, poppedB)
                             } else {
@@ -235,6 +404,60 @@ data class CodeBuilder(
                 is Int -> a.toInt() + b.toInt()
                 is Short -> a.toShort() + b.toShort()
                 else -> a.toByte() + b.toByte()
+            }
+        }
+
+        private fun orNumbers(a: Number, b: Number): Number {
+            return when (toLarger(a, b)) {
+                is Long -> a.toLong() or b.toLong()
+                is Int -> a.toInt() or b.toInt()
+                is Short -> a.toShort() or b.toShort()
+                else -> a.toByte() or b.toByte()
+            }
+        }
+
+        private fun xorNumbers(a: Number, b: Number): Number {
+            return when (toLarger(a, b)) {
+                is Long -> a.toLong() xor b.toLong()
+                is Int -> a.toInt() xor b.toInt()
+                is Short -> a.toShort() xor b.toShort()
+                else -> a.toByte() xor b.toByte()
+            }
+        }
+
+        private fun andNumbers(a: Number, b: Number): Number {
+            return when (toLarger(a, b)) {
+                is Long -> a.toLong() and b.toLong()
+                is Int -> a.toInt() and b.toInt()
+                is Short -> a.toShort() and b.toShort()
+                else -> a.toByte() and b.toByte()
+            }
+        }
+
+        private fun shlNumbers(a: Number, b: Int): Number {
+            return when (a) {
+                is Long -> a.toLong() shl b
+                is Int -> a.toInt() shl b
+                is Short -> (a.toInt() shl b).toShort()
+                else -> (a.toInt() shl b).toByte()
+            }
+        }
+
+        private fun shrNumbers(a: Number, b: Int): Number {
+            return when (a) {
+                is Long -> a.toLong() shr b
+                is Int -> a.toInt() shr b
+                is Short -> (a.toInt() shr b).toShort()
+                else -> (a.toInt() shr b).toByte()
+            }
+        }
+
+        private fun ushrNumbers(a: Number, b: Int): Number {
+            return when (a) {
+                is Long -> a.toLong() ushr b
+                is Int -> a.toInt() ushr b
+                is Short -> (a.toInt() ushr b).toShort()
+                else -> (a.toInt() ushr b).toByte()
             }
         }
 
