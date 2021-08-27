@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.5.30-RC"
+    kotlin("jvm") version "1.5.30"
 }
 
 group = "tech.poder.ir"
