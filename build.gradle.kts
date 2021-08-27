@@ -21,6 +21,7 @@ tasks {
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
         kotlinOptions.jvmTarget = javaVersion
+        kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
         //kotlinOptions.languageVersion = "1.6"
         //kotlinOptions.apiVersion = "1.6"
         //kotlinOptions.useFir = true
