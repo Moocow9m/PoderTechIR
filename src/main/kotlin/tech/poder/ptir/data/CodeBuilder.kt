@@ -90,9 +90,44 @@ data class CodeBuilder(
                             }
                         }
                     }
+                    Simple.ARRAY_CREATE -> {
+                        val size = stack.pop()
+                        check(size is Type.Constant.TInt) {
+                            "Array creation without Int type! Got: $size"
+                        }
+                        val arrayType = instruction.extra!! as Type
+                        if (arrayType is Type.Constant) {
+                            arrayType.constant = false
+                        }
+                        stack.push(Type.TArray(arrayType, 0)) //size is unknown at this time... will be a runtime check
+                    }
+                    Simple.ARRAY_GET -> {
+                        val array = stack.pop() as Type.TArray
+                        val arrayIndex = stack.pop()
+                        check(arrayIndex is Type.Constant.TInt) {
+                            "Array get without Int type! Got: $arrayIndex"
+                        }
+                        stack.push(array.type)
+                    }
+                    Simple.ARRAY_SET -> {
+                        val array = stack.pop() as Type.TArray
+                        val arrayIndex = stack.pop()
+                        val arrayItem = stack.pop()
+                        check(arrayIndex is Type.Constant.TInt) {
+                            "Array set without Int type! Got: $arrayIndex"
+                        }
+                        if (arrayItem is Type.Constant) {
+                            arrayItem.constant = false
+                        }
+                        check(arrayItem == array.type) {
+                            "Array set with incorrect type: $arrayItem! Wanted: ${array.type}"
+                        }
+                        stack.push(array.type)
+                    }
                     Simple.INC, Simple.DEC, Simple.SUB, Simple.MUL, Simple.DIV,
                     Simple.ADD, Simple.OR, Simple.XOR, Simple.AND, Simple.SAR,
-                    Simple.SAL, Simple.SHR, Simple.ROR, Simple.ROL, Simple.NEG ->
+                    Simple.SAL, Simple.SHR, Simple.ROR, Simple.ROL, Simple.NEG,
+                    Simple.SHL ->
                         index = parse(
                             index,
                             instruction,
@@ -277,8 +312,8 @@ data class CodeBuilder(
         instructions.add(getOrPut(Simple.ARRAY_SET))
     }
 
-    fun createArray(types: Array<Type>) {
-        instructions.add(Instruction(Simple.ARRAY_CREATE, types))
+    fun createArray(type: Type) {
+        instructions.add(Instruction(Simple.ARRAY_CREATE, type))
     }
 
     //Fields

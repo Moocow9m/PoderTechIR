@@ -1,23 +1,7 @@
 package tech.poder.ptir.data.storage
 
 sealed interface Type {
-    data class TArray(val types: Array<Type>, val size: UInt) : Type {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other !is TArray) return false
-
-            if (!types.contentEquals(other.types)) return false
-            if (size != other.size) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = types.contentHashCode()
-            result = 31 * result + size.hashCode()
-            return result
-        }
-    }
+    data class TArray(val type: Type, val size: Int) : Type
 
     data class TStruct(val types: Array<NamedType>) : Type {
         override fun equals(other: Any?): Boolean {
