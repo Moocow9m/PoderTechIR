@@ -50,6 +50,21 @@ data class CodeBuilder(
                     Simple.PUSH -> {
                         stack.push(toType(instruction.extra!!))
                     }
+                    Simple.SYS_CALL -> {
+                        val call = instruction.extra as SysCommand
+                        call.args.forEach {
+                            val popped = safePop(stack, "SYS_CALL")
+                            if (popped is Type.Constant) {
+                                popped.constant = false //Consistency for compares
+                            }
+                            check(popped == it) {
+                                "$popped does not match expected $it"
+                            }
+                        }
+                        if (call.return_ != null) {
+                            stack.push(call.return_)
+                        }
+                    }
                     Simple.RETURN -> {
                         if (builder.storage.returnType == null) {
                             check(stack.isEmpty()) {
