@@ -44,12 +44,9 @@ data class CodeBuilder(
             while (index < instructions.size) {
                 val instruction = instructions[index]
                 when (instruction.opCode) {
-                    Simple.POP -> {
-                        safePop(stack, "POP")
-                    }
-                    Simple.PUSH -> {
-                        stack.push(toType(instruction.extra!!))
-                    }
+                    Simple.DUP -> stack.push(stack.peek())
+                    Simple.POP -> safePop(stack, "POP")
+                    Simple.PUSH -> stack.push(toType(instruction.extra!!))
                     Simple.SYS_CALL -> {
                         val call = instruction.extra as SysCommand
                         call.args.forEach {
