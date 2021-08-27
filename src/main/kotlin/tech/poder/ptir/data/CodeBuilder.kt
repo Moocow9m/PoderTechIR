@@ -50,6 +50,27 @@ data class CodeBuilder(
                     Simple.PUSH -> {
                         stack.push(toType(instruction.extra!!))
                     }
+                    Simple.RETURN -> {
+                        if (builder.storage.returnType == null) {
+                            check(stack.isEmpty()) {
+                                "Stack not empty on return!\n" +
+                                        "\tStack:\n" +
+                                        "\t\t${stack.joinToString("\n\t\t")}"
+                            }
+                        } else {
+                            check(stack.isNotEmpty()) {
+                                "Stack empty on return when should be ${builder.storage.returnType}"
+                            }
+                            check(stack.size == 1) {
+                                "Stack has more than 1 item on return!\n" +
+                                        "\tStack:\n" +
+                                        "\t\t${stack.joinToString("\n\t\t")}"
+                            }
+                            check(stack.peek() == builder.storage.returnType) {
+                                "Stack had ${stack.pop()} instead of ${builder.storage.returnType}!"
+                            }
+                        }
+                    }
                     Simple.INC -> {
                         val popped = safePop(stack, "INC")
                         check(popped is Type.Constant && popped !is Type.Constant.TString) {
