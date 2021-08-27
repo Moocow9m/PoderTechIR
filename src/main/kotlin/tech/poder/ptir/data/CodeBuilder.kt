@@ -223,11 +223,11 @@ data class CodeBuilder(
         instructions.add(Instruction(Simple.IF_LT_EQ, elseJump))
     }
 
-    //Misc
-    fun return_() {
-        instructions.add(getOrPut(Simple.RETURN))
+    fun switch(lowCase: Int, highCase: Int, default: Label, vararg cases: Label) {
+        instructions.add(Instruction(Simple.SWITCH, arrayOf(lowCase, highCase, default, *cases)))
     }
 
+    //Methods
     fun invokeMethod(method: Method) {
         instructions.add(
             Instruction(
@@ -239,6 +239,35 @@ data class CodeBuilder(
 
     fun invokeMethod(fullName: String, returnType: Type? = null, vararg args: NamedType) {
         instructions.add(Instruction(Simple.INVOKE_METHOD, MethodHolder(fullName, returnType, args.toSet())))
+    }
+
+    fun launch(method: Method) {
+        check(method.returnType == null) {
+            "Launched methods cannot have a return type!"
+        }
+        instructions.add(
+            Instruction(
+                Simple.LAUNCH,
+                MethodHolder(method.fullName, method.returnType, method.args)
+            )
+        )
+    }
+
+    fun launch(fullName: String, vararg args: NamedType) {
+        instructions.add(Instruction(Simple.LAUNCH, MethodHolder(fullName, null, args.toSet())))
+    }
+
+    //Misc
+    fun return_() {
+        instructions.add(getOrPut(Simple.RETURN))
+    }
+
+    fun newObject(object_: Object) {
+        instructions.add(Instruction(Simple.NEW_OBJECT, ObjectHolder(object_.fullName, object_.fields)))
+    }
+
+    fun newObject(fullName: String, vararg fields: NamedType) {
+        instructions.add(Instruction(Simple.NEW_OBJECT, ObjectHolder(fullName, fields.toSet().toTypedArray())))
     }
 
     fun breakpoint() {
