@@ -43,11 +43,17 @@ data class CodeBuilder(
             builder: CodeBuilder,
             instructions: ArrayList<Instruction>,
             currentStack: Stack<Type>? = null,
-            currentVars: ArrayList<Type>? = null
+            currentVars: Array<Type?>? = null
         ): Stack<Type> {
             val stack = currentStack ?: Stack()
-            val vars: ArrayList<Type> = currentVars ?: arrayListOf(*builder.storage.args.map { it.type }.toTypedArray())
-
+            val vars: Array<Type?> = currentVars ?: Array(builder.localVars.size) {
+                null
+            }
+            if (vars[0] == null && builder.storage.args.isNotEmpty()) {
+                builder.storage.args.forEach {
+                    vars[builder.localVars.indexOf(it.name)] = it.type
+                }
+            }
             var index = 0
             val labels = mutableMapOf<Int, Label>()
             instructions.forEachIndexed { index, instruction ->
@@ -75,6 +81,25 @@ data class CodeBuilder(
                         if (call.return_ != null) {
                             stack.push(call.return_)
                         }
+                    }
+                    Simple.SET_VAR -> {
+                        val popped = safePop(stack, "SET_VAR")
+                        val varId = instruction.extra as Int
+                        if (popped is Type.Constant) {
+                            popped.constant =
+                                false //todo this should be done to a copy so other optimizers can see it is constant
+                        }
+                        val compare = vars[varId]
+                        if (compare != null) {
+                            check(compare == popped) {
+                                "$popped does not match expected $compare"
+                            }
+                        }
+                        vars[varId] = popped
+                    }
+                    Simple.GET_VAR -> {
+                        val varId = instruction.extra as Int
+                        stack.push(vars[varId])
                     }
                     Simple.RETURN -> {
                         if (builder.storage.returnType == null) {
