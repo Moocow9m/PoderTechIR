@@ -338,25 +338,28 @@ data class CodeBuilder(
     }
 
     //Fields
-    private fun indexOfField(name: String): Int {
+    private fun getFieldType(name: String): NamedType {
         check(storage.parent != null) {
             "Floating method has no fields!"
         }
-        val index = storage.parent.fields.indexOfFirst { it.name == name }
-        check(index > -1) {
-            "Field $name does not exist!\n\tKnown Fields:\n\t\t${storage.parent.fields.joinToString("\n\t\t")}"
-        }
-        return index
+        val fName = "${storage.parent.fullName}.$name"
+        return storage.parent.fields.first { it.name == fName }
     }
 
     fun getField(name: String) {
-        val index = indexOfField(name)
-        instructions.add(Instruction(Simple.GET_FIELD, index))
+        getField(getFieldType(name))
     }
 
     fun setField(name: String) {
-        val index = indexOfField(name)
-        instructions.add(Instruction(Simple.SET_FIELD, index))
+        setField(getFieldType(name))
+    }
+
+    fun getField(field: NamedType) {
+        instructions.add(Instruction(Simple.GET_FIELD, field))
+    }
+
+    fun setField(field: NamedType) {
+        instructions.add(Instruction(Simple.SET_FIELD, field))
     }
 
     //Statements

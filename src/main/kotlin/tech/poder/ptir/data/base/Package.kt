@@ -17,7 +17,12 @@ data class Package(
     }
 
     fun newObject(name: String, vararg fields: NamedType): Object {
-        val obj = Object(this, name, mutableSetOf(), fields.toSet().toTypedArray())
+        val obj = Object(
+            this,
+            name,
+            mutableSetOf(),
+            fields.map { NamedType("${namespace}.$name.${it.name}", it.type) }.toTypedArray()
+        )
         objects.add(obj)
         return obj
     }
