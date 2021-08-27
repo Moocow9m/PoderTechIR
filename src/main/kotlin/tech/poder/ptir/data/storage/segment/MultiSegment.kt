@@ -10,7 +10,11 @@ data class MultiSegment(
     val stackChanges: ArrayList<Type> = arrayListOf()
 ) : Segment {
     companion object {
-        fun buildSegments(raw: ArrayList<Instruction>): MultiSegment {
+        fun buildSegments(raw: ArrayList<Instruction>?): MultiSegment? {
+            if (raw == null) {
+                return null
+            }
+
             val head = MultiSegment()
             val loopIndexes = mutableMapOf<Int, Int>()
             raw.forEachIndexed { index, instruction ->
@@ -37,7 +41,7 @@ data class MultiSegment(
 
                     val newRaw = ArrayList<Instruction>()
                     (index..first.first).forEach { newRaw.add(raw[it]) }
-                    head.instructions.add(buildSegments(newRaw))
+                    head.instructions.add(buildSegments(newRaw)!!)
 
                     if (tmpStorage.data.isNotEmpty()) {
                         tmpStorage = SegmentPart()
@@ -49,18 +53,28 @@ data class MultiSegment(
                         Simple.IF_EQ, Simple.IF_LT_EQ,
                         Simple.IF_LT, Simple.IF_NOT_EQ,
                         Simple.IF_GT, Simple.IF_GT_EQ -> {
-                            val label = raw[index].extra as Label
+                            val potentialElse = raw[index].extra as Label
 
                             if (tmpStorage.data.isNotEmpty()) {
                                 head.instructions.add(tmpStorage)
                             }
-
+                            val ifRaw = ArrayList<Instruction>()
+                            (index until potentialElse.offset).forEach { ifRaw.add(raw[it]) }
+                            index = potentialElse.offset - 1
                             //todo package if
+                            val last = ifRaw.last()
+                            var elseRaw: ArrayList<Instruction>? = null
+                            if (last.opCode == Simple.JMP && (last.extra as Label).offset > index) {
+                                elseRaw = arrayListOf()
+                                (index until (last.extra as Label).offset).forEach { elseRaw.add(raw[it]) }
+                                index = (last.extra as Label).offset - 1
+                            }
+
+                            head.instructions.add(BranchHolder(buildSegments(ifRaw)!!, buildSegments(elseRaw)))
 
                             if (tmpStorage.data.isNotEmpty()) {
                                 tmpStorage = SegmentPart()
                             }
-                            //todo move index to after if(and else if applicable)
                         }
                         Simple.SWITCH -> {
                             TODO("SWITCH STATEMENTS NOT SUPPORTED YET!")
