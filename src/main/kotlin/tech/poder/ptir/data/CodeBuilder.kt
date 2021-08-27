@@ -495,26 +495,7 @@ data class CodeBuilder(
             return_()
         }
 
-        val result = validateStack(this, instructions)
-        if (storage.returnType == null) {
-            check(result.isEmpty()) {
-                "Stack not empty on return!\n" +
-                        "\tStack:\n" +
-                        "\t\t${result.joinToString("\n\t\t")}"
-            }
-        } else {
-            check(result.isNotEmpty()) {
-                "Stack empty on return when should be ${storage.returnType}"
-            }
-            check(result.size == 1) {
-                "Stack has more than 1 item on return!\n" +
-                        "\tStack:\n" +
-                        "\t\t${result.joinToString("\n\t\t")}"
-            }
-            check(result.peek() == storage.returnType) {
-                "Stack had ${result.pop()} instead of ${storage.returnType}!"
-            }
-        }
+        validateStack(this, instructions)
 
         return instructions.toTypedArray()
     }
