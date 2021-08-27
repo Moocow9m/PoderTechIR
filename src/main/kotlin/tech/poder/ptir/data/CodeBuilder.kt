@@ -42,6 +42,12 @@ data class CodeBuilder(
         private fun validateStack(builder: CodeBuilder, instructions: ArrayList<Instruction>): Stack<Type> {
             val stack = Stack<Type>()
             var index = 0
+            val labels = mutableMapOf<Int, Label>()
+            instructions.forEachIndexed { index, instruction ->
+                if (instruction.extra is Label) {
+                    labels[index] = instruction.extra as Label
+                }
+            }
             while (index < instructions.size) {
                 val instruction = instructions[index]
                 when (instruction.opCode) {
@@ -91,13 +97,20 @@ data class CodeBuilder(
                             index,
                             instruction,
                             stack,
-                            instructions
+                            instructions,
+                            labels
                         )
                     else -> error("Unknown command: ${instruction.opCode}")
                 }
                 index++
             }
             return stack
+        }
+
+        internal fun scanLabels(removedIndex: Int, labels: Map<Int, Label>) {
+            labels.forEach { t, u ->
+
+            }
         }
 
         private fun toType(any: Any): Type {

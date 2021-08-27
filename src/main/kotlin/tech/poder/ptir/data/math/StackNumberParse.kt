@@ -2,7 +2,9 @@ package tech.poder.ptir.data.math
 
 import tech.poder.ptir.commands.Simple
 import tech.poder.ptir.data.CodeBuilder
+import tech.poder.ptir.data.CodeBuilder.Companion.scanLabels
 import tech.poder.ptir.data.storage.Instruction
+import tech.poder.ptir.data.storage.Label
 import tech.poder.ptir.data.storage.Type
 import java.util.*
 import kotlin.experimental.and
@@ -14,7 +16,8 @@ object StackNumberParse {
         cIndex: Int,
         instruction: Instruction,
         stack: Stack<Type>,
-        instructions: ArrayList<Instruction>
+        instructions: ArrayList<Instruction>,
+        labels: MutableMap<Int, Label>
     ): Int {
         var index = cIndex
         when (instruction.extra) {
@@ -27,6 +30,7 @@ object StackNumberParse {
                     val prev = instructions[index - 1]
                     prev.extra = addNumbers(prev.extra as Number, toSameNumbers(1, prev.extra as Number))
                     instructions.removeAt(index)
+                    scanLabels(index, labels)
                     index--
                 } else {
                     popped.constant = false
@@ -42,6 +46,7 @@ object StackNumberParse {
                     val prev = instructions[index - 1]
                     prev.extra = negNumber(prev.extra as Number)
                     instructions.removeAt(index)
+                    scanLabels(index, labels)
                     index--
                 } else {
                     popped.constant = false
@@ -57,6 +62,7 @@ object StackNumberParse {
                     val prev = instructions[index - 1]
                     prev.extra = subNumbers(prev.extra as Number, toSameNumbers(1, prev.extra as Number))
                     instructions.removeAt(index)
+                    scanLabels(index, labels)
                     index--
                 } else {
                     popped.constant = false
@@ -78,7 +84,9 @@ object StackNumberParse {
                     if (poppedB.constant && poppedA.constant) {
                         prevA.extra = subNumbers(prevA.extra as Number, prevB.extra as Number)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
@@ -111,22 +119,30 @@ object StackNumberParse {
                     if (poppedB.constant && poppedA.constant) {
                         prevA.extra = mulNumbers(prevA.extra as Number, prevB.extra as Number)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
                         val tmp = toLarger(poppedA, poppedB)
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
                             instructions.removeAt(index - 1)
+                            scanLabels(index - 1, labels)
                             instructions.removeAt(index)
+                            scanLabels(index, labels)
                         } else if (poppedA.constant && (prevA.extra as Number).toDouble() == 1.0) {
                             instructions.removeAt(index - 2)
+                            scanLabels(index - 2, labels)
                             instructions.removeAt(index)
+                            scanLabels(index, labels)
                         } else if (poppedB.constant && (prevB.extra as Number).toDouble() == -1.0) {
                             instructions.removeAt(index - 1)
+                            scanLabels(index - 1, labels)
                             instruction.opCode = Simple.NEG
                         } else if (poppedA.constant && (prevA.extra as Number).toDouble() == -1.0) {
                             instructions.removeAt(index - 2)
+                            scanLabels(index - 2, labels)
                             instruction.opCode = Simple.NEG
                         }
                         tmp.constant = false
@@ -149,14 +165,18 @@ object StackNumberParse {
                     if (poppedB.constant && poppedA.constant) {
                         prevA.extra = divNumbers(prevA.extra as Number, prevB.extra as Number)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
                         val tmp = toLarger(poppedA, poppedB)
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
                             instructions.removeAt(index - 1)
+                            scanLabels(index - 1, labels)
                             instructions.removeAt(index)
+                            scanLabels(index, labels)
                         }
                         tmp.constant = false
                         tmp
@@ -182,16 +202,20 @@ object StackNumberParse {
                             prevA.extra = addNumbers(prevA.extra as Number, prevB.extra as Number)
                         }
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
                             instructions.removeAt(index - 1)
+                            scanLabels(index - 1, labels)
                             instruction.opCode = Simple.INC
                         }
                         if (poppedA.constant && (prevA.extra as Number).toDouble() == 1.0) {
                             instructions.removeAt(index - 2)
+                            scanLabels(index - 2, labels)
                             instruction.opCode = Simple.INC
                         }
                         val tmp = toLarger(poppedA, poppedB)
@@ -215,7 +239,9 @@ object StackNumberParse {
                         val prevA = instructions[index - 2]
                         prevA.extra = orNumbers(prevA.extra as Number, prevB.extra as Number)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
@@ -240,7 +266,9 @@ object StackNumberParse {
                         val prevA = instructions[index - 2]
                         prevA.extra = xorNumbers(prevA.extra as Number, prevB.extra as Number)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
@@ -265,7 +293,9 @@ object StackNumberParse {
                         val prevA = instructions[index - 2]
                         prevA.extra = andNumbers(prevA.extra as Number, prevB.extra as Number)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
@@ -290,7 +320,9 @@ object StackNumberParse {
                         val prevA = instructions[index - 2]
                         prevA.extra = shrNumbers(prevA.extra as Number, prevB.extra as Int)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
@@ -315,7 +347,9 @@ object StackNumberParse {
                         val prevA = instructions[index - 2]
                         prevA.extra = shlNumbers(prevA.extra as Number, prevB.extra as Int)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
@@ -340,7 +374,9 @@ object StackNumberParse {
                         val prevA = instructions[index - 2]
                         prevA.extra = ushrNumbers(prevA.extra as Number, prevB.extra as Int)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
@@ -365,7 +401,9 @@ object StackNumberParse {
                         val prevA = instructions[index - 2]
                         prevA.extra = rorNumbers(prevA.extra as Number, prevB.extra as Int)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {
@@ -390,7 +428,9 @@ object StackNumberParse {
                         val prevA = instructions[index - 2]
                         prevA.extra = rolNumbers(prevA.extra as Number, prevB.extra as Int)
                         instructions.removeAt(index)
+                        scanLabels(index, labels)
                         instructions.removeAt(index - 1)
+                        scanLabels(index - 1, labels)
                         index -= 2
                         toLarger(poppedA, poppedB)
                     } else {

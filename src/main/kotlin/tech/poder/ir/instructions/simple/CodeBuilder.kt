@@ -6,7 +6,6 @@ import tech.poder.ir.instructions.common.Object
 import tech.poder.ir.instructions.common.special.Label
 import tech.poder.ir.instructions.common.special.SpecialCalls
 import tech.poder.ir.instructions.complex.Complex
-import java.util.*
 
 class CodeBuilder(val returnItem: Boolean, private val nameSpace: String) {
     private val manualArgs = mutableMapOf<String, UByte>()
@@ -275,9 +274,6 @@ class CodeBuilder(val returnItem: Boolean, private val nameSpace: String) {
         check(unmatched.isEmpty()) {
             "Label(s) Mismatched: ${unmatched.joinToString(", ")}"
         }
-
-        //todo validate stack
-        val stack = Stack<Any>()
         return base
     }
 }
