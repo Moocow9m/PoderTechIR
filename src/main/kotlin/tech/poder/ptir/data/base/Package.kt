@@ -34,7 +34,21 @@ data class Package(
         return obj
     }
 
+    override fun hashCode(): Int {
+        return namespace.hashCode()
+    }
+
+
     override fun toString(): String {
-        return "package $namespace {\n\t${floating.joinToString("\n\t")}\n\n\t${objects.joinToString("\n\t")}\n}"
+        return "package $namespace {\n\t${floating.joinToString("\n\t")}\n\n${objects.joinToString("\n") { it.toString(1) }}\n}"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Package) return false
+
+        if (namespace != other.namespace) return false
+
+        return true
     }
 }

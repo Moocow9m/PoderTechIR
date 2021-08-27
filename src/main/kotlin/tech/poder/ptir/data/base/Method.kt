@@ -42,4 +42,12 @@ data class Method internal constructor(
     override fun toString(): String {
         return "$fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size} }"
     }
+
+    fun toString(tabs: Int): String {
+        val tabBuilder = StringBuilder()
+        repeat(tabs) {
+            tabBuilder.append('\t')
+        }
+        return "$tabBuilder$fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size} }"
+    }
 }

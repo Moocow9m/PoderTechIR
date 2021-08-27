@@ -15,7 +15,7 @@ data class Object internal constructor(
         "${parent.namespace}.$name"
     }
 
-    fun newMethod(name: String, returnType: Type?, vararg args: NamedType, code: (CodeBuilder) -> Unit): Method {
+    fun newMethod(name: String, returnType: Type? = null, vararg args: NamedType, code: (CodeBuilder) -> Unit): Method {
         val meth = CodeBuilder.createMethod(
             parent,
             name,
@@ -46,5 +46,25 @@ data class Object internal constructor(
 
     override fun toString(): String {
         return "class $fullName {\n\t${fields.joinToString("\n\t")}\n\n\t${methods.joinToString("\n\t")}\n}"
+    }
+
+    fun toString(tabs: Int): String {
+        val tabBuilder = StringBuilder()
+        repeat(tabs) {
+            tabBuilder.append('\t')
+        }
+        return "${tabBuilder}class $fullName {\n${
+            fields.joinToString("\n") {
+                it.toString(
+                    tabs + 1
+                )
+            }
+        }\n\n${
+            methods.joinToString("\n") {
+                it.toString(
+                    tabs + 1
+                )
+            }
+        }\n$tabBuilder}"
     }
 }
