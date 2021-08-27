@@ -107,9 +107,19 @@ data class CodeBuilder(
             return stack
         }
 
-        internal fun scanLabels(removedIndex: Int, labels: Map<Int, Label>) {
-            labels.forEach { t, u ->
+        internal fun scanLabels(removedIndex: Int, labels: MutableMap<Int, Label>) {
+            labels.forEach { (index, label) ->
+                val check = index..label.offset
+                if (check.contains(removedIndex)) {
+                    label.offset = label.offset - 1//todo verify this
+                }
+            }
 
+            labels.keys.toTypedArray().forEach {
+                if (it > removedIndex) {
+                    val tmp = labels.remove(it)!!
+                    labels[it - 1] = tmp
+                }
             }
         }
 
