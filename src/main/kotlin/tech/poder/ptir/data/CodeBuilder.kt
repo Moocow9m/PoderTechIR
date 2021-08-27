@@ -7,7 +7,6 @@ import tech.poder.ptir.data.base.Method
 import tech.poder.ptir.data.base.Object
 import tech.poder.ptir.data.base.Package
 import tech.poder.ptir.data.math.StackNumberParse.parse
-import tech.poder.ptir.data.math.StackNumberParse.toLarger
 import tech.poder.ptir.data.storage.*
 import java.util.*
 
@@ -87,8 +86,9 @@ data class CodeBuilder(
                     }
                     Simple.INC, Simple.DEC, Simple.SUB, Simple.MUL, Simple.DIV,
                     Simple.ADD, Simple.OR, Simple.XOR, Simple.AND, Simple.SAR,
-                    Simple.SAL, Simple.SHR, Simple.ROR, Simple.ROL ->
-                        parse(
+                    Simple.SAL, Simple.SHR, Simple.ROR, Simple.ROL, Simple.NEG ->
+                        index = parse(
+                            index,
                             instruction,
                             stack,
                             instructions
@@ -113,33 +113,11 @@ data class CodeBuilder(
             }
         }
 
-        private fun safePop(stack: Stack<Type>, message: String): Type {
+        internal fun safePop(stack: Stack<Type>, message: String): Type {
             check(stack.isNotEmpty()) {
                 "$message could not be executed because stack was empty!"
             }
             return stack.pop()
-        }
-
-
-        @OptIn(ExperimentalStdlibApi::class)
-        private fun rorNumbers(a: Number, b: Int): Number {
-            return when (toLarger(a, b)) {
-                is Long -> a.toLong().rotateRight(b)
-                is Int -> a.toInt().rotateRight(b)
-                is Short -> a.toShort().rotateRight(b)
-                else -> a.toByte().rotateRight(b)
-            }
-        }
-
-
-        @OptIn(ExperimentalStdlibApi::class)
-        private fun rolNumbers(a: Number, b: Int): Number {
-            return when (toLarger(a, b)) {
-                is Long -> a.toLong().rotateLeft(b)
-                is Int -> a.toInt().rotateLeft(b)
-                is Short -> a.toShort().rotateLeft(b)
-                else -> a.toByte().rotateLeft(b)
-            }
         }
     }
 

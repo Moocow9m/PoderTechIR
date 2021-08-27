@@ -10,7 +10,13 @@ import kotlin.experimental.or
 import kotlin.experimental.xor
 
 object StackNumberParse {
-    internal fun parse(instruction: Instruction, stack: Stack<Type>, instructions: ArrayList<Instruction>) {
+    internal fun parse(
+        cIndex: Int,
+        instruction: Instruction,
+        stack: Stack<Type>,
+        instructions: ArrayList<Instruction>
+    ): Int {
+        var index = cIndex
         when (instruction.extra) {
             Simple.INC -> {
                 val popped = CodeBuilder.safePop(stack, "INC")
@@ -20,6 +26,21 @@ object StackNumberParse {
                 if (popped.constant) {
                     val prev = instructions[index - 1]
                     prev.extra = addNumbers(prev.extra as Number, toSameNumbers(1, prev.extra as Number))
+                    instructions.removeAt(index)
+                    index--
+                } else {
+                    popped.constant = false
+                }
+                stack.push(popped)
+            }
+            Simple.NEG -> {
+                val popped = CodeBuilder.safePop(stack, "NEG")
+                check(popped is Type.Constant && popped !is Type.Constant.TString) {
+                    "DEC called on illegal type: $popped!"
+                }
+                if (popped.constant) {
+                    val prev = instructions[index - 1]
+                    prev.extra = negNumber(prev.extra as Number)
                     instructions.removeAt(index)
                     index--
                 } else {
@@ -342,7 +363,7 @@ object StackNumberParse {
                     if (poppedB.constant && poppedA.constant) {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
-                        prevA.extra = CodeBuilder.rorNumbers(prevA.extra as Number, prevB.extra as Int)
+                        prevA.extra = rorNumbers(prevA.extra as Number, prevB.extra as Int)
                         instructions.removeAt(index)
                         instructions.removeAt(index - 1)
                         index -= 2
@@ -367,7 +388,7 @@ object StackNumberParse {
                     if (poppedB.constant && poppedA.constant) {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
-                        prevA.extra = CodeBuilder.rolNumbers(prevA.extra as Number, prevB.extra as Int)
+                        prevA.extra = rolNumbers(prevA.extra as Number, prevB.extra as Int)
                         instructions.removeAt(index)
                         instructions.removeAt(index - 1)
                         index -= 2
@@ -381,6 +402,7 @@ object StackNumberParse {
             }
             else -> error("Unknown number command: ${instruction.opCode}")
         }
+        return index
     }
 
     internal fun toLarger(a: Number, b: Number): Number {
@@ -511,6 +533,38 @@ object StackNumberParse {
             is Int -> a.toInt() - b.toInt()
             is Short -> a.toShort() - b.toShort()
             else -> a.toByte() - b.toByte()
+        }
+    }
+
+    internal fun negNumber(a: Number): Number {
+        return when (a) {
+            is Double -> -a.toDouble()
+            is Float -> -a.toFloat()
+            is Long -> -a.toLong()
+            is Int -> -a.toInt()
+            is Short -> -a.toShort()
+            else -> -a.toByte()
+        }
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    internal fun rorNumbers(a: Number, b: Int): Number {
+        return when (toLarger(a, b)) {
+            is Long -> a.toLong().rotateRight(b)
+            is Int -> a.toInt().rotateRight(b)
+            is Short -> a.toShort().rotateRight(b)
+            else -> a.toByte().rotateRight(b)
+        }
+    }
+
+
+    @OptIn(ExperimentalStdlibApi::class)
+    internal fun rolNumbers(a: Number, b: Int): Number {
+        return when (toLarger(a, b)) {
+            is Long -> a.toLong().rotateLeft(b)
+            is Int -> a.toInt().rotateLeft(b)
+            is Short -> a.toShort().rotateLeft(b)
+            else -> a.toByte().rotateLeft(b)
         }
     }
 }
