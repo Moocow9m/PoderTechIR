@@ -7,8 +7,8 @@ import tech.poder.ptir.data.storage.Type
 data class Object internal constructor(
     val parent: Package,
     val name: String,
-    private val methods: MutableSet<Method>,
-    private val fields: Array<NamedType>
+    internal val methods: MutableSet<Method>,
+    internal val fields: Array<NamedType>
 ) {
 
     val fullName by lazy {

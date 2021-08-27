@@ -1,8 +1,12 @@
 package tech.poder.ptir.commands
 
-enum class Simple {
+enum class Simple : Command {
     RETURN,
     SYS_CALL,
+    PUSH,
+    POP,
+    DUP,
+    JMP,
     OR,
     AND,
     XOR,
@@ -24,15 +28,11 @@ enum class Simple {
     IF_LT,
     IF_GT_EQ,
     IF_LT_EQ,
-    IF_NEQ,
-    PUSH,
-    POP,
-    DUP,
-    JMP,
+    IF_NOT_EQ,
     ARRAY_SET,
     ARRAY_GET,
     ARRAY_CREATE,
-    STORE_VAR,
+    SET_VAR,
     GET_VAR,
     SET_FIELD,
     GET_FIELD,
@@ -41,4 +41,5 @@ enum class Simple {
     SUSPEND,
     LAUNCH,
     NEW_OBJECT,
+    BREAKPOINT,
 }
