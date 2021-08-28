@@ -12,6 +12,7 @@ import tech.poder.ptir.data.storage.Label
 import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
 import tech.poder.ptir.data.storage.segment.MultiSegment
+import tech.poder.ptir.data.storage.segment.Segment
 import tech.poder.ptir.metadata.MethodHolder
 import tech.poder.ptir.metadata.ObjectHolder
 import tech.poder.ptir.metadata.Visibility
@@ -484,7 +485,7 @@ data class CodeBuilder(
         instructions.add(Instruction(Simple.SYS_CALL, call))
     }
 
-    private fun finalize(): MultiSegment {
+    private fun finalize(): Segment {
         //todo Validation and minor code merging of constant ops
         if (instructions.isEmpty() || instructions.last().opCode != Simple.RETURN) {
             return_()

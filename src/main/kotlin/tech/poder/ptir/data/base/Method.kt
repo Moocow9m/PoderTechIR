@@ -3,7 +3,7 @@ package tech.poder.ptir.data.base
 import tech.poder.ptir.data.storage.Instruction
 import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
-import tech.poder.ptir.data.storage.segment.MultiSegment
+import tech.poder.ptir.data.storage.segment.Segment
 import tech.poder.ptir.metadata.Visibility
 
 data class Method internal constructor(
@@ -13,7 +13,7 @@ data class Method internal constructor(
     val returnType: Type?,
     val args: Set<NamedType>,
     val visibility: Visibility,
-    var instructions: MultiSegment
+    internal var instructions: Segment
 ) {
     val fullName by lazy {
         val start = parent?.fullName ?: package_.namespace

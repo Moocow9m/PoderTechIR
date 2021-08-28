@@ -11,12 +11,11 @@ data class MultiSegment(
     val stackChanges: ArrayList<Type> = arrayListOf()
 ) : Segment {
     companion object {
-        fun buildSegments(raw: ArrayList<Instruction>?, startIndex: Int = 0): MultiSegment? {
+        fun buildSegments(raw: ArrayList<Instruction>?, startIndex: Int = 0): Segment? {
             if (raw == null) {
                 return null
             }
 
-            val head = MultiSegment()
             val loopIndexes = mutableMapOf<Int, Int>()
             raw.forEachIndexed { index, instruction ->
                 if (instruction.opCode == Simple.JMP) {
@@ -30,6 +29,7 @@ data class MultiSegment(
 
                 }
             }
+            val head = MultiSegment()
             var internalIndex = 0
             var tmpStorage = SegmentPart()
             while (internalIndex < raw.size) {
@@ -101,6 +101,9 @@ data class MultiSegment(
             }
             if (tmpStorage.data.isNotEmpty()) {
                 head.instructions.add(tmpStorage)
+            }
+            if (head.instructions.size == 1) {
+                return head.instructions[0]
             }
             return head
         }
