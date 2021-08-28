@@ -1,3 +1,8 @@
 package tech.poder.ptir.data.storage.segment
 
-interface Segment
+import tech.poder.ptir.data.storage.Type
+import java.util.*
+
+interface Segment {
+    fun eval(stack: Stack<Type>)
+}

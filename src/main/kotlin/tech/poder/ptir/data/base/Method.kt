@@ -5,12 +5,12 @@ import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
 
 data class Method internal constructor(
-    val package_: Package,
-    val parent: Object?,
-    val name: String,
-    val returnType: Type?,
-    val args: Set<NamedType>,
-    var instructions: Array<Instruction>
+        val package_: Package,
+        val parent: Object?,
+        val name: String,
+        val returnType: Type?,
+        val args: Set<NamedType>,
+        var instructions: Array<Instruction>
 ) {
     val fullName by lazy {
         val start = parent?.fullName ?: package_.namespace

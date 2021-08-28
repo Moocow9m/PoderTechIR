@@ -17,10 +17,10 @@ class ObjectBuilder(private val nameSpace: String, val hasFields: Boolean = true
     }
 
     fun createMethod(
-        name: String,
-        argCount: UByte = 0u,
-        returns: Boolean = false,
-        code: (CodeBuilder) -> Unit
+            name: String,
+            argCount: UByte = 0u,
+            returns: Boolean = false,
+            code: (CodeBuilder) -> Unit
     ): ObjectBuilder {
         val realArgCount: UByte = if (hasFields) {
             (argCount + 1u).toUByte()

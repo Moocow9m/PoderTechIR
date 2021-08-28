@@ -3,20 +3,20 @@ package tech.poder.ir.instructions.common
 import tech.poder.ir.instructions.simple.CodeBuilder
 
 data class Method(
-    val parent: Object = staticObject,
-    val argCount: UByte = 0u,
-    val name: String,
-    val returns: Boolean,
-    val code: ArrayList<Instruction>
+        val parent: Object = staticObject,
+        val argCount: UByte = 0u,
+        val name: String,
+        val returns: Boolean,
+        val code: ArrayList<Instruction>
 ) {
     companion object {
         val staticObject = Object("static", null, emptySet())
         fun create(
-            name: String,
-            argCount: UByte = 0u,
-            returns: Boolean = false,
-            parent: Object? = null,
-            code: (CodeBuilder) -> Unit
+                name: String,
+                argCount: UByte = 0u,
+                returns: Boolean = false,
+                parent: Object? = null,
+                code: (CodeBuilder) -> Unit
         ): Method {
             val trueParent = parent ?: staticObject
             val builder = CodeBuilder(returns, trueParent.nameSpace)

@@ -117,12 +117,12 @@ class CodeBuilder(val returnItem: Boolean, private val nameSpace: String) {
 
     fun invoke(name: String, args: Int, returns: Boolean) {
         base.add(
-            Instruction.create(
-                Simple.INVOKE_METHOD,
-                name,
-                args,
-                returns
-            )
+                Instruction.create(
+                        Simple.INVOKE_METHOD,
+                        name,
+                        args,
+                        returns
+                )
         )
     }
 
@@ -136,11 +136,11 @@ class CodeBuilder(val returnItem: Boolean, private val nameSpace: String) {
 
     fun launch(name: String, args: Int) {
         base.add(
-            Instruction.create(
-                Simple.LAUNCH,
-                name,
-                args
-            )
+                Instruction.create(
+                        Simple.LAUNCH,
+                        name,
+                        args
+                )
         )
     }
 
@@ -248,11 +248,11 @@ class CodeBuilder(val returnItem: Boolean, private val nameSpace: String) {
                     val key = instruction.extra.first() as String
                     if (instruction.opcode == Simple.GET_VAR && !dictionary.containsKey(key)) {
                         throw IllegalStateException(
-                            "GetVar done before StoreVar!\nStackTrace:\n\tIndex: $index\n\tVariable: $key\n\tFullProgram:\n\t\t${
-                                base.joinToString(
-                                    "\n\t\t"
-                                )
-                            }"
+                                "GetVar done before StoreVar!\nStackTrace:\n\tIndex: $index\n\tVariable: $key\n\tFullProgram:\n\t\t${
+                                    base.joinToString(
+                                            "\n\t\t"
+                                    )
+                                }"
                         )
                     }
                     instruction.extra[0] = dictionary.getOrPut(key) {

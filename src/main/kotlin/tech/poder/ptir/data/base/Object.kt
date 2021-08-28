@@ -5,10 +5,10 @@ import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
 
 data class Object internal constructor(
-    val parent: Package,
-    val name: String,
-    internal val methods: MutableSet<Method>,
-    internal val fields: Array<NamedType>
+        val parent: Package,
+        val name: String,
+        internal val methods: MutableSet<Method>,
+        internal val fields: Array<NamedType>
 ) {
 
     val fullName by lazy {
@@ -17,12 +17,12 @@ data class Object internal constructor(
 
     fun newMethod(name: String, returnType: Type? = null, vararg args: NamedType, code: (CodeBuilder) -> Unit): Method {
         val meth = CodeBuilder.createMethod(
-            parent,
-            name,
-            returnType,
-            setOf(NamedType("this", Type.TStruct(fields)), *args),
-            this,
-            code
+                parent,
+                name,
+                returnType,
+                setOf(NamedType("this", Type.TStruct(fields)), *args),
+                this,
+                code
         )
         methods.add(meth)
         return meth
@@ -56,13 +56,13 @@ data class Object internal constructor(
         return "${tabBuilder}class $fullName {\n${
             fields.joinToString("\n") {
                 it.toString(
-                    tabs + 1
+                        tabs + 1
                 )
             }
         }\n\n${
             methods.joinToString("\n") {
                 it.toString(
-                    tabs + 1
+                        tabs + 1
                 )
             }
         }\n$tabBuilder}"

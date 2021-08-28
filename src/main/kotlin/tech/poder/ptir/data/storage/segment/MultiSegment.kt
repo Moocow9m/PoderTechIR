@@ -4,6 +4,7 @@ import tech.poder.ptir.commands.Simple
 import tech.poder.ptir.data.storage.Instruction
 import tech.poder.ptir.data.storage.Label
 import tech.poder.ptir.data.storage.Type
+import java.util.*
 
 data class MultiSegment(
         val instructions: ArrayList<Segment> = arrayListOf(),
@@ -101,7 +102,9 @@ data class MultiSegment(
         }
     }
 
-    fun eval() {
+    override fun eval(stack: Stack<Type>) {
+        instructions.forEach {
 
+        }
     }
 }

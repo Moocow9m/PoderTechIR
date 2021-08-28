@@ -6,17 +6,17 @@ import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
 
 data class Package(
-    val namespace: String,
-    val objects: MutableSet<Object> = mutableSetOf(),
-    val floating: MutableSet<Method> = mutableSetOf(),
-    val constPool: ConstantPool = ConstantPool(mutableMapOf()),
-    val requiredLibs: MutableSet<String> = mutableSetOf()
+        val namespace: String,
+        val objects: MutableSet<Object> = mutableSetOf(),
+        val floating: MutableSet<Method> = mutableSetOf(),
+        val constPool: ConstantPool = ConstantPool(mutableMapOf()),
+        val requiredLibs: MutableSet<String> = mutableSetOf()
 ) {
     fun newFloatingMethod(
-        name: String,
-        returnType: Type? = null,
-        vararg args: NamedType,
-        code: (CodeBuilder) -> Unit
+            name: String,
+            returnType: Type? = null,
+            vararg args: NamedType,
+            code: (CodeBuilder) -> Unit
     ): Method {
         val meth = CodeBuilder.createMethod(this, name, returnType, args.toSet(), null, code)
         floating.add(meth)
@@ -25,10 +25,10 @@ data class Package(
 
     fun newObject(name: String, vararg fields: NamedType): Object {
         val obj = Object(
-            this,
-            name,
-            mutableSetOf(),
-            fields.map { NamedType("${namespace}.$name.${it.name}", it.type) }.toTypedArray()
+                this,
+                name,
+                mutableSetOf(),
+                fields.map { NamedType("${namespace}.$name.${it.name}", it.type) }.toTypedArray()
         )
         objects.add(obj)
         return obj

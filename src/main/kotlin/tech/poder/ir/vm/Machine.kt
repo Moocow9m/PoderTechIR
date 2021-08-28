@@ -87,10 +87,10 @@ object Machine {
     }
 
     private fun executeInstruction(
-        stack: Stack<Any>,
-        localVars: MutableMap<UByte, Any>,
-        end: Int,
-        instruction: Instruction
+            stack: Stack<Any>,
+            localVars: MutableMap<UByte, Any>,
+            end: Int,
+            instruction: Instruction
     ): Int {
         when (instruction.opcode) {
             Simple.SAL -> {
@@ -137,11 +137,11 @@ object Machine {
                 val b = stack.pop()
                 val a = stack.pop()
                 stack.push(
-                    if (a is String || b is String || a is Char || b is Char) {
-                        "$a$b"
-                    } else {
-                        addNumbers(a as Number, b as Number)
-                    }
+                        if (a is String || b is String || a is Char || b is Char) {
+                            "$a$b"
+                        } else {
+                            addNumbers(a as Number, b as Number)
+                        }
                 )
 
             }
@@ -376,7 +376,7 @@ object Machine {
             }
             else -> {
                 a.toInt()
-                    .compareTo(b.toInt()) //int is a default case in cpu, so this may be easier than using smaller numbers... larger memory though
+                        .compareTo(b.toInt()) //int is a default case in cpu, so this may be easier than using smaller numbers... larger memory though
             }
         }
     }

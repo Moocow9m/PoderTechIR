@@ -12,17 +12,17 @@ import tech.poder.ptir.data.storage.segment.MultiSegment
 import java.util.*
 
 data class CodeBuilder(
-    private val storage: Method,
-    val instructions: ArrayList<Instruction> = arrayListOf()
+        private val storage: Method,
+        val instructions: ArrayList<Instruction> = arrayListOf()
 ) {
     companion object {
         fun createMethod(
-            package_: Package,
-            name: String,
-            returnType: Type? = null,
-            args: Set<NamedType> = emptySet(),
-            parent: Object? = null,
-            block: (CodeBuilder) -> Unit
+                package_: Package,
+                name: String,
+                returnType: Type? = null,
+                args: Set<NamedType> = emptySet(),
+                parent: Object? = null,
+                block: (CodeBuilder) -> Unit
         ): Method {
             val method = Method(package_, parent, name, returnType, args, emptyArray())
 
@@ -41,10 +41,10 @@ data class CodeBuilder(
         }
 
         private fun validateStack(
-            builder: CodeBuilder,
-            instructions: ArrayList<Instruction>,
-            currentStack: Stack<Type>? = null,
-            currentVars: Array<Type?>? = null
+                builder: CodeBuilder,
+                instructions: ArrayList<Instruction>,
+                currentStack: Stack<Type>? = null,
+                currentVars: Array<Type?>? = null
         ): Stack<Type> {
             val stack = currentStack ?: Stack()
             val vars: Array<Type?> = currentVars ?: Array(builder.localVars.size) {
@@ -88,7 +88,7 @@ data class CodeBuilder(
                         val varId = instruction.extra as Int
                         if (popped is Type.Constant) {
                             popped.constant =
-                                false //todo this should be done to a copy so other optimizers can see it is constant
+                                    false //todo this should be done to a copy so other optimizers can see it is constant
                         }
                         val compare = vars[varId]
                         if (compare != null) {
@@ -133,10 +133,10 @@ data class CodeBuilder(
                             arrayType.constant = false
                         }
                         stack.push(
-                            Type.TArray(
-                                arrayType,
-                                0
-                            )
+                                Type.TArray(
+                                        arrayType,
+                                        0
+                                )
                         ) //todo size is unknown at this time... will be a runtime check to prevent illegal access
                     }
                     Simple.ARRAY_GET -> {
@@ -189,11 +189,11 @@ data class CodeBuilder(
                     Simple.SAL, Simple.SHR, Simple.ROR, Simple.ROL, Simple.NEG,
                     Simple.SHL ->
                         index = parse(
-                            index,
-                            instruction,
-                            stack,
-                            instructions,
-                            labels
+                                index,
+                                instruction,
+                                stack,
+                                instructions,
+                                labels
                         )
                     else -> error("Unknown command: ${instruction.opCode}")
                 }
@@ -417,10 +417,10 @@ data class CodeBuilder(
     //Methods
     fun invokeMethod(method: Method) {
         instructions.add(
-            Instruction(
-                Simple.INVOKE_METHOD,
-                MethodHolder(method.fullName, method.returnType, method.args)
-            )
+                Instruction(
+                        Simple.INVOKE_METHOD,
+                        MethodHolder(method.fullName, method.returnType, method.args)
+                )
         )
     }
 
@@ -433,10 +433,10 @@ data class CodeBuilder(
             "Launched methods cannot have a return type!"
         }
         instructions.add(
-            Instruction(
-                Simple.LAUNCH,
-                MethodHolder(method.fullName, method.returnType, method.args)
-            )
+                Instruction(
+                        Simple.LAUNCH,
+                        MethodHolder(method.fullName, method.returnType, method.args)
+                )
         )
     }
 
@@ -484,7 +484,8 @@ data class CodeBuilder(
         }
 
         val segment = MultiSegment.buildSegments(instructions)!!
-        segment.eval()
+        val stack = Stack<Type>()
+        segment.eval(stack)
         //validateStack(this, instructions)
 
         return instructions.toTypedArray()
