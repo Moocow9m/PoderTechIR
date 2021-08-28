@@ -503,10 +503,10 @@ data class CodeBuilder(
             return_()
         }
 
+        validateStack(this, instructions) //todo make this segment based rather than array based
         val segment = MultiSegment.buildSegments(instructions)!!
         val stack = Stack<Type>()
         segment.eval(stack)
-        validateStack(this, instructions)
 
         return segment
     }
