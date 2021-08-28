@@ -65,8 +65,8 @@ data class MultiSegment(
                             var elseRaw: ArrayList<Instruction>? = null
                             if (last.opCode == Simple.JMP && (last.extra as Label).offset > internalIndex) {
                                 elseRaw = arrayListOf()
-                                (internalIndex until (last.extra as Label).offset).forEach { elseRaw.add(raw[it]) }
-                                internalIndex = (last.extra as Label).offset - 1
+                                ((internalIndex + 1)..(last.extra as Label).offset).forEach { elseRaw.add(raw[it]) }
+                                internalIndex = (last.extra as Label).offset
                             }
 
                             head.instructions.add(

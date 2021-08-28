@@ -43,7 +43,7 @@ class Packaging {
 
     @Test
     fun ifOnly() {
-        val meth = package_.newFloatingMethod("loop") {
+        val meth = package_.newFloatingMethod("if") {
             val after = it.newLabel()
             it.push("{\n")
             it.sysCall(SysCommand.PRINT)
@@ -55,6 +55,32 @@ class Packaging {
             it.add()
             it.sysCall(SysCommand.PRINT)
             it.placeLabel(after)
+            it.push("}\n")
+            it.sysCall(SysCommand.PRINT)
+            it.return_()
+        }
+        println(meth)
+    }
+
+    @Test
+    fun ifElse() {
+        val meth = package_.newFloatingMethod("ifElse") {
+            val afterLabel = it.newLabel()
+            val elseLabel = it.newLabel()
+            it.push("{\n")
+            it.sysCall(SysCommand.PRINT)
+            it.push(0)
+            it.push(0)
+            it.ifEquals(elseLabel)
+            it.push("Hello World")
+            it.push("\n")
+            it.add()
+            it.sysCall(SysCommand.PRINT)
+            it.jmp(afterLabel)
+            it.placeLabel(elseLabel)
+            it.push("Hello Kat")
+            it.sysCall(SysCommand.PRINT)
+            it.placeLabel(afterLabel)
             it.push("}\n")
             it.sysCall(SysCommand.PRINT)
             it.return_()
