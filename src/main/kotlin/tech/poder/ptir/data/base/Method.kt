@@ -1,8 +1,8 @@
 package tech.poder.ptir.data.base
 
-import tech.poder.ptir.data.storage.Instruction
 import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
+import tech.poder.ptir.data.storage.segment.MultiSegment
 import tech.poder.ptir.metadata.Visibility
 
 data class Method internal constructor(
@@ -12,7 +12,7 @@ data class Method internal constructor(
     val returnType: Type?,
     val args: Set<NamedType>,
     val visibility: Visibility,
-    var instructions: Array<Instruction>
+    var instructions: MultiSegment
 ) {
     val fullName by lazy {
         val start = parent?.fullName ?: package_.namespace
@@ -42,7 +42,7 @@ data class Method internal constructor(
     }
 
     override fun toString(): String {
-        return "$visibility $fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size} }"
+        return "$visibility $fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size()} }"
     }
 
     fun toString(tabs: Int): String {
@@ -50,6 +50,6 @@ data class Method internal constructor(
         repeat(tabs) {
             tabBuilder.append('\t')
         }
-        return "$tabBuilder$visibility $fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size} }"
+        return "$tabBuilder$visibility $fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size()} }"
     }
 }

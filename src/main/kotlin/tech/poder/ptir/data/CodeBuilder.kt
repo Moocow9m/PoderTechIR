@@ -31,7 +31,7 @@ data class CodeBuilder(
             parent: Object? = null,
             block: (CodeBuilder) -> Unit
         ): Method {
-            val method = Method(package_, parent, name, returnType, args, vis, emptyArray())
+            val method = Method(package_, parent, name, returnType, args, vis, MultiSegment())
 
             val builder = CodeBuilder(method)
             block.invoke(builder)
@@ -484,7 +484,7 @@ data class CodeBuilder(
         instructions.add(Instruction(Simple.SYS_CALL, call))
     }
 
-    fun finalize(): Array<Instruction> {
+    private fun finalize(): MultiSegment {
         //todo Validation and minor code merging of constant ops
         if (instructions.isEmpty() || instructions.last().opCode != Simple.RETURN) {
             return_()
@@ -495,6 +495,6 @@ data class CodeBuilder(
         segment.eval(stack)
         //validateStack(this, instructions)
 
-        return instructions.toTypedArray()
+        return segment
     }
 }

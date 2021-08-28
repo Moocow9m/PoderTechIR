@@ -7,4 +7,8 @@ data class LoopHolder(val block: MultiSegment, val stackChanges: ArrayList<Type>
     override fun eval(stack: Stack<Type>) {
 
     }
+
+    override fun size(): Int {
+        return block.size()
+    }
 }

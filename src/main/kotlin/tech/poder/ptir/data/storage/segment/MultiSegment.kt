@@ -111,4 +111,8 @@ data class MultiSegment(
 
         }
     }
+
+    override fun size(): Int {
+        return instructions.sumOf { it.size() }
+    }
 }

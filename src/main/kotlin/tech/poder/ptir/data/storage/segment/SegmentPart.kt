@@ -11,4 +11,8 @@ data class SegmentPart(
     override fun eval(stack: Stack<Type>) {
 
     }
+
+    override fun size(): Int {
+        return data.size
+    }
 }

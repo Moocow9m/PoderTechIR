@@ -5,4 +5,6 @@ import java.util.*
 
 interface Segment {
     fun eval(stack: Stack<Type>)
+
+    fun size(): Int
 }

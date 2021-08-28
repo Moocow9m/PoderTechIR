@@ -11,4 +11,8 @@ data class BranchHolder(
     override fun eval(stack: Stack<Type>) {
 
     }
+
+    override fun size(): Int {
+        return ifBlock.size() + (elseBlock?.size() ?: 0)
+    }
 }
