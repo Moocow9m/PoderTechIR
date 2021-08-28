@@ -15,4 +15,8 @@ data class SegmentPart(
     override fun size(): Int {
         return data.size
     }
+
+    override fun toBulk(storage: ArrayList<Instruction>) {
+        storage.addAll(data)
+    }
 }

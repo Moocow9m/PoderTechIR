@@ -1,5 +1,6 @@
 package tech.poder.ptir.data.base
 
+import tech.poder.ptir.data.storage.Instruction
 import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
 import tech.poder.ptir.data.storage.segment.MultiSegment
@@ -51,5 +52,9 @@ data class Method internal constructor(
             tabBuilder.append('\t')
         }
         return "$tabBuilder$visibility $fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size()} }"
+    }
+
+    internal fun toBulk(arrayList: ArrayList<Instruction>) {
+        instructions.toBulk(arrayList)
     }
 }

@@ -1,5 +1,6 @@
 package tech.poder.ptir.data.storage.segment
 
+import tech.poder.ptir.data.storage.Instruction
 import tech.poder.ptir.data.storage.Type
 import java.util.*
 
@@ -10,5 +11,9 @@ data class LoopHolder(val block: MultiSegment, val stackChanges: ArrayList<Type>
 
     override fun size(): Int {
         return block.size()
+    }
+
+    override fun toBulk(storage: ArrayList<Instruction>) {
+        block.toBulk(storage)
     }
 }

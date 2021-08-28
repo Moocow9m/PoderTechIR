@@ -115,4 +115,10 @@ data class MultiSegment(
     override fun size(): Int {
         return instructions.sumOf { it.size() }
     }
+
+    override fun toBulk(storage: ArrayList<Instruction>) {
+        instructions.forEach {
+            it.toBulk(storage)
+        }
+    }
 }
