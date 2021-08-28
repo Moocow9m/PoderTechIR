@@ -54,13 +54,12 @@ data class MultiSegment(
                         Simple.IF_LT, Simple.IF_NOT_EQ,
                         Simple.IF_GT, Simple.IF_GT_EQ -> {
                             val potentialElse = raw[internalIndex].extra as Label
+                            tmpStorage.data.add(raw[internalIndex])
+                            head.instructions.add(tmpStorage)
 
-                            if (tmpStorage.data.isNotEmpty()) {
-                                head.instructions.add(tmpStorage)
-                            }
                             val ifRaw = ArrayList<Instruction>()
-                            (internalIndex until potentialElse.offset).forEach { ifRaw.add(raw[it]) }
-                            internalIndex = potentialElse.offset - 1
+                            ((internalIndex + 1)..potentialElse.offset).forEach { ifRaw.add(raw[it]) }
+                            internalIndex = potentialElse.offset
                             val savedA = internalIndex
                             val last = ifRaw.last()
                             var elseRaw: ArrayList<Instruction>? = null
@@ -77,9 +76,8 @@ data class MultiSegment(
                                 )
                             )
 
-                            if (tmpStorage.data.isNotEmpty()) {
-                                tmpStorage = SegmentPart()
-                            }
+
+                            tmpStorage = SegmentPart()
                         }
                         Simple.SWITCH -> {
                             TODO("SWITCH STATEMENTS NOT SUPPORTED YET!")

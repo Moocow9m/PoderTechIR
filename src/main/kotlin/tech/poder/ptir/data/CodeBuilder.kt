@@ -485,7 +485,7 @@ data class CodeBuilder(
 
         val segment = MultiSegment.buildSegments(instructions)!!
         segment.eval()
-        validateStack(this, instructions)
+        //validateStack(this, instructions)
 
         return instructions.toTypedArray()
     }
