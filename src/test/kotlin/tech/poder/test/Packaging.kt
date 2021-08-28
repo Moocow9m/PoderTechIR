@@ -88,7 +88,7 @@ class Packaging {
 
     @Test
     fun loopInIf() {
-        val meth = package_.newFloatingMethod("ifInLoop") {
+        val meth = package_.newFloatingMethod("loopInIf") {
             val jump = it.newLabel()
             val after = it.newLabel()
             it.push("{\n")
