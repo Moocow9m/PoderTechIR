@@ -147,6 +147,18 @@ data class CodeBuilder(
                             )
                         ) //todo size is unknown at this time... will be a runtime check to prevent illegal access
                     }
+                    Simple.IF_EQ, Simple.IF_GT, Simple.IF_LT,
+                    Simple.IF_GT_EQ, Simple.IF_LT_EQ,
+                    Simple.IF_NOT_EQ -> {
+                        val poppedB = safePop(stack, "IF1")
+                        check(poppedB is Type.Constant) {
+                            "IF called on illegal type: $poppedB!"
+                        }
+                        val poppedA = safePop(stack, "IF2")
+                        check(poppedA is Type.Constant) {
+                            "IF called on illegal type: $poppedA!"
+                        }
+                    }
                     Simple.ARRAY_GET -> {
                         val array = safePop(stack, "ARRAY_GET1") as Type.TArray
                         val arrayIndex = safePop(stack, "ARRAY_GET2")
@@ -494,7 +506,7 @@ data class CodeBuilder(
         val segment = MultiSegment.buildSegments(instructions)!!
         val stack = Stack<Type>()
         segment.eval(stack)
-        //validateStack(this, instructions)
+        validateStack(this, instructions)
 
         return segment
     }
