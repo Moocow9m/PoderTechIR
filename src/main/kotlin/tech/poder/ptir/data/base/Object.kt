@@ -3,26 +3,35 @@ package tech.poder.ptir.data.base
 import tech.poder.ptir.data.CodeBuilder
 import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.data.storage.Type
+import tech.poder.ptir.metadata.Visibility
 
 data class Object internal constructor(
-        val parent: Package,
-        val name: String,
-        internal val methods: MutableSet<Method>,
-        internal val fields: Array<NamedType>
+    val parent: Package,
+    val name: String,
+    val visibility: Visibility,
+    internal val methods: MutableSet<Method>,
+    internal val fields: Array<NamedType>
 ) {
 
     val fullName by lazy {
         "${parent.namespace}.$name"
     }
 
-    fun newMethod(name: String, returnType: Type? = null, vararg args: NamedType, code: (CodeBuilder) -> Unit): Method {
+    fun newMethod(
+        name: String,
+        vis: Visibility,
+        returnType: Type? = null,
+        vararg args: NamedType,
+        code: (CodeBuilder) -> Unit
+    ): Method {
         val meth = CodeBuilder.createMethod(
-                parent,
-                name,
-                returnType,
-                setOf(NamedType("this", Type.TStruct(fields)), *args),
-                this,
-                code
+            parent,
+            name,
+            vis,
+            returnType,
+            setOf(NamedType("this", Type.TStruct(fields)), *args),
+            this,
+            code
         )
         methods.add(meth)
         return meth
@@ -45,7 +54,7 @@ data class Object internal constructor(
     }
 
     override fun toString(): String {
-        return "class $fullName {\n\t${fields.joinToString("\n\t")}\n\n\t${methods.joinToString("\n\t")}\n}"
+        return "$visibility class $fullName {\n\t${fields.joinToString("\n\t")}\n\n\t${methods.joinToString("\n\t")}\n}"
     }
 
     fun toString(tabs: Int): String {
@@ -53,16 +62,16 @@ data class Object internal constructor(
         repeat(tabs) {
             tabBuilder.append('\t')
         }
-        return "${tabBuilder}class $fullName {\n${
+        return "$tabBuilder$visibility class $fullName {\n${
             fields.joinToString("\n") {
                 it.toString(
-                        tabs + 1
+                    tabs + 1
                 )
             }
         }\n\n${
             methods.joinToString("\n") {
                 it.toString(
-                        tabs + 1
+                    tabs + 1
                 )
             }
         }\n$tabBuilder}"

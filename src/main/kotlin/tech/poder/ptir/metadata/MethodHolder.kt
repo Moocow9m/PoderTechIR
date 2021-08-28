@@ -1,4 +1,7 @@
-package tech.poder.ptir.data.storage
+package tech.poder.ptir.metadata
+
+import tech.poder.ptir.data.storage.NamedType
+import tech.poder.ptir.data.storage.Type
 
 data class MethodHolder(val fullName: String, val returnType: Type?, val args: Set<NamedType>) {
     init {

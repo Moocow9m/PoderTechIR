@@ -2,17 +2,18 @@ package tech.poder.test
 
 import tech.poder.ptir.commands.SysCommand
 import tech.poder.ptir.data.base.Package
+import tech.poder.ptir.metadata.Visibility
 import kotlin.test.Test
 
 
 class Packaging {
     companion object {
-        val package_ = Package("test")
+        val package_ = Package("test", Visibility.PUBLIC)
     }
 
     @Test
     fun linear() {
-        val meth = package_.newFloatingMethod("linear") {
+        val meth = package_.newFloatingMethod("linear", Visibility.PRIVATE) {
             it.push("{\nHello World")
             it.push("\n}")
             it.add()
@@ -24,7 +25,7 @@ class Packaging {
 
     @Test
     fun loop() {
-        val meth = package_.newFloatingMethod("loop") {
+        val meth = package_.newFloatingMethod("loop", Visibility.PRIVATE) {
             val jump = it.newLabel()
             it.push("{\n")
             it.sysCall(SysCommand.PRINT)
@@ -43,7 +44,7 @@ class Packaging {
 
     @Test
     fun ifOnly() {
-        val meth = package_.newFloatingMethod("if") {
+        val meth = package_.newFloatingMethod("if", Visibility.PRIVATE) {
             val after = it.newLabel()
             it.push("{\n")
             it.sysCall(SysCommand.PRINT)
@@ -64,7 +65,7 @@ class Packaging {
 
     @Test
     fun ifInLoop() {
-        val meth = package_.newFloatingMethod("ifInLoop") {
+        val meth = package_.newFloatingMethod("ifInLoop", Visibility.PRIVATE) {
             val jump = it.newLabel()
             val after = it.newLabel()
             it.placeLabel(jump)
@@ -88,7 +89,7 @@ class Packaging {
 
     @Test
     fun loopInIf() {
-        val meth = package_.newFloatingMethod("loopInIf") {
+        val meth = package_.newFloatingMethod("loopInIf", Visibility.PRIVATE) {
             val jump = it.newLabel()
             val after = it.newLabel()
             it.push("{\n")
@@ -112,7 +113,7 @@ class Packaging {
 
     @Test
     fun ifElse() {
-        val meth = package_.newFloatingMethod("ifElse") {
+        val meth = package_.newFloatingMethod("ifElse", Visibility.PRIVATE) {
             val afterLabel = it.newLabel()
             val elseLabel = it.newLabel()
             it.push("{\n")

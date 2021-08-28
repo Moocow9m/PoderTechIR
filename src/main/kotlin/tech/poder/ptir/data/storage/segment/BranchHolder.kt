@@ -4,9 +4,9 @@ import tech.poder.ptir.data.storage.Type
 import java.util.*
 
 data class BranchHolder(
-        val ifBlock: MultiSegment,
-        val elseBlock: MultiSegment?,
-        val stackChanges: ArrayList<Type> = arrayListOf()
+    val ifBlock: MultiSegment,
+    val elseBlock: MultiSegment?,
+    val stackChanges: ArrayList<Type> = arrayListOf()
 ) : Segment {
     override fun eval(stack: Stack<Type>) {
 

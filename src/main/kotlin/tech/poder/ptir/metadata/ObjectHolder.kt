@@ -1,4 +1,6 @@
-package tech.poder.ptir.data.storage
+package tech.poder.ptir.metadata
+
+import tech.poder.ptir.data.storage.NamedType
 
 data class ObjectHolder(val fullName: String, val fields: Array<NamedType>) {
     override fun equals(other: Any?): Boolean {

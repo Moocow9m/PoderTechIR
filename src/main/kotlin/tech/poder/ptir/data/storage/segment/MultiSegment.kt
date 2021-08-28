@@ -7,8 +7,8 @@ import tech.poder.ptir.data.storage.Type
 import java.util.*
 
 data class MultiSegment(
-        val instructions: ArrayList<Segment> = arrayListOf(),
-        val stackChanges: ArrayList<Type> = arrayListOf()
+    val instructions: ArrayList<Segment> = arrayListOf(),
+    val stackChanges: ArrayList<Type> = arrayListOf()
 ) : Segment {
     companion object {
         fun buildSegments(raw: ArrayList<Instruction>?, startIndex: Int = 0): MultiSegment? {
@@ -55,10 +55,10 @@ data class MultiSegment(
                         }
 
                         head.instructions.add(
-                                BranchHolder(
-                                        buildSegments(ifRaw, startIndex + savedA + 1)!!,
-                                        buildSegments(elseRaw, startIndex + savedB + 1)
-                                )
+                            BranchHolder(
+                                buildSegments(ifRaw, startIndex + savedA + 1)!!,
+                                buildSegments(elseRaw, startIndex + savedB + 1)
+                            )
                         )
 
 
@@ -71,7 +71,11 @@ data class MultiSegment(
                         if (loopIndexes.values.contains(internalIndex)) {
                             val jumpTo = loopIndexes.filter { it.value == internalIndex }.map { it.toPair() }
                             check(jumpTo.size == 1) {
-                                "Loop detection failed! Jump point had multiple labels pointing to it: ${jumpTo.joinToString(", ") { "Jump from ${it.first} to ${it.second}" }}"
+                                "Loop detection failed! Jump point had multiple labels pointing to it: ${
+                                    jumpTo.joinToString(
+                                        ", "
+                                    ) { "Jump from ${it.first} to ${it.second}" }
+                                }"
                             }
                             val first = jumpTo.first()
 
