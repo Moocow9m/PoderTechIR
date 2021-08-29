@@ -1,14 +1,14 @@
 package tech.poder.ptir.data.storage.segment
 
 import tech.poder.ptir.commands.Simple
+import tech.poder.ptir.data.base.Method
 import tech.poder.ptir.data.storage.Instruction
 import tech.poder.ptir.data.storage.Label
 import tech.poder.ptir.data.storage.Type
 import java.util.*
 
 data class MultiSegment(
-    val instructions: ArrayList<Segment> = arrayListOf(),
-    val stackChanges: ArrayList<Type> = arrayListOf()
+    val instructions: ArrayList<Segment> = arrayListOf()
 ) : Segment {
     companion object {
         fun buildSegments(raw: ArrayList<Instruction>?, startIndex: Int = 0): Segment? {
@@ -109,9 +109,9 @@ data class MultiSegment(
         }
     }
 
-    override fun eval(stack: Stack<Type>) {
+    override fun eval(method: Method, stack: Stack<Type>) {
         instructions.forEach {
-
+            it.eval(method, stack)
         }
     }
 

@@ -1,16 +1,17 @@
 package tech.poder.ptir.data.storage.segment
 
+import tech.poder.ptir.data.base.Method
 import tech.poder.ptir.data.storage.Instruction
 import tech.poder.ptir.data.storage.Type
 import java.util.*
 
 data class BranchHolder(
     val ifBlock: Segment,
-    val elseBlock: Segment?,
-    val stackChanges: ArrayList<Type> = arrayListOf()
+    val elseBlock: Segment?
 ) : Segment {
-    override fun eval(stack: Stack<Type>) {
-
+    override fun eval(method: Method, stack: Stack<Type>) {
+        ifBlock.eval(method, stack)
+        elseBlock?.eval(method, stack)
     }
 
     override fun size(): Int {

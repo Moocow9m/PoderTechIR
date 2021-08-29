@@ -1,14 +1,14 @@
 package tech.poder.ptir.data.storage.segment
 
+import tech.poder.ptir.data.base.Method
 import tech.poder.ptir.data.storage.Instruction
 import tech.poder.ptir.data.storage.Type
 import java.util.*
 
 data class SegmentPart(
-    val data: ArrayList<Instruction> = arrayListOf(),
-    val stackChanges: ArrayList<Type> = arrayListOf()
+    val data: ArrayList<Instruction> = arrayListOf()
 ) : Segment {
-    override fun eval(stack: Stack<Type>) {
+    override fun eval(method: Method, stack: Stack<Type>) {
 
     }
 
