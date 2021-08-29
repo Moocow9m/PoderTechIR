@@ -7,7 +7,6 @@ import java.util.*
 
 data class LoopHolder(val block: Segment) : Segment {
     override fun eval(method: Method, stack: Stack<Type>) {
-        //todo determine how stack should process this...
         block.eval(method, stack)
         val loopStack = Stack<Type>()
         val copy = Stack<Type>()
