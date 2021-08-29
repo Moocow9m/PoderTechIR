@@ -506,6 +506,8 @@ data class CodeBuilder(
         validateStack(this, instructions) //todo make this segment based rather than array based
         val segment = MultiSegment.buildSegments(instructions)!!
         val stack = Stack<Type>()
+        stack.push(Type.Constant.TInt(true))
+        stack.push(Type.Constant.TByte(true))
         segment.eval(storage, stack)
 
         return segment
