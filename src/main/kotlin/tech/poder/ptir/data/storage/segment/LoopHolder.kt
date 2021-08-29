@@ -9,6 +9,41 @@ data class LoopHolder(val block: Segment) : Segment {
     override fun eval(method: Method, stack: Stack<Type>) {
         //todo determine how stack should process this...
         block.eval(method, stack)
+        val loopStack = Stack<Type>()
+        val copy = Stack<Type>()
+        stack.forEach {
+            loopStack.push(it.copy())
+            copy.push(it.copy())
+        }
+        block.eval(method, stack)
+        check(loopStack.size == copy.size) {
+            "Loop stack does not match original!\n\tLoop:\n\t\t${loopStack.joinToString("\n\t\t")}\n\tOriginal:\n\t\t${
+                copy.joinToString(
+                    "\n\t\t"
+                )
+            }"
+        }
+        repeat(loopStack.size) {
+            val popA = loopStack.pop()
+            val popB = copy.pop()
+            if (popA is Type.Constant) {
+                popA.constant = false
+            }
+            if (popB is Type.Constant) {
+                popB.constant = false
+            }
+            check(popA == popB) {
+                "Loop stack does not match original! Loop: $popA Original: $popB\n\tLoop:\n\t\t${
+                    loopStack.joinToString(
+                        "\n\t\t"
+                    )
+                }\n\tOriginal:\n\t\t${
+                    copy.joinToString(
+                        "\n\t\t"
+                    )
+                }"
+            }
+        }
     }
 
     override fun size(): Int {
