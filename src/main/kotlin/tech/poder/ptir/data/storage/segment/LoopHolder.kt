@@ -13,7 +13,7 @@ data class LoopHolder(val block: Segment) : Segment {
             loopStack.push(it.copy())
             copy.push(it.copy())
         }
-        block.eval(method, stack, currentVars) //todo verify same after running
+        block.eval(method, stack, currentVars)
         check(loopStack.size == copy.size) {
             "Loop stack does not match original!\n\tLoop:\n\t\t${loopStack.joinToString("\n\t\t")}\n\tOriginal:\n\t\t${
                 copy.joinToString(

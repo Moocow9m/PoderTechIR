@@ -16,12 +16,25 @@ data class BranchHolder(
             ifStack.push(it.copy())
             elseStack.push(it.copy())
         }
+        val ifVars = Array(currentVars.size) {
+            currentVars[it]?.copy()
+        }
+        val elseVars = Array(currentVars.size) {
+            currentVars[it]?.copy()
+        }
         stack.clear()
-        ifBlock.eval(method, ifStack, currentVars) //todo verify same after running
-        elseBlock?.eval(method, stack, currentVars) //todo verify same after running
+        ifBlock.eval(method, ifStack, ifVars)
+        elseBlock?.eval(method, stack, elseVars)
         check(ifStack.size == elseStack.size) {
             "Branch stacks do not match!\n\tIf:\n\t\t${ifStack.joinToString("\n\t\t")}\n\tElse:\n\t\t${
                 elseStack.joinToString(
+                    "\n\t\t"
+                )
+            }"
+        }
+        check(ifVars.size == elseVars.size) {
+            "Branch vars do not match!\n\tIf:\n\t\t${ifVars.joinToString("\n\t\t")}\n\tElse:\n\t\t${
+                elseVars.joinToString(
                     "\n\t\t"
                 )
             }"
@@ -45,6 +58,24 @@ data class BranchHolder(
                     )
                 }"
             }
+        }
+        repeat(ifVars.size) {
+            val a = ifVars[it]
+            val b = elseVars[it]
+            if (a is Type.Constant) {
+                a.constant = false
+            }
+            if (b is Type.Constant) {
+                b.constant = false
+            }
+            check(a == b) {
+                "Branch vars do not match! If: $a Else: $b\n\tIf:\n\t\t${ifVars.joinToString("\n\t\t")}\n\tElse:\n\t\t${
+                    elseVars.joinToString(
+                        "\n\t\t"
+                    )
+                }"
+            }
+            currentVars[it] = a
         }
     }
 
