@@ -1,8 +1,8 @@
 package tech.poder.test
 
-import tech.poder.ptir.Machine
-import tech.poder.ptir.commands.SysCommand
-import tech.poder.ptir.metadata.Visibility
+import tech.poder.ir.Machine
+import tech.poder.ir.commands.SysCommand
+import tech.poder.ir.metadata.Visibility
 import kotlin.test.Test
 
 class VMTest {
