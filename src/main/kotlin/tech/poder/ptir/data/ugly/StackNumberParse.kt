@@ -1,4 +1,4 @@
-package tech.poder.ptir.data.math
+package tech.poder.ptir.data.ugly
 
 import tech.poder.ptir.commands.Simple
 import tech.poder.ptir.data.storage.Instruction
@@ -294,7 +294,7 @@ object StackNumberParse {
                     if (poppedB.constant && poppedA.constant) {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
-                        prevA.extra = shrNumbers(prevA.extra as Number, prevB.extra as Int)
+                        prevA.extra = shrNumbers(prevA.extra as Number, prevB.extra as Number)
                         deleteInstruction(oIndex, index, labels, instructions)
                         deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
@@ -319,7 +319,7 @@ object StackNumberParse {
                     if (poppedB.constant && poppedA.constant) {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
-                        prevA.extra = shlNumbers(prevA.extra as Number, prevB.extra as Int)
+                        prevA.extra = shlNumbers(prevA.extra as Number, prevB.extra as Number)
                         deleteInstruction(oIndex, index, labels, instructions)
                         deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
@@ -344,7 +344,7 @@ object StackNumberParse {
                     if (poppedB.constant && poppedA.constant) {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
-                        prevA.extra = ushrNumbers(prevA.extra as Number, prevB.extra as Int)
+                        prevA.extra = ushrNumbers(prevA.extra as Number, prevB.extra as Number)
                         deleteInstruction(oIndex, index, labels, instructions)
                         deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
@@ -369,7 +369,7 @@ object StackNumberParse {
                     if (poppedB.constant && poppedA.constant) {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
-                        prevA.extra = rorNumbers(prevA.extra as Number, prevB.extra as Int)
+                        prevA.extra = rorNumbers(prevA.extra as Number, prevB.extra as Number)
                         deleteInstruction(oIndex, index, labels, instructions)
                         deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
@@ -394,7 +394,7 @@ object StackNumberParse {
                     if (poppedB.constant && poppedA.constant) {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
-                        prevA.extra = rolNumbers(prevA.extra as Number, prevB.extra as Int)
+                        prevA.extra = rolNumbers(prevA.extra as Number, prevB.extra as Number)
                         deleteInstruction(oIndex, index, labels, instructions)
                         deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
@@ -505,30 +505,30 @@ object StackNumberParse {
         }
     }
 
-    internal fun shlNumbers(a: Number, b: Int): Number {
+    internal fun shlNumbers(a: Number, b: Number): Number {
         return when (a) {
-            is Long -> a.toLong() shl b
-            is Int -> a.toInt() shl b
-            is Short -> (a.toInt() shl b).toShort()
-            else -> (a.toInt() shl b).toByte()
+            is Long -> a.toLong() shl b.toInt()
+            is Int -> a.toInt() shl b.toInt()
+            is Short -> (a.toInt() shl b.toInt()).toShort()
+            else -> (a.toInt() shl b.toInt()).toByte()
         }
     }
 
-    internal fun shrNumbers(a: Number, b: Int): Number {
+    internal fun shrNumbers(a: Number, b: Number): Number {
         return when (a) {
-            is Long -> a.toLong() shr b
-            is Int -> a.toInt() shr b
-            is Short -> (a.toInt() shr b).toShort()
-            else -> (a.toInt() shr b).toByte()
+            is Long -> a.toLong() shr b.toInt()
+            is Int -> a.toInt() shr b.toInt()
+            is Short -> (a.toInt() shr b.toInt()).toShort()
+            else -> (a.toInt() shr b.toInt()).toByte()
         }
     }
 
-    internal fun ushrNumbers(a: Number, b: Int): Number {
+    internal fun ushrNumbers(a: Number, b: Number): Number {
         return when (a) {
-            is Long -> a.toLong() ushr b
-            is Int -> a.toInt() ushr b
-            is Short -> (a.toInt() ushr b).toShort()
-            else -> (a.toInt() ushr b).toByte()
+            is Long -> a.toLong() ushr b.toInt()
+            is Int -> a.toInt() ushr b.toInt()
+            is Short -> (a.toInt() ushr b.toInt()).toShort()
+            else -> (a.toInt() ushr b.toInt()).toByte()
         }
     }
 
@@ -555,25 +555,59 @@ object StackNumberParse {
     }
 
     @OptIn(ExperimentalStdlibApi::class)
-    internal fun rorNumbers(a: Number, b: Int): Number {
-        return when (toLarger(a, b)) {
-            is Long -> a.toLong().rotateRight(b)
-            is Int -> a.toInt().rotateRight(b)
-            is Short -> a.toShort().rotateRight(b)
-            else -> a.toByte().rotateRight(b)
+    internal fun rorNumbers(a: Number, b: Number): Number {
+        return when (a) {
+            is Long -> a.toLong().rotateRight(b.toInt())
+            is Int -> a.toInt().rotateRight(b.toInt())
+            is Short -> a.toShort().rotateRight(b.toInt())
+            else -> a.toByte().rotateRight(b.toInt())
         }
     }
 
 
     @OptIn(ExperimentalStdlibApi::class)
-    internal fun rolNumbers(a: Number, b: Int): Number {
-        return when (toLarger(a, b)) {
-            is Long -> a.toLong().rotateLeft(b)
-            is Int -> a.toInt().rotateLeft(b)
-            is Short -> a.toShort().rotateLeft(b)
-            else -> a.toByte().rotateLeft(b)
+    internal fun rolNumbers(a: Number, b: Number): Number {
+        return when (a) {
+            is Long -> a.toLong().rotateLeft(b.toInt())
+            is Int -> a.toInt().rotateLeft(b.toInt())
+            is Short -> a.toShort().rotateLeft(b.toInt())
+            else -> a.toByte().rotateLeft(b.toInt())
         }
     }
 
+    fun gtEq(a: Number, b: Number): Boolean {
+        return when (toLarger(a, b)) {
+            is Long -> a.toLong() >= b.toLong()
+            is Int -> a.toInt() >= b.toInt()
+            is Short -> a.toShort() >= b.toShort()
+            else -> a.toByte() >= b.toByte()
+        }
+    }
 
+    fun ltEq(a: Number, b: Number): Boolean {
+        return when (toLarger(a, b)) {
+            is Long -> a.toLong() <= b.toLong()
+            is Int -> a.toInt() <= b.toInt()
+            is Short -> a.toShort() <= b.toShort()
+            else -> a.toByte() <= b.toByte()
+        }
+    }
+
+    fun gt(a: Number, b: Number): Boolean {
+        return when (toLarger(a, b)) {
+            is Long -> a.toLong() > b.toLong()
+            is Int -> a.toInt() > b.toInt()
+            is Short -> a.toShort() > b.toShort()
+            else -> a.toByte() > b.toByte()
+        }
+    }
+
+    fun lt(a: Number, b: Number): Boolean {
+        return when (toLarger(a, b)) {
+            is Long -> a.toLong() < b.toLong()
+            is Int -> a.toInt() < b.toInt()
+            is Short -> a.toShort() < b.toShort()
+            else -> a.toByte() < b.toByte()
+        }
+    }
 }

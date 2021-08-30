@@ -18,7 +18,7 @@ data class Method internal constructor(
 ) {
     val fullName by lazy {
         val start = parent?.fullName ?: package_.namespace
-        "$start.$name"
+        "$start:$name"
     }
 
     override fun equals(other: Any?): Boolean {

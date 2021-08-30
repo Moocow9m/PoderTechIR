@@ -14,7 +14,7 @@ data class Object internal constructor(
 ) {
 
     val fullName by lazy {
-        "${parent.namespace}.$name"
+        "${parent.namespace}_$name"
     }
 
     fun newMethod(
@@ -29,7 +29,7 @@ data class Object internal constructor(
             name,
             vis,
             returnType,
-            setOf(NamedType("this", Type.TStruct(fields)), *args),
+            setOf(NamedType("this", Type.TStruct(fullName, fields)), *args),
             this,
             code
         )

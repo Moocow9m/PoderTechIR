@@ -3,10 +3,10 @@ package tech.poder.ptir.data.storage.segment
 import tech.poder.ptir.commands.Simple
 import tech.poder.ptir.commands.SysCommand
 import tech.poder.ptir.data.base.Method
-import tech.poder.ptir.data.math.StackNumberParse
 import tech.poder.ptir.data.storage.Instruction
 import tech.poder.ptir.data.storage.Label
 import tech.poder.ptir.data.storage.Type
+import tech.poder.ptir.data.ugly.StackNumberParse
 import tech.poder.ptir.metadata.MethodHolder
 import tech.poder.ptir.metadata.ObjectHolder
 import java.util.*
@@ -114,8 +114,8 @@ data class SegmentPart(
                 Simple.ARRAY_GET -> {
                     val array = safePop(stack, "ARRAY_GET1") as Type.TArray
                     val arrayIndex = safePop(stack, "ARRAY_GET2")
-                    check(arrayIndex is Type.Constant.TInt) {
-                        "Array get without Int type! Got: $arrayIndex"
+                    check(arrayIndex is Type.Constant && arrayIndex !is Type.Constant.TString) {
+                        "Array get without Number type! Got: $arrayIndex"
                     }
                     stack.push(array.type)
                 }
@@ -123,8 +123,8 @@ data class SegmentPart(
                     val array = safePop(stack, "ARRAY_SET1") as Type.TArray
                     val arrayIndex = safePop(stack, "ARRAY_SET2")
                     val arrayItem = safePop(stack, "ARRAY_SET3")
-                    check(arrayIndex is Type.Constant.TInt) {
-                        "Array set without Int type! Got: $arrayIndex"
+                    check(arrayIndex is Type.Constant && arrayIndex !is Type.Constant.TString) {
+                        "Array set without Number type! Got: $arrayIndex"
                     }
                     if (arrayItem is Type.Constant) {
                         arrayItem.constant = false
@@ -152,7 +152,7 @@ data class SegmentPart(
                 }
                 Simple.NEW_OBJECT -> {
                     val objType = instruction.extra as ObjectHolder
-                    stack.push(Type.TStruct(objType.fields))
+                    stack.push(Type.TStruct(objType.fullName, objType.fields))
                 }
                 Simple.JMP -> {
                 }

@@ -9,7 +9,7 @@ sealed interface Type {
         }
     }
 
-    data class TStruct(val types: Array<NamedType>) : Type {
+    data class TStruct(val name: String, val types: Array<NamedType>) : Type {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is TStruct) return false
@@ -24,7 +24,7 @@ sealed interface Type {
         }
 
         override fun copy(): Type {
-            return TStruct(types)
+            return TStruct(name, types)
         }
 
     }
