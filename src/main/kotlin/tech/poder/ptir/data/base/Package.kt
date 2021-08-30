@@ -38,6 +38,10 @@ data class Package(
         return obj
     }
 
+    fun finalize() {
+        //todo this will remove names from all methods and objects marked private and replace the references with internal id numbers
+    }
+
     override fun hashCode(): Int {
         return namespace.hashCode()
     }
