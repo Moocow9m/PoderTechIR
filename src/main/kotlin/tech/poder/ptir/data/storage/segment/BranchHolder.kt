@@ -2,6 +2,7 @@ package tech.poder.ptir.data.storage.segment
 
 import tech.poder.ptir.data.base.Method
 import tech.poder.ptir.data.storage.Instruction
+import tech.poder.ptir.data.storage.Label
 import tech.poder.ptir.data.storage.Type
 import java.util.*
 
@@ -9,7 +10,13 @@ data class BranchHolder(
     val ifBlock: Segment,
     val elseBlock: Segment?
 ) : Segment {
-    override fun eval(method: Method, stack: Stack<Type>, currentVars: Array<Type?>) {
+    override fun eval(
+        method: Method,
+        stack: Stack<Type>,
+        currentVars: Array<Type?>,
+        currentIndex: Int,
+        labels: MutableMap<Int, Label>
+    ): Int {
         val ifStack = Stack<Type>()
         val elseStack = Stack<Type>()
         stack.forEach {
@@ -23,8 +30,9 @@ data class BranchHolder(
             currentVars[it]?.copy()
         }
         stack.clear()
-        ifBlock.eval(method, ifStack, ifVars)
-        elseBlock?.eval(method, stack, elseVars)
+        var index = currentIndex
+        index = ifBlock.eval(method, ifStack, ifVars, index, labels)
+        index = elseBlock?.eval(method, stack, elseVars, index, labels) ?: index
         check(ifStack.size == elseStack.size) {
             "Branch stacks do not match!\n\tIf:\n\t\t${ifStack.joinToString("\n\t\t")}\n\tElse:\n\t\t${
                 elseStack.joinToString(
@@ -77,6 +85,7 @@ data class BranchHolder(
             }
             currentVars[it] = a
         }
+        return index
     }
 
     override fun size(): Int {

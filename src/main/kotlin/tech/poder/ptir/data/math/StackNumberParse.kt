@@ -1,11 +1,11 @@
 package tech.poder.ptir.data.math
 
 import tech.poder.ptir.commands.Simple
-import tech.poder.ptir.data.CodeBuilder
-import tech.poder.ptir.data.CodeBuilder.Companion.scanLabels
 import tech.poder.ptir.data.storage.Instruction
 import tech.poder.ptir.data.storage.Label
 import tech.poder.ptir.data.storage.Type
+import tech.poder.ptir.data.storage.segment.SegmentPart.Companion.deleteInstruction
+import tech.poder.ptir.data.storage.segment.SegmentPart.Companion.safePop
 import java.util.*
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -14,6 +14,7 @@ import kotlin.experimental.xor
 object StackNumberParse {
     internal fun parse(
         cIndex: Int,
+        oIndex: Int,
         instruction: Instruction,
         stack: Stack<Type>,
         instructions: ArrayList<Instruction>,
@@ -22,15 +23,14 @@ object StackNumberParse {
         var index = cIndex
         when (instruction.opCode) {
             Simple.INC -> {
-                val popped = CodeBuilder.safePop(stack, "INC")
+                val popped = safePop(stack, "INC")
                 check(popped is Type.Constant && popped !is Type.Constant.TString) {
                     "INC called on illegal type: $popped!"
                 }
                 if (popped.constant) {
                     val prev = instructions[index - 1]
                     prev.extra = addNumbers(prev.extra as Number, toSameNumbers(1, prev.extra as Number))
-                    instructions.removeAt(index)
-                    scanLabels(index, labels)
+                    deleteInstruction(oIndex, index, labels, instructions)
                     index--
                 } else {
                     popped.constant = false
@@ -38,15 +38,14 @@ object StackNumberParse {
                 stack.push(popped)
             }
             Simple.NEG -> {
-                val popped = CodeBuilder.safePop(stack, "NEG")
+                val popped = safePop(stack, "NEG")
                 check(popped is Type.Constant && popped !is Type.Constant.TString) {
                     "DEC called on illegal type: $popped!"
                 }
                 if (popped.constant) {
                     val prev = instructions[index - 1]
                     prev.extra = negNumber(prev.extra as Number)
-                    instructions.removeAt(index)
-                    scanLabels(index, labels)
+                    deleteInstruction(oIndex, index, labels, instructions)
                     index--
                 } else {
                     popped.constant = false
@@ -54,15 +53,14 @@ object StackNumberParse {
                 stack.push(popped)
             }
             Simple.DEC -> {
-                val popped = CodeBuilder.safePop(stack, "DEC")
+                val popped = safePop(stack, "DEC")
                 check(popped is Type.Constant && popped !is Type.Constant.TString) {
                     "DEC called on illegal type: $popped!"
                 }
                 if (popped.constant) {
                     val prev = instructions[index - 1]
                     prev.extra = subNumbers(prev.extra as Number, toSameNumbers(1, prev.extra as Number))
-                    instructions.removeAt(index)
-                    scanLabels(index, labels)
+                    deleteInstruction(oIndex, index, labels, instructions)
                     index--
                 } else {
                     popped.constant = false
@@ -70,11 +68,11 @@ object StackNumberParse {
                 stack.push(popped)
             }
             Simple.SUB -> {
-                val poppedB = CodeBuilder.safePop(stack, "SUB1")
+                val poppedB = safePop(stack, "SUB1")
                 check(poppedB is Type.Constant && poppedB !is Type.Constant.TString) {
                     "SUB called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "SUB2")
+                val poppedA = safePop(stack, "SUB2")
                 check(poppedA is Type.Constant && poppedA !is Type.Constant.TString) {
                     "SUB called on illegal type: $poppedA!"
                 }
@@ -83,21 +81,19 @@ object StackNumberParse {
                 stack.push(
                     if (poppedB.constant && poppedA.constant) {
                         prevA.extra = subNumbers(prevA.extra as Number, prevB.extra as Number)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
                         tmp
                     } else {
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
-                            instructions.removeAt(index - 1)
+                            deleteInstruction(oIndex, index - 1, labels, instructions)
                             instruction.opCode = Simple.DEC
                         }
                         if (poppedA.constant && (prevA.extra as Number).toDouble() == 1.0) {
-                            instructions.removeAt(index - 2)
+                            deleteInstruction(oIndex, index - 2, labels, instructions)
                             instruction.opCode = Simple.DEC
                         }
                         toLarger(poppedA, poppedB)
@@ -105,11 +101,11 @@ object StackNumberParse {
                 )
             }
             Simple.MUL -> {
-                val poppedB = CodeBuilder.safePop(stack, "MUL1")
+                val poppedB = safePop(stack, "MUL1")
                 check(poppedB is Type.Constant && poppedB !is Type.Constant.TString) {
                     "MUL called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "MUL2")
+                val poppedA = safePop(stack, "MUL2")
                 check(poppedA is Type.Constant && poppedA !is Type.Constant.TString) {
                     "MUL called on illegal type: $poppedA!"
                 }
@@ -118,10 +114,8 @@ object StackNumberParse {
                 stack.push(
                     if (poppedB.constant && poppedA.constant) {
                         prevA.extra = mulNumbers(prevA.extra as Number, prevB.extra as Number)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
@@ -129,22 +123,16 @@ object StackNumberParse {
                     } else {
                         val tmp = toLarger(poppedA, poppedB)
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
-                            instructions.removeAt(index - 1)
-                            scanLabels(index - 1, labels)
-                            instructions.removeAt(index)
-                            scanLabels(index, labels)
+                            deleteInstruction(oIndex, index - 1, labels, instructions)
+                            deleteInstruction(oIndex, index, labels, instructions)
                         } else if (poppedA.constant && (prevA.extra as Number).toDouble() == 1.0) {
-                            instructions.removeAt(index - 2)
-                            scanLabels(index - 2, labels)
-                            instructions.removeAt(index)
-                            scanLabels(index, labels)
+                            deleteInstruction(oIndex, index - 2, labels, instructions)
+                            deleteInstruction(oIndex, index, labels, instructions)
                         } else if (poppedB.constant && (prevB.extra as Number).toDouble() == -1.0) {
-                            instructions.removeAt(index - 1)
-                            scanLabels(index - 1, labels)
+                            deleteInstruction(oIndex, index - 1, labels, instructions)
                             instruction.opCode = Simple.NEG
                         } else if (poppedA.constant && (prevA.extra as Number).toDouble() == -1.0) {
-                            instructions.removeAt(index - 2)
-                            scanLabels(index - 2, labels)
+                            deleteInstruction(oIndex, index - 2, labels, instructions)
                             instruction.opCode = Simple.NEG
                         }
                         tmp
@@ -152,11 +140,11 @@ object StackNumberParse {
                 )
             }
             Simple.DIV -> {
-                val poppedB = CodeBuilder.safePop(stack, "DIV1")
+                val poppedB = safePop(stack, "DIV1")
                 check(poppedB is Type.Constant && poppedB !is Type.Constant.TString) {
                     "DIV called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "DIV2")
+                val poppedA = safePop(stack, "DIV2")
                 check(poppedA is Type.Constant && poppedA !is Type.Constant.TString) {
                     "DIV called on illegal type: $poppedA!"
                 }
@@ -165,10 +153,8 @@ object StackNumberParse {
                 stack.push(
                     if (poppedB.constant && poppedA.constant) {
                         prevA.extra = divNumbers(prevA.extra as Number, prevB.extra as Number)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
@@ -176,21 +162,19 @@ object StackNumberParse {
                     } else {
                         val tmp = toLarger(poppedA, poppedB)
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
-                            instructions.removeAt(index - 1)
-                            scanLabels(index - 1, labels)
-                            instructions.removeAt(index)
-                            scanLabels(index, labels)
+                            deleteInstruction(oIndex, index - 1, labels, instructions)
+                            deleteInstruction(oIndex, index, labels, instructions)
                         }
                         tmp
                     }
                 )
             }
             Simple.ADD -> {
-                val poppedB = CodeBuilder.safePop(stack, "ADD1")
+                val poppedB = safePop(stack, "ADD1")
                 check(poppedB is Type.Constant) {
                     "ADD called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "ADD2")
+                val poppedA = safePop(stack, "ADD2")
                 check(poppedA is Type.Constant) {
                     "ADD called on illegal type: $poppedA!"
                 }
@@ -203,23 +187,19 @@ object StackNumberParse {
                         } else {
                             prevA.extra = addNumbers(prevA.extra as Number, prevB.extra as Number)
                         }
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
                         tmp
                     } else {
                         if (poppedB.constant && (prevB.extra as Number).toDouble() == 1.0) {
-                            instructions.removeAt(index - 1)
-                            scanLabels(index - 1, labels)
+                            deleteInstruction(oIndex, index - 1, labels, instructions)
                             instruction.opCode = Simple.INC
                         }
                         if (poppedA.constant && (prevA.extra as Number).toDouble() == 1.0) {
-                            instructions.removeAt(index - 2)
-                            scanLabels(index - 2, labels)
+                            deleteInstruction(oIndex, index - 2, labels, instructions)
                             instruction.opCode = Simple.INC
                         }
                         toLarger(poppedA, poppedB)
@@ -227,11 +207,11 @@ object StackNumberParse {
                 )
             }
             Simple.OR -> {
-                val poppedB = CodeBuilder.safePop(stack, "OR1")
+                val poppedB = safePop(stack, "OR1")
                 check(poppedB is Type.Constant) {
                     "OR called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "OR2")
+                val poppedA = safePop(stack, "OR2")
                 check(poppedA is Type.Constant) {
                     "OR called on illegal type: $poppedA!"
                 }
@@ -240,10 +220,8 @@ object StackNumberParse {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
                         prevA.extra = orNumbers(prevA.extra as Number, prevB.extra as Number)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
@@ -254,11 +232,11 @@ object StackNumberParse {
                 )
             }
             Simple.XOR -> {
-                val poppedB = CodeBuilder.safePop(stack, "XOR1")
+                val poppedB = safePop(stack, "XOR1")
                 check(poppedB is Type.Constant) {
                     "XOR called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "XOR2")
+                val poppedA = safePop(stack, "XOR2")
                 check(poppedA is Type.Constant) {
                     "XOR called on illegal type: $poppedA!"
                 }
@@ -267,10 +245,8 @@ object StackNumberParse {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
                         prevA.extra = xorNumbers(prevA.extra as Number, prevB.extra as Number)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
@@ -281,11 +257,11 @@ object StackNumberParse {
                 )
             }
             Simple.AND -> {
-                val poppedB = CodeBuilder.safePop(stack, "AND1")
+                val poppedB = safePop(stack, "AND1")
                 check(poppedB is Type.Constant) {
                     "AND called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "AND2")
+                val poppedA = safePop(stack, "AND2")
                 check(poppedA is Type.Constant) {
                     "AND called on illegal type: $poppedA!"
                 }
@@ -294,10 +270,8 @@ object StackNumberParse {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
                         prevA.extra = andNumbers(prevA.extra as Number, prevB.extra as Number)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
@@ -308,11 +282,11 @@ object StackNumberParse {
                 )
             }
             Simple.SAR -> {
-                val poppedB = CodeBuilder.safePop(stack, "SHR1")
+                val poppedB = safePop(stack, "SHR1")
                 check(poppedB is Type.Constant.TInt) {
                     "SHR called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "SHR2")
+                val poppedA = safePop(stack, "SHR2")
                 check(poppedA is Type.Constant) {
                     "SHR called on illegal type: $poppedA!"
                 }
@@ -321,10 +295,8 @@ object StackNumberParse {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
                         prevA.extra = shrNumbers(prevA.extra as Number, prevB.extra as Int)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
@@ -335,11 +307,11 @@ object StackNumberParse {
                 )
             }
             Simple.SAL -> {
-                val poppedB = CodeBuilder.safePop(stack, "SHL1")
+                val poppedB = safePop(stack, "SHL1")
                 check(poppedB is Type.Constant.TInt) {
                     "SHL called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "SHL2")
+                val poppedA = safePop(stack, "SHL2")
                 check(poppedA is Type.Constant) {
                     "SHL called on illegal type: $poppedA!"
                 }
@@ -348,10 +320,8 @@ object StackNumberParse {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
                         prevA.extra = shlNumbers(prevA.extra as Number, prevB.extra as Int)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
@@ -362,11 +332,11 @@ object StackNumberParse {
                 )
             }
             Simple.SHR -> {
-                val poppedB = CodeBuilder.safePop(stack, "USHR1")
+                val poppedB = safePop(stack, "USHR1")
                 check(poppedB is Type.Constant.TInt) {
                     "USHR called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "SHL2")
+                val poppedA = safePop(stack, "SHL2")
                 check(poppedA is Type.Constant) {
                     "USHR called on illegal type: $poppedA!"
                 }
@@ -375,10 +345,8 @@ object StackNumberParse {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
                         prevA.extra = ushrNumbers(prevA.extra as Number, prevB.extra as Int)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
@@ -389,11 +357,11 @@ object StackNumberParse {
                 )
             }
             Simple.ROR -> {
-                val poppedB = CodeBuilder.safePop(stack, "ROR1")
+                val poppedB = safePop(stack, "ROR1")
                 check(poppedB is Type.Constant.TInt) {
                     "ROR called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "ROR2")
+                val poppedA = safePop(stack, "ROR2")
                 check(poppedA is Type.Constant) {
                     "ROR called on illegal type: $poppedA!"
                 }
@@ -402,10 +370,8 @@ object StackNumberParse {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
                         prevA.extra = rorNumbers(prevA.extra as Number, prevB.extra as Int)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
@@ -416,11 +382,11 @@ object StackNumberParse {
                 )
             }
             Simple.ROL -> {
-                val poppedB = CodeBuilder.safePop(stack, "ROL1")
+                val poppedB = safePop(stack, "ROL1")
                 check(poppedB is Type.Constant.TInt) {
                     "ROL called on illegal type: $poppedB!"
                 }
-                val poppedA = CodeBuilder.safePop(stack, "ROL2")
+                val poppedA = safePop(stack, "ROL2")
                 check(poppedA is Type.Constant) {
                     "ROL called on illegal type: $poppedA!"
                 }
@@ -429,10 +395,8 @@ object StackNumberParse {
                         val prevB = instructions[index - 1]
                         val prevA = instructions[index - 2]
                         prevA.extra = rolNumbers(prevA.extra as Number, prevB.extra as Int)
-                        instructions.removeAt(index)
-                        scanLabels(index, labels)
-                        instructions.removeAt(index - 1)
-                        scanLabels(index - 1, labels)
+                        deleteInstruction(oIndex, index, labels, instructions)
+                        deleteInstruction(oIndex, index - 1, labels, instructions)
                         index -= 2
                         val tmp = toLarger(poppedA, poppedB)
                         tmp.constant = true
@@ -610,4 +574,6 @@ object StackNumberParse {
             else -> a.toByte().rotateLeft(b)
         }
     }
+
+
 }

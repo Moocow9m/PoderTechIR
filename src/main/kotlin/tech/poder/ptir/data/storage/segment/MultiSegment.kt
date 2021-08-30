@@ -38,7 +38,7 @@ data class MultiSegment(
                     Simple.IF_LT, Simple.IF_NOT_EQ,
                     Simple.IF_GT, Simple.IF_GT_EQ -> {
                         val potentialElse = raw[internalIndex].extra as Label
-                        tmpStorage.data.add(raw[internalIndex])
+                        tmpStorage.instructions.add(raw[internalIndex])
                         head.instructions.add(tmpStorage)
 
                         val savedA = internalIndex
@@ -79,7 +79,7 @@ data class MultiSegment(
                             }
                             val first = jumpTo.first()
 
-                            if (tmpStorage.data.isNotEmpty()) {
+                            if (tmpStorage.instructions.isNotEmpty()) {
                                 head.instructions.add(tmpStorage)
                             }
 
@@ -87,19 +87,19 @@ data class MultiSegment(
                             (internalIndex..first.first).forEach { newRaw.add(raw[it]) }
                             head.instructions.add(LoopHolder(buildSegments(newRaw, startIndex + internalIndex + 1)!!))
 
-                            if (tmpStorage.data.isNotEmpty()) {
+                            if (tmpStorage.instructions.isNotEmpty()) {
                                 tmpStorage = SegmentPart()
                             }
 
                             internalIndex = first.first
                         } else {
-                            tmpStorage.data.add(raw[internalIndex])
+                            tmpStorage.instructions.add(raw[internalIndex])
                         }
                     }
                 }
                 internalIndex++
             }
-            if (tmpStorage.data.isNotEmpty()) {
+            if (tmpStorage.instructions.isNotEmpty()) {
                 head.instructions.add(tmpStorage)
             }
             if (head.instructions.size == 1) {
@@ -109,10 +109,18 @@ data class MultiSegment(
         }
     }
 
-    override fun eval(method: Method, stack: Stack<Type>, currentVars: Array<Type?>) {
+    override fun eval(
+        method: Method,
+        stack: Stack<Type>,
+        currentVars: Array<Type?>,
+        currentIndex: Int,
+        labels: MutableMap<Int, Label>
+    ): Int {
+        var index = currentIndex
         instructions.forEach {
-            it.eval(method, stack, currentVars)
+            index = it.eval(method, stack, currentVars, index, labels)
         }
+        return index
     }
 
     override fun size(): Int {

@@ -2,18 +2,26 @@ package tech.poder.ptir.data.storage.segment
 
 import tech.poder.ptir.data.base.Method
 import tech.poder.ptir.data.storage.Instruction
+import tech.poder.ptir.data.storage.Label
 import tech.poder.ptir.data.storage.Type
 import java.util.*
 
 data class LoopHolder(val block: Segment) : Segment {
-    override fun eval(method: Method, stack: Stack<Type>, currentVars: Array<Type?>) {
+    override fun eval(
+        method: Method,
+        stack: Stack<Type>,
+        currentVars: Array<Type?>,
+        currentIndex: Int,
+        labels: MutableMap<Int, Label>
+    ): Int {
         val loopStack = Stack<Type>()
         val copy = Stack<Type>()
         stack.forEach {
             loopStack.push(it.copy())
             copy.push(it.copy())
         }
-        block.eval(method, stack, currentVars)
+        var index = currentIndex
+        index = block.eval(method, stack, currentVars, index, labels)
         check(loopStack.size == copy.size) {
             "Loop stack does not match original!\n\tLoop:\n\t\t${loopStack.joinToString("\n\t\t")}\n\tOriginal:\n\t\t${
                 copy.joinToString(
@@ -42,6 +50,7 @@ data class LoopHolder(val block: Segment) : Segment {
                 }"
             }
         }
+        return index
     }
 
     override fun size(): Int {
