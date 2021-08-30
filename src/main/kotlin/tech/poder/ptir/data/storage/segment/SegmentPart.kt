@@ -216,13 +216,14 @@ data class SegmentPart(
             labels.forEach { (index, label) ->
                 val check = index..label.offset
                 if (check.contains(realIndex)) {
-                    label.offset = label.offset - 1//todo verify this
+                    label.offset = label.offset - 1
                 }
             }
 
             labels.keys.toTypedArray().forEach {
                 if (it > realIndex) {
                     val tmp = labels.remove(it)!!
+                    tmp.offset = tmp.offset - 1
                     labels[it - 1] = tmp
                 }
             }
