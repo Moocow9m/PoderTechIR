@@ -5,6 +5,7 @@ import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.storage.Instruction
 import tech.poder.ir.data.storage.Label
+import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.Type
 import tech.poder.ir.data.ugly.StackNumberParse
 import tech.poder.ir.metadata.MethodHolder
@@ -168,6 +169,34 @@ data class SegmentPart(
                         instructions,
                         labels
                     )
+                Simple.SET_FIELD -> {
+                    val object_ = safePop(stack, "SET_FIELD")
+                    check(object_ is Type.TStruct) {
+                        "Expected Object ref, but got: $object_"
+                    }
+                    val wanted = instruction.extra as NamedType
+                    val result = object_.types.firstOrNull { it == wanted }
+                    check(result != null) {
+                        "${instruction.extra} does not exist in $object_"
+                    }
+                    val got = stack.pop()
+                    check(wanted.type == got) {
+                        "Type mismatch! Wanted: ${wanted.type}, Got: $got"
+                    }
+                }
+                Simple.GET_FIELD -> {
+                    val object_ = safePop(stack, "SET_FIELD")
+                    check(object_ is Type.TStruct) {
+                        "Expected Object ref, but got: $object_"
+                    }
+                    val result = object_.types.firstOrNull { it == (instruction.extra as NamedType) }
+                    check(result != null) {
+                        "${instruction.extra} does not exist in $object_"
+                    }
+                    stack.push(result.type)
+                }
+                Simple.BREAKPOINT -> {
+                }
                 else -> error("Unknown command: ${instruction.opCode}")
             }
             index++

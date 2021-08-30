@@ -8,6 +8,7 @@ import tech.poder.ir.data.storage.Label
 import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.ugly.StackNumberParse
 import tech.poder.ir.metadata.MethodHolder
+import tech.poder.ir.metadata.ObjectHolder
 import java.util.*
 
 class Machine {
@@ -212,9 +213,11 @@ class Machine {
                 }
                 Simple.GET_VAR -> stack.push(vars[inst.extra as Int])
                 Simple.SET_FIELD -> TODO()
-                Simple.GET_FIELD -> TODO()
+                Simple.GET_FIELD -> {
+                    val object_ = stack.pop()
+                }
                 Simple.INVOKE_METHOD -> {
-                    val holder = inst.extra as MethodHolder
+                    val holder = inst.extra as MethodHolder //todo add HiddenMethodHolder support
                     val newArgs = Array(holder.args.size) {
                         stack.pop()
                     }
@@ -225,7 +228,15 @@ class Machine {
                     }
                 }
                 Simple.LAUNCH -> TODO()
-                Simple.NEW_OBJECT -> TODO()
+                Simple.NEW_OBJECT -> {
+                    val objDef = stack.pop() as ObjectHolder//todo add HiddenObjectHolder support
+                    val fields = mutableMapOf<String, Any>()
+                    repeat(objDef.fields.size) {
+                        val f = objDef.fields[it]
+                        fields[f.name] = f.type.defaultValue()
+                    }
+                    stack.push(fields)
+                }
                 Simple.BREAKPOINT -> {
                     System.err.println("BREAKPOINT")
                 }

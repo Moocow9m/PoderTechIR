@@ -3,9 +3,15 @@ package tech.poder.ir.data.storage
 sealed interface Type {
     fun copy(): Type
 
+    fun defaultValue(): Any
+
     data class TArray(val type: Type, val size: Int) : Type {
         override fun copy(): Type {
             return TArray(type, size)
+        }
+
+        override fun defaultValue(): Any {
+            return Array(size) { type.defaultValue() }
         }
     }
 
@@ -27,6 +33,10 @@ sealed interface Type {
             return TStruct(name, types)
         }
 
+        override fun defaultValue(): Any {
+            return Array(types.size) { types[it].type.defaultValue() }
+        }
+
     }
 
     sealed interface Constant : Type {
@@ -36,11 +46,19 @@ sealed interface Type {
             override fun copy(): Type {
                 return TByte(constant)
             }
+
+            override fun defaultValue(): Any {
+                return 0.toByte()
+            }
         }
 
         data class TShort(override var constant: Boolean = false) : Constant {
             override fun copy(): Type {
                 return TShort(constant)
+            }
+
+            override fun defaultValue(): Any {
+                return 0.toShort()
             }
         }
 
@@ -48,11 +66,19 @@ sealed interface Type {
             override fun copy(): Type {
                 return TInt(constant)
             }
+
+            override fun defaultValue(): Any {
+                return 0
+            }
         }
 
         data class TLong(override var constant: Boolean = false) : Constant {
             override fun copy(): Type {
                 return TLong(constant)
+            }
+
+            override fun defaultValue(): Any {
+                return 0.toLong()
             }
         }
 
@@ -60,17 +86,29 @@ sealed interface Type {
             override fun copy(): Type {
                 return TFloat(constant)
             }
+
+            override fun defaultValue(): Any {
+                return 0.toFloat()
+            }
         }
 
         data class TDouble(override var constant: Boolean = false) : Constant {
             override fun copy(): Type {
                 return TDouble(constant)
             }
+
+            override fun defaultValue(): Any {
+                return 0.toDouble()
+            }
         }
 
         data class TString(override var constant: Boolean = false) : Constant {
             override fun copy(): Type {
                 return TString(constant)
+            }
+
+            override fun defaultValue(): Any {
+                return ""
             }
         }
 
