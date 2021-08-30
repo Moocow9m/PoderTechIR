@@ -32,7 +32,7 @@ data class CodeBuilder(
             parent: Object? = null,
             block: (CodeBuilder) -> Unit
         ): Method {
-            val method = Method(package_, parent, name, returnType, args, vis, MultiSegment())
+            val method = Method(package_, parent, name, returnType, args, vis, 0, MultiSegment())
 
             val builder = CodeBuilder(method)
             block.invoke(builder)
@@ -508,7 +508,15 @@ data class CodeBuilder(
         val stack = Stack<Type>()
         stack.push(Type.Constant.TInt(true))
         stack.push(Type.Constant.TByte(true))
-        segment.eval(storage, stack)
+        val vars: Array<Type?> = Array(localVars.size) {
+            null
+        }
+        if (storage.args.isNotEmpty() && vars[0] == null && storage.args.isNotEmpty()) {
+            storage.args.forEach {
+                vars[localVars.indexOf(it.name)] = it.type
+            }
+        }
+        segment.eval(storage, stack, vars)
 
         return segment
     }

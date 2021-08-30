@@ -13,6 +13,7 @@ data class Method internal constructor(
     val returnType: Type?,
     val args: Set<NamedType>,
     val visibility: Visibility,
+    var localVarSize: Int = 0,
     internal var instructions: Segment
 ) {
     val fullName by lazy {

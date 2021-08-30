@@ -7,7 +7,7 @@ import java.util.*
 
 interface Segment {
 
-    fun eval(method: Method, stack: Stack<Type>)
+    fun eval(method: Method, stack: Stack<Type>, currentVars: Array<Type?>)
 
     fun size(): Int
 

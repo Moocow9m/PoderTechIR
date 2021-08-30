@@ -9,7 +9,7 @@ data class BranchHolder(
     val ifBlock: Segment,
     val elseBlock: Segment?
 ) : Segment {
-    override fun eval(method: Method, stack: Stack<Type>) {
+    override fun eval(method: Method, stack: Stack<Type>, currentVars: Array<Type?>) {
         val ifStack = Stack<Type>()
         val elseStack = Stack<Type>()
         stack.forEach {
@@ -17,8 +17,8 @@ data class BranchHolder(
             elseStack.push(it.copy())
         }
         stack.clear()
-        ifBlock.eval(method, ifStack)
-        elseBlock?.eval(method, stack)
+        ifBlock.eval(method, ifStack, currentVars) //todo verify same after running
+        elseBlock?.eval(method, stack, currentVars) //todo verify same after running
         check(ifStack.size == elseStack.size) {
             "Branch stacks do not match!\n\tIf:\n\t\t${ifStack.joinToString("\n\t\t")}\n\tElse:\n\t\t${
                 elseStack.joinToString(

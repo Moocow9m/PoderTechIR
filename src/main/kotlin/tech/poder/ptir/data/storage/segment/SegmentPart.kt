@@ -8,7 +8,7 @@ import java.util.*
 data class SegmentPart(
     val data: ArrayList<Instruction> = arrayListOf()
 ) : Segment {
-    override fun eval(method: Method, stack: Stack<Type>) {
+    override fun eval(method: Method, stack: Stack<Type>, currentVars: Array<Type?>) {
 
     }
 

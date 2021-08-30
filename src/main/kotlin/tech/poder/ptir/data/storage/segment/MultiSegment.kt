@@ -109,9 +109,9 @@ data class MultiSegment(
         }
     }
 
-    override fun eval(method: Method, stack: Stack<Type>) {
+    override fun eval(method: Method, stack: Stack<Type>, currentVars: Array<Type?>) {
         instructions.forEach {
-            it.eval(method, stack)
+            it.eval(method, stack, currentVars)
         }
     }
 
