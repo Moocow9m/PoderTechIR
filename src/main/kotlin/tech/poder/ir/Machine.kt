@@ -40,15 +40,15 @@ class Machine {
         execute(method, *args)
     }
 
-    private fun execute(instruction: Array<Instruction>, vararg args: Any): Any? {
+    private fun execute(instructions: Array<Instruction>, vararg args: Any): Any? {
         var index = 0
         val stack = Stack<Any>()
         val vars = ArrayList<Any?>()
         args.forEach {
             vars.add(it)
         }
-        while (index < instruction.size) {
-            val inst = instruction[index]
+        while (index < instructions.size) {
+            val inst = instructions[index]
             when (inst.opCode) {
                 Simple.JMP -> {
                     index = (inst.extra as Number).toInt()
@@ -212,9 +212,13 @@ class Machine {
                     vars[varIndex] = stack.pop()
                 }
                 Simple.GET_VAR -> stack.push(vars[inst.extra as Int])
-                Simple.SET_FIELD -> TODO()
+                Simple.SET_FIELD -> {
+                    val object_ = stack.pop() as MutableMap<String, Any>
+                    object_[(inst.extra as NamedType).name] = stack.pop()
+                }
                 Simple.GET_FIELD -> {
-                    val object_ = stack.pop()
+                    val object_ = stack.pop() as Map<String, Any>
+                    stack.push(object_[(inst.extra as NamedType).name])
                 }
                 Simple.INVOKE_METHOD -> {
                     val holder = inst.extra as MethodHolder //todo add HiddenMethodHolder support
