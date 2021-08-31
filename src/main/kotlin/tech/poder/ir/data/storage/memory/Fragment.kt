@@ -1,21 +1,37 @@
 package tech.poder.ir.data.storage.memory
 
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.experimental.or
+import kotlin.math.floor
 
 data class Fragment(
     val flags: Byte,
     val position: Long,
-    val size: Int,
+    val size: Long,
     val objectSize: Int,
-    var count: Int = 0,
-    val freeList: MutableList<Int> = mutableListOf(),
-    var state: State = State.EMPTY
 ) {
+    private var count: Int = 0
+    private val freeList: MutableList<Int> = mutableListOf()
+    var state: State = State.EMPTY
+    private val maxObject = floor(size / objectSize.toDouble()).toInt()
+    private val writeLock = ReentrantLock()
+
+    fun remaining(): Int {
+        return freeList.size + (maxObject - count)
+    }
+
+    fun lock() {
+        writeLock.lock()
+    }
+
+    fun unlock() {
+        writeLock.unlock()
+    }
 
     private fun updateState() {
         state = if (freeList.isEmpty() && count == 0) {
             State.EMPTY
-        } else if (freeList.isEmpty() && size == (count * objectSize)) {
+        } else if (remaining() == 0) {
             State.FULL
         } else {
             State.PARTIAL
@@ -72,5 +88,18 @@ data class Fragment(
 
     val reservedF by lazy {
         flags or 128.toByte() != 0.toByte()
+    }
+
+    override fun hashCode(): Int {
+        return position.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Fragment) return false
+
+        if (position != other.position) return false
+
+        return true
     }
 }
