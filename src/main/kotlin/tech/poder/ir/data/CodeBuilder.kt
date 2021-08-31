@@ -243,20 +243,15 @@ data class CodeBuilder(
         instructions.add(Instruction(Simple.INVOKE_METHOD, MethodHolder(fullName, returnType, args.toSet())))
     }
 
-    fun launch(method: Method) {
+    fun launch(method: Method, priority: Int) {
         check(method.returnType == null) {
             "Launched methods cannot have a return type!"
         }
-        instructions.add(
-            Instruction(
-                Simple.LAUNCH,
-                MethodHolder(method.fullName, method.returnType, method.args)
-            )
-        )
+        launch(method.fullName, priority, *method.args.toTypedArray())
     }
 
-    fun launch(fullName: String, vararg args: NamedType) {
-        instructions.add(Instruction(Simple.LAUNCH, MethodHolder(fullName, null, args.toSet())))
+    fun launch(fullName: String, priority: Int, vararg args: NamedType) {
+        instructions.add(Instruction(Simple.LAUNCH, Pair(priority, MethodHolder(fullName, null, args.toSet()))))
     }
 
     //Misc

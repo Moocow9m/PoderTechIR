@@ -65,6 +65,7 @@ class Machine {
                         SysCommand.SLEEP -> TODO()
                         SysCommand.SUSPEND -> TODO()
                         SysCommand.LOAD_LIB -> TODO()
+                        SysCommand.YIELD -> TODO()
                         SysCommand.PRINT -> print(stack.pop())
                     }
                 }
