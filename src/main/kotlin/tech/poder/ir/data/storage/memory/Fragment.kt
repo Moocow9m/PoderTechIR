@@ -30,34 +30,34 @@ data class Fragment(
     }
 
     val isReadOnly by lazy {
-        flags or 1
+        flags or 1 != 0.toByte()
     }
 
     val isExecutable by lazy {
-        flags or 2
+        flags or 2 != 0.toByte()
     }
 
     val reservedA by lazy {
-        flags or 4
+        flags or 4 != 0.toByte()
     }
 
     val reservedB by lazy {
-        flags or 8
+        flags or 8 != 0.toByte()
     }
 
     val reservedC by lazy {
-        flags or 16
+        flags or 16 != 0.toByte()
     }
 
     val reservedD by lazy {
-        flags or 32
+        flags or 32 != 0.toByte()
     }
 
     val reservedE by lazy {
-        flags or 64
+        flags or 64 != 0.toByte()
     }
 
     val reservedF by lazy {
-        flags or 128.toByte()
+        flags or 128.toByte() != 0.toByte()
     }
 }
