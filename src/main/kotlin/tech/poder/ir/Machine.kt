@@ -6,14 +6,16 @@ import tech.poder.ir.data.base.Package
 import tech.poder.ir.data.storage.Instruction
 import tech.poder.ir.data.storage.Label
 import tech.poder.ir.data.storage.NamedType
+import tech.poder.ir.data.storage.memory.MemoryAllocator
 import tech.poder.ir.data.ugly.StackNumberParse
 import tech.poder.ir.metadata.MethodHolder
 import tech.poder.ir.metadata.ObjectHolder
 import java.util.*
 
-class Machine {
+class Machine(maxMemory: Long = 1_073_741_824 /* 1 GB default*/, pageSize: Long = 1_024 /*1 KB default*/) {
     private val methods = mutableMapOf<String, Array<Instruction>>()
     private val structs = mutableMapOf<String, Array<NamedType>>()
+    private val allocator = MemoryAllocator(maxMemory, pageSize)
 
     fun loadPackage(package_: Package) {
         package_.floating.forEach {
