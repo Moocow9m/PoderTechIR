@@ -10,11 +10,11 @@ data class Fragment(
     val freeList: MutableList<Int>
 ) {
     val isReadOnly by lazy {
-        flags or 2
+        flags or 1
     }
 
     val isExecutable by lazy {
-        flags or 1
+        flags or 2
     }
 
     val reservedA by lazy {
