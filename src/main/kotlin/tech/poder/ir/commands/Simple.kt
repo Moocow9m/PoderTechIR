@@ -41,4 +41,6 @@ enum class Simple : Command {
     LAUNCH,
     NEW_OBJECT,
     BREAKPOINT,
+    UNSAFE_GET,
+    UNSAFE_SET
 }

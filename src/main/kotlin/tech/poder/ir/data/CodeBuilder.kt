@@ -6,10 +6,7 @@ import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.Object
 import tech.poder.ir.data.base.Package
-import tech.poder.ir.data.storage.Instruction
-import tech.poder.ir.data.storage.Label
-import tech.poder.ir.data.storage.NamedType
-import tech.poder.ir.data.storage.Type
+import tech.poder.ir.data.storage.*
 import tech.poder.ir.data.storage.segment.MultiSegment
 import tech.poder.ir.data.storage.segment.Segment
 import tech.poder.ir.metadata.MethodHolder
@@ -192,6 +189,15 @@ data class CodeBuilder(
 
     fun setField(field: NamedType) {
         instructions.add(Instruction(Simple.SET_FIELD, field))
+    }
+
+    //Unsafe
+    fun getUnsafeData(offset: Int, type: Type) {
+        instructions.add(Instruction(Simple.UNSAFE_GET, OffsetType(offset, type)))
+    }
+
+    fun setUnsafeData(offset: Int, type: Type) {
+        instructions.add(Instruction(Simple.UNSAFE_SET, OffsetType(offset, type)))
     }
 
     //Statements
