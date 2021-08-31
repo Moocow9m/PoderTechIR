@@ -7,8 +7,28 @@ data class Fragment(
     val position: Long,
     val size: Int,
     val objectSize: Int,
-    val freeList: MutableList<Int>
+    var lastUsed: Int,
+    val freeList: MutableList<Int> = mutableListOf(),
+    val state: State = State.EMPTY
 ) {
+
+    fun nextFree(): Int {
+        return if (freeList.isEmpty()) { //use fragmented areas first!
+            lastUsed += objectSize
+            lastUsed
+        } else {
+            freeList.removeAt(0)
+        }
+    }
+
+    fun free(location: Int) {
+        if (lastUsed == location) {
+            lastUsed -= objectSize
+        } else {
+            freeList.add(location)
+        }
+    }
+
     val isReadOnly by lazy {
         flags or 1
     }
