@@ -10,6 +10,7 @@ data class Fragment(
     val size: Long,
     val objectSize: Int,
 ) {
+    private var lastId: Int = 0
     private var count: Int = 0
     private val freeList: MutableList<Int> = mutableListOf()
     var state: State = State.EMPTY
@@ -29,7 +30,7 @@ data class Fragment(
     }
 
     private fun updateState() {
-        state = if (freeList.isEmpty() && count == 0) {
+        state = if (freeList.isEmpty() && lastId == 0) {
             State.EMPTY
         } else if (remaining() == 0) {
             State.FULL
@@ -39,8 +40,9 @@ data class Fragment(
     }
 
     fun nextFree(): Int {
+        count++
         return if (freeList.isEmpty()) { //use fragmented areas first!
-            objectSize * count++
+            objectSize * lastId++
         } else {
             freeList.removeAt(0)
         }.let {
@@ -50,8 +52,9 @@ data class Fragment(
     }
 
     fun free(location: Int) {
-        if (count * objectSize == location) {
-            count--
+        count--
+        if (lastId * objectSize == location) {
+            lastId--
         } else {
             freeList.add(location)
         }

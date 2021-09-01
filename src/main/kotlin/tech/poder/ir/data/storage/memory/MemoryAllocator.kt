@@ -7,11 +7,15 @@ import kotlin.math.ceil
 import kotlin.math.floor
 
 //based off SLUB
-class MemoryAllocator(memorySize: Long, private val pageSize: Long) {
-    private val fragments = ConcurrentSkipListSet<Fragment>()
+class MemoryAllocator(memorySize: Long, private val pageSize: Long = 4_096) { //todo per process tracking
+    private val fragments = ConcurrentSkipListSet<Fragment>() //todo per_cpu maintain, mass delete on process death
     private var lastFrag = 0
     private val memory = MemorySegment.allocateNative(memorySize)
     private val objSize = floor(pageSize / 8.0).toInt()
+
+    fun offsetPerCpu(coreCount: Int): Long {
+        return floor(memory.byteSize() / coreCount.toDouble()).toLong()
+    }
 
     fun alloc(size: Long): AllocatedMemory {
         val amount = ceil(size / objSize.toDouble()).toInt()
