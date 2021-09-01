@@ -1,6 +1,6 @@
 package tech.poder.test
 
-import tech.poder.ir.parsing.windows.WindowsImageReader
+import tech.poder.ir.parsing.windows.WindowsImage
 import java.nio.file.FileVisitOption
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -16,7 +16,7 @@ class WindowsTest {
             val name = it.fileName.toString()
             it.isRegularFile() && (name.endsWith("dll") || name.endsWith("exe"))
         }.forEach {
-            val result = WindowsImageReader.read(it)
+            val result = WindowsImage.read(it)
         }
     }
 }

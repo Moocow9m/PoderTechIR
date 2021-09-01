@@ -6,7 +6,7 @@ import java.nio.channels.SeekableByteChannel
 import java.nio.file.Files
 import java.nio.file.Path
 
-class WindowsImageReader(
+class WindowsImage(
     val machine: CoffMachine,
     val coffFlags: List<CoffFlag>,
     val dllFlags: List<DLLFlag>,
@@ -16,15 +16,14 @@ class WindowsImageReader(
     val sections: Array<Section>
 ) {
     companion object {
-        fun read(path: Path): WindowsImageReader {
+        fun read(path: Path): WindowsImage {
             val file = Files.newByteChannel(path)
             val buffer = ByteBuffer.allocate(1024)
             buffer.order(ByteOrder.LITTLE_ENDIAN)
             buffer.limit(2)
             file.read(buffer)
             buffer.flip()
-            val magic = "${buffer.get().toInt().toChar()}${buffer.get().toInt().toChar()}"
-            return when (magic) {
+            return when (val magic = "${buffer.get().toInt().toChar()}${buffer.get().toInt().toChar()}") {
                 "MZ", "ZM" -> {
                     buffer.clear()
                     file.position(0x3c)
@@ -44,12 +43,12 @@ class WindowsImageReader(
                     parseCoff(buffer, file)
                 }
                 else -> {
-                    error("Unknown magic: $path")
+                    error("Unknown magic: $magic, With path: $path")
                 }
             }
         }
 
-        private fun parseCoff(buf: ByteBuffer, bc: SeekableByteChannel): WindowsImageReader {
+        private fun parseCoff(buf: ByteBuffer, bc: SeekableByteChannel): WindowsImage {
             buf.clear()
             buf.limit(20)
             bc.read(buf)
@@ -60,7 +59,8 @@ class WindowsImageReader(
                 "Could not identify machine: ${mId.toUShort().toString(16)}"
             }
             val numOfSections = buf.short.toUShort()
-            val creationDateLow32 = buf.int
+            buf.position(buf.position() + 4) //skip unneeded
+            //val creationDateLow32 = buf.int
 
             buf.position(buf.position() + 8) //skip deprecated
             //val debugOffset = buf.int //deprecated, should be 0
@@ -85,7 +85,8 @@ class WindowsImageReader(
                 }
                 else -> error("Unknown COFF optional magic: ${magic.toUShort().toString(16)}")
             }
-            val linkerVersion = "${buf.get().toUByte()}.${buf.get().toUByte()}"
+            buf.position(buf.position() + 2) //skip unneeded
+            //val linkerVersion = "${buf.get().toUByte()}.${buf.get().toUByte()}"
             val sizeOfCode = buf.int.toUInt()
             val sizeOfInitData = buf.int.toUInt()
             val sizeOfUnInitData = buf.int.toUInt()
@@ -103,14 +104,15 @@ class WindowsImageReader(
             }
             val sectionAlignment = buf.int.toUInt()
             val fileAlignment = buf.int.toUInt()
-            val osVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
-            val imageVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
-            val subSystemVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
+            buf.position(buf.position() + 12) //skip unneeded
+            //val osVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
+            //val imageVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
+            //val subSystemVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
             buf.position(buf.position() + 4) //skip unused value
             //val winVersion = buf.int //should be 0
             val sizeOfImage = buf.int.toUInt()
             val sizeOfHeaders = buf.int.toUInt()
-            val checksum = buf.int.toUInt()
+            val checksum = buf.int.toUInt() //todo should probably verify this
             val subSystemId = buf.short
             val subSystem = SubSystem.values().firstOrNull { it.id == subSystemId }
             check(subSystem != null) {
@@ -170,7 +172,7 @@ class WindowsImageReader(
                 val flags = SectionFlags.getFlags(buf.int)
                 Section(name.toString(), vSize, vAddr, sRD, pRD, pRL, nRL, flags)
             }
-            return WindowsImageReader(machine, charFlags, dllFlags, format, subSystem, dirs, sections)
+            return WindowsImage(machine, charFlags, dllFlags, format, subSystem, dirs, sections)
         }
     }
 }
