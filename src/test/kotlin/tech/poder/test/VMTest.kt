@@ -2,6 +2,7 @@ package tech.poder.test
 
 import tech.poder.ir.Machine
 import tech.poder.ir.commands.SysCommand
+import tech.poder.ir.data.storage.memory.MemoryAllocator
 import tech.poder.ir.metadata.Visibility
 import kotlin.test.Test
 
@@ -18,5 +19,13 @@ class VMTest {
         val machine = Machine()
         machine.loadPackage(Packaging.package_)
         machine.execute(meth.fullName)
+    }
+
+    @Test
+    fun allocation() {
+        val mem = MemoryAllocator(1_073_741_824)
+
+        val frag = mem.alloc(128)
+        println(frag)
     }
 }

@@ -34,6 +34,10 @@ tasks {
         targetCompatibility = javaVersion
     }
 
+    withType<Test> {
+        jvmArgs("-Xmx3G", "--add-modules=jdk.incubator.foreign")
+    }
+
     val sourcesJar by creating(Jar::class) {
         archiveClassifier.set("sources")
         from(sourceSets.main.get().allSource)

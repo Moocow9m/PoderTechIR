@@ -9,7 +9,7 @@ data class Fragment(
     val position: Long,
     val size: Long,
     val objectSize: Int,
-) {
+): Comparable<Fragment> {
     private var lastId: Int = 0
     private var count: Int = 0
     private val freeList: MutableList<Int> = mutableListOf()
@@ -104,5 +104,9 @@ data class Fragment(
         if (position != other.position) return false
 
         return true
+    }
+
+    override fun compareTo(other: Fragment): Int {
+        return position.compareTo(other.position)
     }
 }
