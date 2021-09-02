@@ -1,13 +1,11 @@
 package tech.poder.test
 
 import jdk.incubator.foreign.MemoryAccess
-import jdk.incubator.foreign.MemoryLayouts
 import jdk.incubator.foreign.MemorySegment
 import tech.poder.ir.parsing.generic.OS
 import tech.poder.ir.parsing.generic.RawCode
 import tech.poder.ir.parsing.generic.RawCodeFile
 import tech.poder.ir.parsing.windows.*
-import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
@@ -18,7 +16,6 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.fileSize
 import kotlin.io.path.isRegularFile
-import kotlin.io.path.readBytes
 import kotlin.test.Test
 
 class WindowsTest {
@@ -31,17 +28,14 @@ class WindowsTest {
             val name = it.fileName.toString()
             it.isRegularFile() && (name.endsWith("dll") || name.endsWith("exe"))
         }.forEach {
-            processableFiles.add(WindowsImage.read(it))
+            thing(it)
         }
 
         processableFiles.forEach { it.process() }
     }
 
     // TODO: Use a datainputstream
-    @Test
-    fun thing() {
-
-        val path = Paths.get("testFiles", "_OverClockingNvc.dll")
+    fun thing(path: Path) {
 
         val reader = MemorySegmentReader(
             MemorySegment.mapFile(path, 0, path.fileSize(), FileChannel.MapMode.READ_ONLY),
