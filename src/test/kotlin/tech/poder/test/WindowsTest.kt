@@ -12,11 +12,13 @@ class WindowsTest {
     @Test
     fun readDll() {
         val dlls = Paths.get("testFiles").toAbsolutePath()
+        val processableFiles = mutableListOf<WindowsImage>()
         Files.walk(dlls, FileVisitOption.FOLLOW_LINKS).filter {
             val name = it.fileName.toString()
             it.isRegularFile() && (name.endsWith("dll") || name.endsWith("exe"))
         }.forEach {
-            val result = WindowsImage.read(it)
+            processableFiles.add(WindowsImage.read(it))
         }
+
     }
 }

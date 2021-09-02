@@ -1,5 +1,7 @@
 package tech.poder.ir.parsing.windows
 
+import tech.poder.ir.parsing.generic.RawCode
+import tech.poder.ir.parsing.generic.RawCodeFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.SeekableByteChannel
@@ -13,7 +15,11 @@ class WindowsImage(
     val format: ExeFormat,
     val subSystem: SubSystem,
     val dataDirs: Array<DataDirectories>,
-    val sections: Array<Section>
+    val sections: Array<Section>,
+    val entryLocation: UInt,
+    val baseCodeAddress: UInt,
+    val baseDataAddress: UInt,
+    val location: Path,
 ) {
     companion object {
         fun read(path: Path): WindowsImage {
@@ -40,7 +46,7 @@ class WindowsImage(
                     check(header == "PE00") {
                         "Header does not match PE format! Got: $header"
                     }
-                    parseCoff(buffer, file)
+                    parseCoff(buffer, file, path)
                 }
                 else -> {
                     error("Unknown magic: $magic, With path: $path")
@@ -48,7 +54,7 @@ class WindowsImage(
             }
         }
 
-        private fun parseCoff(buf: ByteBuffer, bc: SeekableByteChannel): WindowsImage {
+        private fun parseCoff(buf: ByteBuffer, bc: SeekableByteChannel, path: Path): WindowsImage {
             buf.clear()
             buf.limit(20)
             bc.read(buf)
@@ -172,7 +178,44 @@ class WindowsImage(
                 val flags = SectionFlags.getFlags(buf.int)
                 Section(name.toString(), vSize, vAddr, sRD, pRD, pRL, nRL, flags)
             }
-            return WindowsImage(machine, charFlags, dllFlags, format, subSystem, dirs, sections)
+            bc.close()
+            buf.clear()
+            return WindowsImage(
+                machine,
+                charFlags,
+                dllFlags,
+                format,
+                subSystem,
+                dirs,
+                sections,
+                entryPoint,
+                baseOfCode,
+                baseOfData,
+                path
+            )
         }
+    }
+
+    fun process(): RawCodeFile {
+        val buffer = ByteBuffer.allocate(1024)
+
+        val list = mutableMapOf<Int, RawCode.Unprocessed>()
+
+        val imports = sections.filter { it.name.startsWith(".idata", true) }
+        val exports = sections.filter { it.name.startsWith(".edata", true) }
+        val import = mutableListOf<String>()
+
+        imports.forEach {
+
+        }
+
+        val export = mutableListOf<String>()
+
+        exports.forEach {
+
+        }
+
+        //return RawCodeFile(OS.WINDOWS, machine.arch)
+        TODO()
     }
 }
