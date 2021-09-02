@@ -211,7 +211,7 @@ class WindowsImage(
 
         val importTables = mutableListOf<ImportTable>()
         val offset = if (dataDirs.size > 12) {
-            dataDirs[12].size
+            (dataDirs[1].virtualAddress.toLong() - dataDirs[12].virtualAddress.toLong()).coerceAtLeast(0).toUInt()
         } else {
             0u
         }
