@@ -1,5 +1,6 @@
 package tech.poder.ir.parsing.windows
 
+import tech.poder.ir.parsing.generic.OS
 import tech.poder.ir.parsing.generic.RawCode
 import tech.poder.ir.parsing.generic.RawCodeFile
 import java.nio.ByteBuffer
@@ -197,16 +198,55 @@ class WindowsImage(
     }
 
     fun process(): RawCodeFile {
-        val buffer = ByteBuffer.allocate(1024)
-
+        val buf = ByteBuffer.allocate(1024)
+        buf.order(ByteOrder.LITTLE_ENDIAN)
         val list = mutableMapOf<Int, RawCode.Unprocessed>()
 
         val imports = sections.filter { it.name.startsWith(".idata", true) }
         val exports = sections.filter { it.name.startsWith(".edata", true) }
         val import = mutableListOf<String>()
+        val bc = Files.newByteChannel(location)
 
+        val importTables = mutableListOf<ImportTable>()
         imports.forEach {
+            bc.position(it.pointerToRawData.toLong())
+            var remaining = it.sizeOfRawData
+            buf.clear()
+            reAllocate(remaining, buf, bc)
+            remaining -= buf.remaining().toUInt()
+            do {
+                remaining = reAllocateIfNeeded(20, remaining, buf, bc)
+                importTables.add(
+                    ImportTable(
+                        buf.int.toUInt(),
+                        buf.int.toUInt(),
+                        buf.int.toUInt(),
+                        buf.int.toUInt(),
+                        buf.int.toUInt(),
+                        it
+                    )
+                )
+            } while (!importTables.last().isNull())
+            importTables.removeLast()
+        }
 
+        val names = mutableListOf<String>()
+        importTables.forEach {
+            if (it.nameRVA != 0u) {
+                bc.position((it.nameRVA.toLong() - it.sectionLink.address.toLong()) + it.sectionLink.pointerToRawData.toLong())
+                buf.clear()
+                bc.read(buf)
+                buf.flip()
+                val builder = StringBuilder()
+                val size = buf.short.toUShort()
+                var i = buf.get().toInt()
+                while (i != 0) {
+                    builder.append(i.toChar())
+                    i = buf.get().toInt()
+                }
+                print(size)
+                names.add(builder.toString())
+            }
         }
 
         val export = mutableListOf<String>()
@@ -215,7 +255,31 @@ class WindowsImage(
 
         }
 
-        //return RawCodeFile(OS.WINDOWS, machine.arch)
-        TODO()
+        bc.close()
+        return RawCodeFile(OS.WINDOWS, machine.arch, 0, mutableListOf())
+    }
+
+    private fun reAllocateIfNeeded(dataSize: Int, remaining: UInt, buf: ByteBuffer, bc: SeekableByteChannel): UInt {
+        return if (buf.remaining() < dataSize) {
+            buf.compact()
+            reAllocate(remaining, buf, bc)
+            remaining - buf.remaining().toUInt()
+        } else {
+            remaining
+        }
+    }
+
+    private fun reAllocate(amount: UInt, buf: ByteBuffer, bc: SeekableByteChannel) {
+        var remaining = (bc.size() - bc.position()).toInt()
+        if (remaining < 0) {
+            remaining = buf.remaining()
+        }
+        var amountLeft = amount.toInt()
+        if (amountLeft < 0) {
+            amountLeft = buf.remaining()
+        }
+        buf.limit(buf.remaining().coerceAtMost(remaining).coerceAtMost(amountLeft))
+        bc.read(buf)
+        buf.flip()
     }
 }

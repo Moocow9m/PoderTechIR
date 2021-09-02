@@ -20,5 +20,6 @@ class WindowsTest {
             processableFiles.add(WindowsImage.read(it))
         }
 
+        processableFiles.forEach { it.process() }
     }
 }
