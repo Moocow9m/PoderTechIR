@@ -20,9 +20,6 @@ class WindowsTest {
             processableFiles.add(WindowsImage.read(it))
         }
 
-        processableFiles.filter {
-            it.location.fileName.toString().equals("WdfCoInstaller01011.dll", true) || it.location.fileName.toString()
-                .equals("_OverClockingNvc.dll", true)
-        }.forEach { it.process() }
+        processableFiles.forEach { it.process() }
     }
 }
