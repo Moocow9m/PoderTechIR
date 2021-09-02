@@ -112,12 +112,12 @@ class WindowsImage(
             }
             val sectionAlignment = buf.int.toUInt()
             val fileAlignment = buf.int.toUInt()
-            buf.position(buf.position() + 12) //skip unneeded
-            //val osVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
-            //val imageVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
-            //val subSystemVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
-            buf.position(buf.position() + 4) //skip unused value
-            //val winVersion = buf.int //should be 0
+            //buf.position(buf.position() + 12) //skip unneeded
+            val osVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
+            val imageVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
+            val subSystemVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
+            //buf.position(buf.position() + 4) //skip unused value
+            val winVersion = buf.int //should be 0
             val sizeOfImage = buf.int.toUInt()
             val sizeOfHeaders = buf.int.toUInt()
             val checksum = buf.int.toUInt() //todo should probably verify this
@@ -194,7 +194,7 @@ class WindowsImage(
                 baseOfCode,
                 baseOfData,
                 imageBase,
-                path
+                path,
             )
         }
     }
@@ -210,14 +210,19 @@ class WindowsImage(
         val bc = Files.newByteChannel(location)
 
         val importTables = mutableListOf<ImportTable>()
+        val offset = if (dataDirs.size > 12) {
+            dataDirs[12].size
+        } else {
+            0u
+        }
         imports.forEach {
-            bc.position(it.pointerToRawData.toLong())
+            bc.position(it.pointerToRawData.toLong() + offset.toLong())
             var remaining = it.sizeOfRawData
             buf.clear()
             reAllocate(remaining, buf, bc)
             remaining -= buf.remaining().toUInt()
             do {
-                remaining = reAllocateIfNeeded(24, remaining, buf, bc)
+                remaining = reAllocateIfNeeded(20, remaining, buf, bc)
                 importTables.add(
                     ImportTable(
                         buf.int.toUInt(),
@@ -231,12 +236,13 @@ class WindowsImage(
             importTables.removeLast()
         }
 
+
         val names = mutableListOf<String>()
         importTables.forEach {
             val vAddr = dataDirs[1].virtualAddress
             val raw = sections.first { (it.address..(it.address + it.size)).contains(vAddr) }
             if (it.nameRVA != 0u) {
-                bc.position((it.nameRVA.toLong() - vAddr.toLong()) + raw.pointerToRawData.toLong())
+                bc.position((it.nameRVA.toLong() - vAddr.toLong()) + raw.pointerToRawData.toLong() + offset.toLong())
                 buf.clear()
                 bc.read(buf)
                 buf.flip()
