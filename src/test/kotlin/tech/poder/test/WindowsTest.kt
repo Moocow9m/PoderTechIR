@@ -6,6 +6,7 @@ import tech.poder.ir.parsing.generic.OS
 import tech.poder.ir.parsing.generic.RawCode
 import tech.poder.ir.parsing.generic.RawCodeFile
 import tech.poder.ir.parsing.windows.*
+import java.io.Closeable
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
@@ -43,6 +44,8 @@ class WindowsTest {
         )
 
         println(read(path, reader))
+
+        reader.close()
     }
 
     fun read(path: Path, reader: MemorySegmentReader): RawCodeFile {
@@ -346,9 +349,14 @@ class WindowsTest {
     data class MemorySegmentReader(
         val memorySegment: MemorySegment,
         val byteOrder: ByteOrder = ByteOrder.nativeOrder(),
-    ) {
+    ) : Closeable {
 
         var position = 0L
+
+
+        override fun close() {
+            memorySegment.close()
+        }
 
 
         fun readByte(): Byte {
