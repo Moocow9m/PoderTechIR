@@ -20,6 +20,7 @@ class WindowsTest {
             processableFiles.add(WindowsImage.read(it))
         }
 
-        processableFiles.forEach { it.process() }
+        processableFiles.filter { it.location.fileName.toString().equals("WdfCoInstaller01011.dll", true) }
+            .forEach { it.process() }
     }
 }

@@ -5,8 +5,7 @@ data class ImportTable(
     val timeStamp: UInt,
     val forwardChain: UInt,
     val nameRVA: UInt,
-    val addressTableRVA: UInt,
-    val sectionLink: Section
+    val addressTableRVA: UInt
 ) {
 
     fun isNull(): Boolean {

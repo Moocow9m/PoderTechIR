@@ -20,6 +20,7 @@ class WindowsImage(
     val entryLocation: UInt,
     val baseCodeAddress: UInt,
     val baseDataAddress: UInt,
+    val preferredImageBase: ULong,
     val location: Path,
 ) {
     companion object {
@@ -192,6 +193,7 @@ class WindowsImage(
                 entryPoint,
                 baseOfCode,
                 baseOfData,
+                imageBase,
                 path
             )
         }
@@ -215,15 +217,14 @@ class WindowsImage(
             reAllocate(remaining, buf, bc)
             remaining -= buf.remaining().toUInt()
             do {
-                remaining = reAllocateIfNeeded(20, remaining, buf, bc)
+                remaining = reAllocateIfNeeded(24, remaining, buf, bc)
                 importTables.add(
                     ImportTable(
                         buf.int.toUInt(),
                         buf.int.toUInt(),
                         buf.int.toUInt(),
                         buf.int.toUInt(),
-                        buf.int.toUInt(),
-                        it
+                        buf.int.toUInt()
                     )
                 )
             } while (!importTables.last().isNull())
@@ -232,19 +233,19 @@ class WindowsImage(
 
         val names = mutableListOf<String>()
         importTables.forEach {
+            val vAddr = dataDirs[1].virtualAddress
+            val raw = sections.first { (it.address..(it.address + it.size)).contains(vAddr) }
             if (it.nameRVA != 0u) {
-                bc.position((it.nameRVA.toLong() - it.sectionLink.address.toLong()) + it.sectionLink.pointerToRawData.toLong())
+                bc.position((it.nameRVA.toLong() - vAddr.toLong()) + raw.pointerToRawData.toLong())
                 buf.clear()
                 bc.read(buf)
                 buf.flip()
                 val builder = StringBuilder()
-                val size = buf.short.toUShort()
                 var i = buf.get().toInt()
                 while (i != 0) {
                     builder.append(i.toChar())
                     i = buf.get().toInt()
                 }
-                print(size)
                 names.add(builder.toString())
             }
         }
