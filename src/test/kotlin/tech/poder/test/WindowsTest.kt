@@ -43,7 +43,7 @@ class WindowsTest {
             ByteOrder.LITTLE_ENDIAN
         )
 
-        println(read(path, reader))
+        read(path, reader)
 
         reader.close()
     }
@@ -55,8 +55,6 @@ class WindowsTest {
         check(header == "PE00") {
             "Header does not match PE format! Got: $header"
         }
-
-        println(header)
 
         return processImage(parseCoff(reader, path), reader)
     }
@@ -117,7 +115,6 @@ class WindowsTest {
             importTables.removeLast()
         }
 
-        println(imports)
         val names = mutableListOf<String>()
         importTables.forEach {
 
@@ -146,7 +143,9 @@ class WindowsTest {
             }
         }
 
-        println(names)
+        if (names.isNotEmpty()) {
+            println(names)
+        }
 
         val export = mutableListOf<String>()
 
