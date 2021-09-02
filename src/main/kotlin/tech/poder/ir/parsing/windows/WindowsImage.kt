@@ -215,8 +215,10 @@ class WindowsImage(
         } else {
             0u
         }
+
+
         imports.forEach {
-            bc.position(it.pointerToRawData.toLong() + offset.toLong())
+            bc.position(it.pointerToRawData.toLong() + offset.toLong()) //why does this work?
             var remaining = it.sizeOfRawData
             buf.clear()
             reAllocate(remaining, buf, bc)
@@ -256,6 +258,9 @@ class WindowsImage(
             }
         }
 
+        if (names.isNotEmpty()) {
+            println(names.joinToString(", "))
+        }
         val export = mutableListOf<String>()
 
         exports.forEach {
