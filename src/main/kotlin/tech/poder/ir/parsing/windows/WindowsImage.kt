@@ -23,6 +23,7 @@ class WindowsImage(
     val dataDirs: Array<DataDirectories>,
     val sections: Array<Section>,
     val entryLocation: UInt,
+    val baseOfCode: UInt,
     val exports: ExportDirectory?,
     val imports: List<ImportTable>?
 ) {
@@ -86,8 +87,8 @@ class WindowsImage(
             //val sizeOfInitData = reader.readUInt()
             //val sizeOfUnInitData = reader.readUInt()
             val entryPoint = reader.readUInt()
-            reader.position += 4 //skip unneeded
-            //val baseOfCode = reader.readUInt()
+            //reader.position += 4 //skip unneeded
+            val baseOfCode = reader.readUInt()
             if (format == ExeFormat.PE32) { //skip unneeded
                 reader.position += 4
             }
@@ -190,6 +191,7 @@ class WindowsImage(
                 dirs,
                 sections,
                 entryPoint,
+                baseOfCode,
                 processExports(dirs, sections, reader),
                 processImports(dirs, sections, reader, format)
             )
@@ -334,7 +336,7 @@ class WindowsImage(
         val list = mutableMapOf<Int, RawCode.Unprocessed>()
 
         if (entryLocation != 0u) {
-            val section = resolveVAToSection(entryLocation, sections)
+            val section = resolveVAToSection(baseOfCode, sections)
             reader.position = resolveSection(entryLocation, section)
         }
 
