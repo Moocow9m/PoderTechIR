@@ -3,11 +3,9 @@ package tech.poder.ir.parsing.windows
 import tech.poder.ir.parsing.generic.OS
 import tech.poder.ir.parsing.generic.RawCode
 import tech.poder.ir.parsing.generic.RawCodeFile
+import tech.poder.ir.util.MemorySegmentBuffer
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.nio.channels.SeekableByteChannel
-import java.nio.file.Files
-import java.nio.file.Path
 
 class WindowsImage(
     val machine: CoffMachine,
@@ -20,69 +18,48 @@ class WindowsImage(
     val entryLocation: UInt,
     val baseCodeAddress: UInt,
     val baseDataAddress: UInt,
-    val preferredImageBase: ULong,
-    val location: Path,
+    val preferredImageBase: ULong
 ) {
     companion object {
-        fun read(path: Path): WindowsImage {
-            val file = Files.newByteChannel(path)
-            val buffer = ByteBuffer.allocate(1024)
-            buffer.order(ByteOrder.LITTLE_ENDIAN)
-            buffer.limit(2)
-            file.read(buffer)
-            buffer.flip()
-            return when (val magic = "${buffer.get().toInt().toChar()}${buffer.get().toInt().toChar()}") {
+        fun read(reader: MemorySegmentBuffer): WindowsImage {
+            reader.position = 0
+            return when (val magic = "${reader.readAsciiChar()}${reader.readAsciiChar()}") {
                 "MZ", "ZM" -> {
-                    buffer.clear()
-                    file.position(0x3c)
-                    buffer.limit(4)
-                    file.read(buffer)
-                    buffer.flip()
-                    file.position(buffer.int.toLong())
-                    buffer.clear()
-                    buffer.limit(4)
-                    file.read(buffer)
-                    buffer.flip()
+                    reader.position = 0x3c
+
+                    reader.position = reader.readUInt().toLong()
                     val header =
-                        "${buffer.get().toInt().toChar()}${buffer.get().toInt().toChar()}${buffer.get()}${buffer.get()}"
+                        "${reader.readAsciiChar()}${reader.readAsciiChar()}${reader.readByte()}${reader.readByte()}"
                     check(header == "PE00") {
                         "Header does not match PE format! Got: $header"
                     }
-                    parseCoff(buffer, file, path)
+                    parseCoff(reader)
                 }
                 else -> {
-                    error("Unknown magic: $magic, With path: $path")
+                    error("Unknown magic: $magic")
                 }
             }
         }
 
-        private fun parseCoff(buf: ByteBuffer, bc: SeekableByteChannel, path: Path): WindowsImage {
-            buf.clear()
-            buf.limit(20)
-            bc.read(buf)
-            buf.flip()
-            val mId = buf.short
+        private fun parseCoff(reader: MemorySegmentBuffer): WindowsImage {
+            val mId = reader.readShort()
             val machine = CoffMachine.values().firstOrNull { it.id == mId }
             check(machine != null) {
                 "Could not identify machine: ${mId.toUShort().toString(16)}"
             }
-            val numOfSections = buf.short.toUShort()
-            buf.position(buf.position() + 4) //skip unneeded
-            //val creationDateLow32 = buf.int
+            val numOfSections = reader.readUShort()
+            reader.position += 4//skip unneeded
+            //val creationDateLow32 = reader.readInt()
 
-            buf.position(buf.position() + 8) //skip deprecated
-            //val debugOffset = buf.int //deprecated, should be 0
-            //val symbolCount = buf.int //deprecated, should be 0
-            val optionalHeaderSize = buf.short
-            val charFlags = CoffFlag.getFlags(buf.short)
-            check(optionalHeaderSize > 0) {
+            reader.position += 8 //skip deprecated
+            //val debugOffset = reader.readInt() //deprecated, should be 0
+            //val symbolCount = reader.readInt() //deprecated, should be 0
+            val optionalHeaderSize = reader.readUShort()
+            val charFlags = CoffFlag.getFlags(reader.readShort())
+            check(optionalHeaderSize > 0u) {
                 "Optional header was empty, but is required on Window Images!"
             }
-            buf.clear()
-            buf.limit(optionalHeaderSize.toInt())
-            bc.read(buf)
-            buf.flip()
-            val format = when (val magic = buf.short) {
+            val format = when (val magic = reader.readShort()) {
                 0x10B.toShort() -> {
                     //PE32 version
                     ExeFormat.PE32
@@ -91,97 +68,99 @@ class WindowsImage(
                     //PE32+ version
                     ExeFormat.PE32_PLUS
                 }
+                0x107.toShort() -> {
+                    //ROM
+                    error("ROM is not supported! (yet?)")
+                }
                 else -> error("Unknown COFF optional magic: ${magic.toUShort().toString(16)}")
             }
-            buf.position(buf.position() + 2) //skip unneeded
-            //val linkerVersion = "${buf.get().toUByte()}.${buf.get().toUByte()}"
-            val sizeOfCode = buf.int.toUInt()
-            val sizeOfInitData = buf.int.toUInt()
-            val sizeOfUnInitData = buf.int.toUInt()
-            val entryPoint = buf.int.toUInt()
-            val baseOfCode = buf.int.toUInt()
+            reader.position += 14 //skip unneeded
+            //val linkerVersion = "${reader.readUByte()}.${reader.readUByte()}"
+            //val sizeOfCode = reader.readUInt()
+            //val sizeOfInitData = reader.readUInt()
+            //val sizeOfUnInitData = reader.readUInt()
+            val entryPoint = reader.readUInt()
+            val baseOfCode = reader.readUInt()
             val baseOfData = if (format == ExeFormat.PE32) {
-                buf.int.toUInt()
+                reader.readUInt()
             } else {
                 0u
             }
             val imageBase = if (format == ExeFormat.PE32) {
-                buf.int.toULong()
+                reader.readInt().toULong()
             } else {
-                buf.long.toULong()
+                reader.readULong()
             }
-            val sectionAlignment = buf.int.toUInt()
-            val fileAlignment = buf.int.toUInt()
-            //buf.position(buf.position() + 12) //skip unneeded
-            val osVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
-            val imageVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
-            val subSystemVersion = "${buf.short.toUShort()}.${buf.short.toUShort()}"
-            //buf.position(buf.position() + 4) //skip unused value
-            val winVersion = buf.int //should be 0
-            val sizeOfImage = buf.int.toUInt()
-            val sizeOfHeaders = buf.int.toUInt()
-            val checksum = buf.int.toUInt() //todo should probably verify this
-            val subSystemId = buf.short
+            reader.position += 8 //skip unneeded
+            //val sectionAlignment = reader.readUInt()
+            //val fileAlignment = reader.readUInt()
+            reader.position += 12 //skip unneeded
+            //val osVersion = "${reader.readUShort()}.${reader.readUShort()}"
+            //val imageVersion = "${reader.readUShort()}.${reader.readUShort()}"
+            //val subSystemVersion = "${reader.readUShort()}.${reader.readUShort()}"
+            reader.position += 16 //skip unused value
+            //val winVersion = reader.readInt() //should be 0
+            //val sizeOfImage = reader.readUInt()
+            //val sizeOfHeaders = reader.readUInt()
+
+            //val checksum = reader.readUInt() //todo should probably verify this
+
+            val subSystemId = reader.readShort()
             val subSystem = SubSystem.values().firstOrNull { it.id == subSystemId }
             check(subSystem != null) {
                 "Could not identify subSystem: ${subSystemId.toUShort().toString(16)}"
             }
-            val dllFlags = DLLFlag.getFlags(buf.short)
+            val dllFlags = DLLFlag.getFlags(reader.readShort())
             val stackReserveSize = if (format == ExeFormat.PE32) {
-                buf.int.toULong()
+                reader.readInt().toULong()
             } else {
-                buf.long.toULong()
+                reader.readULong()
             }
             val stackCommitSize = if (format == ExeFormat.PE32) {
-                buf.int.toULong()
+                reader.readInt().toULong()
             } else {
-                buf.long.toULong()
+                reader.readULong()
             }
             val stackHeapReserveSize = if (format == ExeFormat.PE32) {
-                buf.int.toULong()
+                reader.readInt().toULong()
             } else {
-                buf.long.toULong()
+                reader.readULong()
             }
             val stackHeapCommitSize = if (format == ExeFormat.PE32) {
-                buf.int.toULong()
+                reader.readInt().toULong()
             } else {
-                buf.long.toULong()
+                reader.readULong()
             }
-            buf.position(buf.position() + 4) //skip unused value
-            //val loaderFlags = buf.short //should be 0
-            val dirs = Array(buf.int) {
-                DataDirectories(buf.int.toUInt(), buf.int.toUInt())
+            reader.position += 4 //skip unused value
+            //val loaderFlags = reader.readShort() //should be 0
+            val dirs = Array(reader.readInt()) {
+                DataDirectories(reader.readUInt(), reader.readUInt())
             }
             val sections = Array(numOfSections.toInt()) {
-                buf.clear()
-                buf.limit(40)
-                bc.read(buf)
-                buf.flip()
                 val name = StringBuilder()
                 var foundNull = false
                 repeat(8) {
-                    val char = buf.get()
+                    val char = reader.readAsciiChar()
                     if (!foundNull) {
-                        if (char == 0.toByte()) {
+                        if (char == '\u0000') {
                             foundNull = true
                         } else {
-                            name.append(char.toInt().toChar())
+                            name.append(char)
                         }
                     }
                 }
-                val vSize = buf.int.toUInt()
-                val vAddr = buf.int.toUInt()
-                val sRD = buf.int.toUInt()
-                val pRD = buf.int.toUInt()
-                val pRL = buf.int.toUInt()
-                buf.position(buf.position() + 4)//skip deprecated
-                val nRL = buf.short.toUShort()
-                buf.position(buf.position() + 2)//skip deprecated
-                val flags = SectionFlags.getFlags(buf.int)
+                val vSize = reader.readUInt()
+                val vAddr = reader.readUInt()
+                val sRD = reader.readUInt()
+                val pRD = reader.readUInt()
+                val pRL = reader.readUInt()
+                reader.position += 4 //skip deprecated
+                val nRL = reader.readUShort()
+                reader.position += 2 //skip deprecated
+                val flags = SectionFlags.getFlags(reader.readInt())
                 Section(name.toString(), vSize, vAddr, sRD, pRD, pRL, nRL, flags)
             }
-            bc.close()
-            buf.clear()
+
             return WindowsImage(
                 machine,
                 charFlags,
@@ -193,21 +172,17 @@ class WindowsImage(
                 entryPoint,
                 baseOfCode,
                 baseOfData,
-                imageBase,
-                path,
+                imageBase
             )
         }
     }
 
-    fun process(): RawCodeFile {
-        val buf = ByteBuffer.allocate(1024)
-        buf.order(ByteOrder.LITTLE_ENDIAN)
+    fun process(reader: MemorySegmentBuffer): RawCodeFile {
         val list = mutableMapOf<Int, RawCode.Unprocessed>()
 
         val imports = sections.filter { it.name.startsWith(".idata", true) }
         val exports = sections.filter { it.name.startsWith(".edata", true) }
         val import = mutableListOf<String>()
-        val bc = Files.newByteChannel(location)
 
         val importTables = mutableListOf<ImportTable>()
         val offset = if (dataDirs.size > 12) {
@@ -219,20 +194,15 @@ class WindowsImage(
 
 
         imports.forEach {
-            bc.position(it.pointerToRawData.toLong() + offset.toLong())
-            var remaining = it.sizeOfRawData
-            buf.clear()
-            reAllocate(remaining, buf, bc)
-            remaining -= buf.remaining().toUInt()
+            reader.position = it.pointerToRawData.toLong() + offset.toLong()
             do {
-                remaining = reAllocateIfNeeded(20, remaining, buf, bc)
                 importTables.add(
                     ImportTable(
-                        buf.int.toUInt(),
-                        buf.int.toUInt(),
-                        buf.int.toUInt(),
-                        buf.int.toUInt(),
-                        buf.int.toUInt()
+                        reader.readUInt(),
+                        reader.readUInt(),
+                        reader.readUInt(),
+                        reader.readUInt(),
+                        reader.readUInt()
                     )
                 )
             } while (!importTables.last().isNull())
@@ -241,19 +211,19 @@ class WindowsImage(
 
 
         val names = mutableListOf<String>()
-        importTables.forEach {
+        importTables.forEach { table ->
             val vAddr = dataDirs[1].virtualAddress
             val raw = sections.first { (it.address..(it.address + it.size)).contains(vAddr) }
-            if (it.nameRVA != 0u) {
-                bc.position((it.nameRVA.toLong() - vAddr.toLong()) + raw.pointerToRawData.toLong() + offset.toLong())
-                buf.clear()
-                bc.read(buf)
-                buf.flip()
+            if (table.nameRVA != 0u) {
+                reader.position =
+                    (table.nameRVA.toLong() - vAddr.toLong()) + raw.pointerToRawData.toLong() + offset.toLong()
+
                 val builder = StringBuilder()
-                var i = buf.get().toInt()
-                while (i != 0) {
-                    builder.append(i.toChar())
-                    i = buf.get().toInt()
+                var i = reader.readAsciiChar()
+
+                while (i != '\u0000') {
+                    builder.append(i)
+                    i = reader.readAsciiChar()
                 }
                 names.add(builder.toString())
             }
@@ -268,7 +238,6 @@ class WindowsImage(
 
         }
 
-        bc.close()
         return RawCodeFile(OS.WINDOWS, machine.arch, 0, mutableListOf())
     }
 

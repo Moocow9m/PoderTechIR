@@ -11,8 +11,8 @@ object SegmentUtil {
         location: Path,
         order: ByteOrder = ByteOrder.nativeOrder(),
         mode: FileChannel.MapMode = FileChannel.MapMode.READ_WRITE
-    ): MemorySegmentReader {
-        return MemorySegmentReader(
+    ): MemorySegmentBuffer {
+        return MemorySegmentBuffer(
             MemorySegment.mapFile(location, 0, location.fileSize(), mode),
             order
         )

@@ -4,7 +4,7 @@ import jdk.incubator.foreign.MemoryAccess
 import jdk.incubator.foreign.MemorySegment
 import java.nio.ByteOrder
 
-data class MemorySegmentReader(
+data class MemorySegmentBuffer(
     val memorySegment: MemorySegment,
     val byteOrder: ByteOrder = ByteOrder.nativeOrder(),
 ) : AutoCloseable {
