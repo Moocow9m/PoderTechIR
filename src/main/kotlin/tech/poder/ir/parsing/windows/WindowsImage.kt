@@ -256,7 +256,8 @@ class WindowsImage(
                     listOfExports.add(ExportEntry(listOfNames[it], listOfTables[it], reader.readUShort()))
                 }
                 ExportDirectory(name, ordinalBase, listOfExports)
-            } else {
+            }
+            else {
                 null
             }
         }
@@ -322,14 +323,11 @@ class WindowsImage(
                         )
                     )
                 } while (!importTables.last().isNull())
-                importTables.removeLast()
 
-                if (importTables.isNotEmpty()) {
-                    importTables
-                } else {
-                    null
-                }
-            } else {
+                importTables.removeLast()
+                importTables.ifEmpty { null }
+            }
+            else {
                 null
             }
         }
@@ -346,21 +344,25 @@ class WindowsImage(
     fun processToGeneric(reader: MemorySegmentBuffer): RawCodeFile {
 
         val externalCodeStartPoints = mutableSetOf<Long>()
-
         val section = resolveVAToSection(baseOfCode, sections)
 
-        val startPoint = if (entryLocation != 0u) {
-            resolveSection(entryLocation, section)
-        } else {
-            -1L
-        }
+        val startPoint =
+            if (entryLocation != 0u) {
+                resolveSection(entryLocation, section)
+            }
+            else {
+                -1L
+            }
+
         if (startPoint > 0L) {
             externalCodeStartPoints.add(startPoint)
         }
+
         //Start point is to be called on Load and Unload of DLL
         exports?.exportEntries?.filter { it.entry is Export.ExportAddress }?.forEach {
             externalCodeStartPoints.add(resolveSection((it.entry as Export.ExportAddress).exportRVA, section))
         }
+
         return RawCodeFile(OS.WINDOWS, machine.arch, 0, mutableListOf())
     }
 }

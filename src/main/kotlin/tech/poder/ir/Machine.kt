@@ -19,6 +19,7 @@ class Machine(maxMemory: Long = 1024 * 1024 /* 1 MB default*/, pageSize: Long = 
     private val allocator = MemoryAllocator(maxMemory, pageSize)
 
     fun loadPackage(package_: Package) {
+
         package_.floating.forEach {
             val list = mutableListOf<Instruction>()
             it.toBulk(list)
@@ -84,45 +85,45 @@ class Machine(maxMemory: Long = 1024 * 1024 /* 1 MB default*/, pageSize: Long = 
                     stack.push(stack.peek())
                 }
                 Simple.OR -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.orNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.orNumbers(pop2, pop1))
                 }
                 Simple.AND -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.andNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.andNumbers(pop2, pop1))
                 }
                 Simple.XOR -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.xorNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.xorNumbers(pop2, pop1))
                 }
                 Simple.SHL -> TODO("Kotlin VM issues")
                 Simple.SHR -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.ushrNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.ushrNumbers(pop2, pop1))
                 }
                 Simple.SAL -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.shlNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.shlNumbers(pop2, pop1))
                 }
                 Simple.SAR -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.shrNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.shrNumbers(pop2, pop1))
                 }
                 Simple.ROL -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.rolNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.rolNumbers(pop2, pop1))
                 }
                 Simple.ROR -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.rorNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.rorNumbers(pop2, pop1))
                 }
                 Simple.INC -> stack.push(StackNumberParse.addNumbers(stack.pop() as Number, 1))
                 Simple.DEC -> stack.push(StackNumberParse.subNumbers(stack.pop() as Number, 1))

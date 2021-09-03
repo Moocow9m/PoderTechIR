@@ -5,13 +5,13 @@ sealed interface Type {
     fun defaultValue(): Any
 
 
-    data class TArray(val type: Type, val size: Int) : Type {
+    data class Array(val type: Type, val size: Int) : Type {
         override fun defaultValue(): Any {
             return Array(size) { type.defaultValue() }
         }
     }
 
-    data class TStruct(val name: String, val types: List<NamedType>) : Type {
+    data class Struct(val name: String, val types: List<NamedType>) : Type {
         override fun defaultValue(): Any {
             return Array(types.size) { types[it].type.defaultValue() }
         }
@@ -24,43 +24,43 @@ sealed interface Type {
         abstract var isConstant: Boolean
 
 
-        class TByte(override var isConstant: Boolean = false) : Primitive() {
+        class Byte(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0.toByte()
             }
         }
 
-        class TShort(override var isConstant: Boolean = false) : Primitive() {
+        class Short(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0.toShort()
             }
         }
 
-        class TInt(override var isConstant: Boolean = false) : Primitive() {
+        class Int(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0
             }
         }
 
-        class TLong(override var isConstant: Boolean = false) : Primitive() {
+        class Long(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0.toLong()
             }
         }
 
-        class TFloat(override var isConstant: Boolean = false) : Primitive() {
+        class Float(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0.toFloat()
             }
         }
 
-        class TDouble(override var isConstant: Boolean = false) : Primitive() {
+        class Double(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0.toDouble()
             }
         }
 
-        class TString(override var isConstant: Boolean = false) : Primitive() {
+        class String(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return ""
             }
@@ -71,7 +71,7 @@ sealed interface Type {
             return other != null && this::class == other::class
         }
 
-        override fun hashCode(): Int {
+        override fun hashCode(): kotlin.Int {
             return this::class.hashCode()
         }
 

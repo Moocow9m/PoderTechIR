@@ -24,7 +24,7 @@ object StackNumberParse {
         when (instruction.opCode) {
             Simple.INC -> {
                 val popped = safePop(stack, "INC")
-                check(popped is Type.Primitive && popped !is Type.Primitive.TString) {
+                check(popped is Type.Primitive && popped !is Type.Primitive.String) {
                     "INC called on illegal type: $popped!"
                 }
                 if (popped.isConstant) {
@@ -39,7 +39,7 @@ object StackNumberParse {
             }
             Simple.NEG -> {
                 val popped = safePop(stack, "NEG")
-                check(popped is Type.Primitive && popped !is Type.Primitive.TString) {
+                check(popped is Type.Primitive && popped !is Type.Primitive.String) {
                     "DEC called on illegal type: $popped!"
                 }
                 if (popped.isConstant) {
@@ -54,7 +54,7 @@ object StackNumberParse {
             }
             Simple.DEC -> {
                 val popped = safePop(stack, "DEC")
-                check(popped is Type.Primitive && popped !is Type.Primitive.TString) {
+                check(popped is Type.Primitive && popped !is Type.Primitive.String) {
                     "DEC called on illegal type: $popped!"
                 }
                 if (popped.isConstant) {
@@ -69,11 +69,11 @@ object StackNumberParse {
             }
             Simple.SUB -> {
                 val poppedB = safePop(stack, "SUB1")
-                check(poppedB is Type.Primitive && poppedB !is Type.Primitive.TString) {
+                check(poppedB is Type.Primitive && poppedB !is Type.Primitive.String) {
                     "SUB called on illegal type: $poppedB!"
                 }
                 val poppedA = safePop(stack, "SUB2")
-                check(poppedA is Type.Primitive && poppedA !is Type.Primitive.TString) {
+                check(poppedA is Type.Primitive && poppedA !is Type.Primitive.String) {
                     "SUB called on illegal type: $poppedA!"
                 }
                 val prevB = instructions[index - 1]
@@ -102,11 +102,11 @@ object StackNumberParse {
             }
             Simple.MUL -> {
                 val poppedB = safePop(stack, "MUL1")
-                check(poppedB is Type.Primitive && poppedB !is Type.Primitive.TString) {
+                check(poppedB is Type.Primitive && poppedB !is Type.Primitive.String) {
                     "MUL called on illegal type: $poppedB!"
                 }
                 val poppedA = safePop(stack, "MUL2")
-                check(poppedA is Type.Primitive && poppedA !is Type.Primitive.TString) {
+                check(poppedA is Type.Primitive && poppedA !is Type.Primitive.String) {
                     "MUL called on illegal type: $poppedA!"
                 }
                 val prevB = instructions[index - 1]
@@ -141,11 +141,11 @@ object StackNumberParse {
             }
             Simple.DIV -> {
                 val poppedB = safePop(stack, "DIV1")
-                check(poppedB is Type.Primitive && poppedB !is Type.Primitive.TString) {
+                check(poppedB is Type.Primitive && poppedB !is Type.Primitive.String) {
                     "DIV called on illegal type: $poppedB!"
                 }
                 val poppedA = safePop(stack, "DIV2")
-                check(poppedA is Type.Primitive && poppedA !is Type.Primitive.TString) {
+                check(poppedA is Type.Primitive && poppedA !is Type.Primitive.String) {
                     "DIV called on illegal type: $poppedA!"
                 }
                 val prevB = instructions[index - 1]
@@ -182,7 +182,7 @@ object StackNumberParse {
                 val prevA = instructions[index - 2]
                 stack.push(
                     if (poppedB.isConstant && poppedA.isConstant) {
-                        if (poppedB is Type.Primitive.TString || poppedA is Type.Primitive.TString) {
+                        if (poppedB is Type.Primitive.String || poppedA is Type.Primitive.String) {
                             prevA.extra = "${prevA.extra}${prevB.extra}"
                         } else {
                             prevA.extra = addNumbers(prevA.extra as Number, prevB.extra as Number)
@@ -283,7 +283,7 @@ object StackNumberParse {
             }
             Simple.SAR -> {
                 val poppedB = safePop(stack, "SHR1")
-                check(poppedB is Type.Primitive.TInt) {
+                check(poppedB is Type.Primitive.Int) {
                     "SHR called on illegal type: $poppedB!"
                 }
                 val poppedA = safePop(stack, "SHR2")
@@ -308,7 +308,7 @@ object StackNumberParse {
             }
             Simple.SAL -> {
                 val poppedB = safePop(stack, "SHL1")
-                check(poppedB is Type.Primitive.TInt) {
+                check(poppedB is Type.Primitive.Int) {
                     "SHL called on illegal type: $poppedB!"
                 }
                 val poppedA = safePop(stack, "SHL2")
@@ -333,7 +333,7 @@ object StackNumberParse {
             }
             Simple.SHR -> {
                 val poppedB = safePop(stack, "USHR1")
-                check(poppedB is Type.Primitive.TInt) {
+                check(poppedB is Type.Primitive.Int) {
                     "USHR called on illegal type: $poppedB!"
                 }
                 val poppedA = safePop(stack, "SHL2")
@@ -358,7 +358,7 @@ object StackNumberParse {
             }
             Simple.ROR -> {
                 val poppedB = safePop(stack, "ROR1")
-                check(poppedB is Type.Primitive.TInt) {
+                check(poppedB is Type.Primitive.Int) {
                     "ROR called on illegal type: $poppedB!"
                 }
                 val poppedA = safePop(stack, "ROR2")
@@ -383,7 +383,7 @@ object StackNumberParse {
             }
             Simple.ROL -> {
                 val poppedB = safePop(stack, "ROL1")
-                check(poppedB is Type.Primitive.TInt) {
+                check(poppedB is Type.Primitive.Int) {
                     "ROL called on illegal type: $poppedB!"
                 }
                 val poppedA = safePop(stack, "ROL2")
@@ -424,13 +424,13 @@ object StackNumberParse {
 
     internal fun toLarger(a: Type.Primitive, b: Type.Primitive): Type.Primitive {
         return when {
-            a is Type.Primitive.TString || b is Type.Primitive.TString -> Type.Primitive.TString()
-            a is Type.Primitive.TDouble || b is Type.Primitive.TDouble -> Type.Primitive.TDouble()
-            a is Type.Primitive.TFloat || b is Type.Primitive.TFloat -> Type.Primitive.TFloat()
-            a is Type.Primitive.TLong || b is Type.Primitive.TLong -> Type.Primitive.TLong()
-            a is Type.Primitive.TInt || b is Type.Primitive.TInt -> Type.Primitive.TInt()
-            a is Type.Primitive.TShort || b is Type.Primitive.TShort -> Type.Primitive.TShort()
-            else -> Type.Primitive.TByte()
+            a is Type.Primitive.String || b is Type.Primitive.String -> Type.Primitive.String()
+            a is Type.Primitive.Double || b is Type.Primitive.Double -> Type.Primitive.Double()
+            a is Type.Primitive.Float || b is Type.Primitive.Float -> Type.Primitive.Float()
+            a is Type.Primitive.Long || b is Type.Primitive.Long -> Type.Primitive.Long()
+            a is Type.Primitive.Int || b is Type.Primitive.Int -> Type.Primitive.Int()
+            a is Type.Primitive.Short || b is Type.Primitive.Short -> Type.Primitive.Short()
+            else -> Type.Primitive.Byte()
         }
     }
 

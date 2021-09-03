@@ -13,11 +13,18 @@ data class Fragment(
 
     private var lastId = 0
     private var count  = 0
-    var state: State = State.EMPTY
 
     private val freeList = mutableListOf<Int>()
     private val maxObject = floor(size / objectSize.toDouble()).toInt()
     private val writeLock = ReentrantLock()
+
+
+    val state get() = when {
+        freeList.isEmpty() && lastId == 0 -> State.EMPTY
+        remaining() == 0 -> State.FULL
+        else -> State.PARTIAL
+    }
+
 
     fun remaining(): Int {
         return freeList.size + (maxObject - count)
@@ -31,27 +38,9 @@ data class Fragment(
         writeLock.unlock()
     }
 
-    private fun updateState() {
-        state =
-            if (freeList.isEmpty() && lastId == 0) {
-                State.EMPTY
-            }
-            else if (remaining() == 0) {
-                State.FULL
-            }
-            else {
-                State.PARTIAL
-            }
-    }
-
     fun nextFree(): Int {
-
         count++
-
-        val result = freeList.removeFirstOrNull() ?: (objectSize * lastId++)
-        updateState()
-
-        return result
+        return freeList.removeFirstOrNull() ?: (objectSize * lastId++)
     }
 
     fun free(location: Int) {
@@ -64,8 +53,6 @@ data class Fragment(
         else {
             freeList.add(location)
         }
-
-        updateState()
     }
 
     val isReadOnly by lazy {

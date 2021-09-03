@@ -47,12 +47,8 @@ data class CodeBuilder(
         }
     }
 
-    private var localVars = ArrayList<String>()
-
-    init {
-        storage.args.forEach {
-            localVars.add(it.name)
-        }
+    private val localVars = storage.args.mapTo(mutableSetOf()) {
+        it.name
     }
 
     val fullName by lazy {
@@ -142,16 +138,16 @@ data class CodeBuilder(
 
     //Local Vars
     fun setVar(name: String) {
-        if (!localVars.contains(name)) {
-            localVars.add(name)
-        }
+        localVars.add(name)
         instructions.add(Instruction(Simple.SET_VAR, localVars.indexOf(name)))
     }
 
     fun getVar(name: String) {
-        check(localVars.contains(name)) {
+
+        check(name in localVars) {
             "Variable $name does not have a value on get!\n\tKnown Variables:\n\t\t${localVars.joinToString("\n\t\t")}"
         }
+
         instructions.add(Instruction(Simple.GET_VAR, localVars.indexOf(name)))
     }
 
@@ -243,9 +239,11 @@ data class CodeBuilder(
     }
 
     fun launch(method: Method, priority: Int) {
-        check(method.returnType == null) {
+
+        checkNotNull(method.returnType) {
             "Launched methods cannot have a return type!"
         }
+
         launch(method.fullName, priority, *method.args.toTypedArray())
     }
 

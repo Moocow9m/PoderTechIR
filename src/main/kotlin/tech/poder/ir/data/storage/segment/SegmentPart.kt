@@ -103,12 +103,12 @@ data class SegmentPart(
                     val size = safePop(stack, "ARRAY_CREATE")
                     val arrayType = instruction.extra!! as Type
 
-                    check(size is Type.Primitive.TInt) {
+                    check(size is Type.Primitive.Int) {
                         "Array creation without Int type! Got: $size"
                     }
 
                     // TODO: size is unknown at this time... will be a runtime check to prevent illegal access to memory
-                    stack.push(Type.TArray(arrayType, 0))
+                    stack.push(Type.Array(arrayType, 0))
                 }
 
                 Simple.IF_EQ, Simple.IF_GT, Simple.IF_LT,
@@ -129,10 +129,10 @@ data class SegmentPart(
 
                 Simple.ARRAY_GET -> {
 
-                    val array = safePop(stack, "ARRAY_GET1") as Type.TArray
+                    val array = safePop(stack, "ARRAY_GET1") as Type.Array
                     val arrayIndex = safePop(stack, "ARRAY_GET2")
 
-                    check(arrayIndex is Type.Primitive && arrayIndex !is Type.Primitive.TString) {
+                    check(arrayIndex is Type.Primitive && arrayIndex !is Type.Primitive.String) {
                         "Array get without Number type! Got: $arrayIndex"
                     }
 
@@ -140,11 +140,11 @@ data class SegmentPart(
                 }
                 Simple.ARRAY_SET -> {
 
-                    val array = safePop(stack, "ARRAY_SET1") as Type.TArray
+                    val array = safePop(stack, "ARRAY_SET1") as Type.Array
                     val arrayIndex = safePop(stack, "ARRAY_SET2")
                     val arrayItem = safePop(stack, "ARRAY_SET3")
 
-                    check(arrayIndex is Type.Primitive && arrayIndex !is Type.Primitive.TString) {
+                    check(arrayIndex is Type.Primitive && arrayIndex !is Type.Primitive.String) {
                         "Array set without Number type! Got: $arrayIndex"
                     }
 
@@ -174,7 +174,7 @@ data class SegmentPart(
 
                 Simple.NEW_OBJECT -> {
                     val objType = instruction.extra as ObjectHolder
-                    stack.push(Type.TStruct(objType.fullName, objType.fields))
+                    stack.push(Type.Struct(objType.fullName, objType.fields))
                 }
 
                 Simple.JMP -> {
@@ -201,7 +201,7 @@ data class SegmentPart(
                     val wanted = instruction.extra as NamedType
                     val pop = stack.pop()
 
-                    check(object_ is Type.TStruct) {
+                    check(object_ is Type.Struct) {
                         "Expected Object ref, but got: $object_"
                     }
                     check(wanted in object_.types) {
@@ -216,7 +216,7 @@ data class SegmentPart(
 
                     val object_ = safePop(stack, "SET_FIELD")
 
-                    check(object_ is Type.TStruct) {
+                    check(object_ is Type.Struct) {
                         "Expected Object ref, but got: $object_"
                     }
 
@@ -250,13 +250,13 @@ data class SegmentPart(
 
     private fun toType(any: Any): Type {
         return when (any) {
-            is Byte -> Type.Primitive.TByte(true)
-            is Short -> Type.Primitive.TShort(true)
-            is Int -> Type.Primitive.TInt(true)
-            is Long -> Type.Primitive.TLong(true)
-            is Float -> Type.Primitive.TFloat(true)
-            is Double -> Type.Primitive.TDouble(true)
-            is String -> Type.Primitive.TString(true)
+            is Byte -> Type.Primitive.Byte(true)
+            is Short -> Type.Primitive.Short(true)
+            is Int -> Type.Primitive.Int(true)
+            is Long -> Type.Primitive.Long(true)
+            is Float -> Type.Primitive.Float(true)
+            is Double -> Type.Primitive.Double(true)
+            is String -> Type.Primitive.String(true)
             else -> error("Unknown push: ${any::class.java}")
         }
     }

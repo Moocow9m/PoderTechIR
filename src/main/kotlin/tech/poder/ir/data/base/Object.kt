@@ -29,7 +29,7 @@ data class Object internal constructor(
             name,
             vis,
             returnType,
-            setOf(NamedType("this", Type.TStruct(fullName, fields)), *args),
+            setOf(NamedType("this", Type.Struct(fullName, fields)), *args),
             this,
             code
         )

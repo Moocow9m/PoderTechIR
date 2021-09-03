@@ -18,8 +18,11 @@ class MemoryAllocator(memorySize: Long, private val pageSize: Long = 4_096) { //
     }
 
     fun alloc(size: Long): AllocatedMemory {
+
         val amount = ceil(size / objSize.toDouble()).toInt()
+
         var selectedFrag = fragments.filter { it.state != State.FULL }.firstOrNull {
+
             it.lock()
 
             if (it.remaining() >= amount) {
@@ -29,17 +32,19 @@ class MemoryAllocator(memorySize: Long, private val pageSize: Long = 4_096) { //
                 false
             }
         }
+
         if (selectedFrag == null) {
             selectedFrag = Fragment(0, (pageSize * lastFrag++), pageSize, objSize)
             selectedFrag.lock()
             fragments.add(selectedFrag)
         }
 
-        val segments = ArrayList<Int>()
-        val mem = AllocatedMemory(segments, selectedFrag)
-        repeat(amount) {
-            segments.add(selectedFrag.nextFree())
+        val segments = List(amount) {
+            selectedFrag.nextFree()
         }
+
+        val mem = AllocatedMemory(segments, selectedFrag)
+
         selectedFrag.unlock()
         return mem
     }
