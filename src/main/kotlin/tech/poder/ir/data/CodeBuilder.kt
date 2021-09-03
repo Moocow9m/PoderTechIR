@@ -28,16 +28,18 @@ data class CodeBuilder(
             parent: Object? = null,
             block: (CodeBuilder) -> Unit
         ): Method {
+
             val method = Method(package_, parent, name, returnType, args, vis, 0, MultiSegment())
-
             val builder = CodeBuilder(method)
-            block.invoke(builder)
 
+            block.invoke(builder)
             method.instructions = builder.finalize()
+
             return method
         }
 
         private val constantMethods = mutableMapOf<Command, Instruction>()
+
         private fun getOrPut(command: Command): Instruction {
             return constantMethods.getOrPut(command) {
                 Instruction(command)
@@ -232,10 +234,7 @@ data class CodeBuilder(
     //Methods
     fun invokeMethod(method: Method) {
         instructions.add(
-            Instruction(
-                Simple.INVOKE_METHOD,
-                MethodHolder(method.fullName, method.returnType, method.args)
-            )
+            Instruction(Simple.INVOKE_METHOD, MethodHolder(method.fullName, method.returnType, method.args))
         )
     }
 
@@ -264,7 +263,7 @@ data class CodeBuilder(
     }
 
     fun newObject(fullName: String, vararg fields: NamedType) {
-        instructions.add(Instruction(Simple.NEW_OBJECT, ObjectHolder(fullName, fields.toSet().toTypedArray())))
+        instructions.add(Instruction(Simple.NEW_OBJECT, ObjectHolder(fullName, fields.toSet().toList())))
     }
 
     fun breakpoint() {
@@ -288,16 +287,19 @@ data class CodeBuilder(
     }
 
     private fun finalize(): Segment {
-        //todo Validation and minor code merging of constant ops
+
+        // TODO: Validation and minor code merging of constant ops
         if (instructions.isEmpty() || instructions.last().opCode != Simple.RETURN) {
             return_()
         }
 
         val segment = MultiSegment.buildSegments(instructions)!!
         val stack = Stack<Type>()
-        val vars: Array<Type?> = Array(localVars.size) {
+
+        val vars = MutableList<Type?>(localVars.size) {
             null
         }
+
         if (storage.args.isNotEmpty() && vars[0] == null && storage.args.isNotEmpty()) {
             storage.args.forEach {
                 vars[localVars.indexOf(it.name)] = it.type

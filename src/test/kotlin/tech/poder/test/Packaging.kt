@@ -6,13 +6,15 @@ import tech.poder.ir.metadata.Visibility
 import kotlin.test.Test
 
 
-class Packaging {
+internal class Packaging {
+
     companion object {
         val package_ = Package("test", Visibility.PUBLIC)
     }
 
     @Test
     fun linear() {
+
         val meth = package_.newFloatingMethod("linear", Visibility.PRIVATE) {
             it.push("{\nHello World")
             it.push("\n}")
@@ -20,11 +22,13 @@ class Packaging {
             it.sysCall(SysCommand.PRINT)
             it.return_()
         }
+
         println(meth)
     }
 
     @Test
     fun loop() {
+
         val meth = package_.newFloatingMethod("loop", Visibility.PRIVATE) {
             val jump = it.newLabel()
             it.push("{\n")
@@ -39,6 +43,7 @@ class Packaging {
             it.sysCall(SysCommand.PRINT)
             it.return_()
         }
+
         println(meth)
     }
 

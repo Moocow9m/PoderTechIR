@@ -27,15 +27,15 @@ data class Package(
     }
 
     fun newObject(name: String, vis: Visibility, vararg fields: NamedType): Object {
-        val obj = Object(
+        return Object(
             this,
             name,
             vis,
             mutableSetOf(),
-            fields.map { NamedType("${namespace}.$name.${it.name}", it.type) }.toTypedArray()
-        )
-        objects.add(obj)
-        return obj
+            fields.map { NamedType("${namespace}.$name.${it.name}", it.type) }
+        ).apply {
+            objects.add(this)
+        }
     }
 
     fun finalize() {
@@ -48,13 +48,14 @@ data class Package(
 
 
     override fun toString(): String {
-        return "$visibility package $namespace {\n\t${floating.joinToString("\n\t")}\n\n${
-            objects.joinToString("\n") {
-                it.toString(
-                    1
-                )
-            }
-        }\n}"
+        return (
+            """
+            $visibility package $namespace {
+                   ${floating.joinToString("\n\t")}
+                   ${objects.joinToString("\n") { it.toString(1) }}
+            }       
+            """.trimIndent()
+        )
     }
 
     override fun equals(other: Any?): Boolean {

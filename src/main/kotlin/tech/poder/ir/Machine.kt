@@ -13,15 +13,16 @@ import tech.poder.ir.metadata.ObjectHolder
 import java.util.*
 
 class Machine(maxMemory: Long = 1_073_741_824 /* 1 GB default*/, pageSize: Long = 1_024 /*1 KB default*/) {
-    private val methods = mutableMapOf<String, Array<Instruction>>()
-    private val structs = mutableMapOf<String, Array<NamedType>>()
+
+    private val methods = mutableMapOf<String, List<Instruction>>()
+    private val structs = mutableMapOf<String, List<NamedType>>()
     private val allocator = MemoryAllocator(maxMemory, pageSize)
 
     fun loadPackage(package_: Package) {
         package_.floating.forEach {
-            val list = ArrayList<Instruction>()
+            val list = mutableListOf<Instruction>()
             it.toBulk(list)
-            methods[it.fullName] = list.toTypedArray()
+            methods[it.fullName] = list
         }
 
         package_.objects.forEach { obj ->
@@ -29,28 +30,30 @@ class Machine(maxMemory: Long = 1_073_741_824 /* 1 GB default*/, pageSize: Long 
             obj.methods.forEach {
                 val list = ArrayList<Instruction>()
                 it.toBulk(list)
-                methods[it.fullName] = list.toTypedArray()
+                methods[it.fullName] = list
             }
         }
     }
 
     fun execute(name: String, vararg args: Any) {
-        val method = methods[name]
-        check(method != null) {
+
+        val method = checkNotNull(methods[name]) {
             "Method \"$name\" does not exist!"
         }
+
         execute(method, *args)
     }
 
-    private fun execute(instructions: Array<Instruction>, vararg args: Any): Any? {
+    private fun execute(instructions: List<Instruction>, vararg args: Any): Any? {
+
         var index = 0
         val stack = Stack<Any>()
-        val vars = ArrayList<Any?>()
-        args.forEach {
-            vars.add(it)
-        }
+        val vars = args.toCollection(mutableListOf<Any?>())
+
         while (index < instructions.size) {
+
             val inst = instructions[index]
+
             when (inst.opCode) {
                 Simple.JMP -> {
                     index = (inst.extra as Number).toInt()
@@ -124,73 +127,75 @@ class Machine(maxMemory: Long = 1_073_741_824 /* 1 GB default*/, pageSize: Long 
                 Simple.INC -> stack.push(StackNumberParse.addNumbers(stack.pop() as Number, 1))
                 Simple.DEC -> stack.push(StackNumberParse.subNumbers(stack.pop() as Number, 1))
                 Simple.ADD -> {
-                    val b = stack.pop()
-                    val a = stack.pop()
+
+                    val pop1 = stack.pop()
+                    val pop2 = stack.pop()
+
                     stack.push(
-                        if (a is String || b is String) {
-                            "$a$b"
+                        if (pop2 is String || pop1 is String) {
+                            "$pop2$pop1"
                         } else {
-                            StackNumberParse.addNumbers(a as Number, b as Number)
+                            StackNumberParse.addNumbers(pop2 as Number, pop1 as Number)
                         }
                     )
 
                 }
                 Simple.SUB -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.subNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.subNumbers(pop2, pop1))
                 }
                 Simple.MUL -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.mulNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.mulNumbers(pop2, pop1))
                 }
                 Simple.DIV -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    stack.push(StackNumberParse.divNumbers(a, b))
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    stack.push(StackNumberParse.divNumbers(pop2, pop1))
                 }
                 Simple.NEG -> stack.push(StackNumberParse.negNumber(stack.pop() as Number))
                 Simple.SWITCH -> TODO("Not Understood yet")
                 Simple.IF_EQ -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    if (a != b) {
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    if (pop2 != pop1) {
                         index = (inst.extra as Label).offset
                     }
                 }
                 Simple.IF_GT -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    if (StackNumberParse.ltEq(a, b)) {
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    if (StackNumberParse.ltEq(pop2, pop1)) {
                         index = (inst.extra as Label).offset
                     }
                 }
                 Simple.IF_LT -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    if (StackNumberParse.gtEq(a, b)) {
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    if (StackNumberParse.gtEq(pop2, pop1)) {
                         index = (inst.extra as Label).offset
                     }
                 }
                 Simple.IF_GT_EQ -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    if (StackNumberParse.lt(a, b)) {
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    if (StackNumberParse.lt(pop2, pop1)) {
                         index = (inst.extra as Label).offset
                     }
                 }
                 Simple.IF_LT_EQ -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    if (StackNumberParse.gt(a, b)) {
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    if (StackNumberParse.gt(pop2, pop1)) {
                         index = (inst.extra as Label).offset
                     }
                 }
                 Simple.IF_NOT_EQ -> {
-                    val b = stack.pop() as Number
-                    val a = stack.pop() as Number
-                    if (a == b) {
+                    val pop1 = stack.pop() as Number
+                    val pop2 = stack.pop() as Number
+                    if (pop2 == pop1) {
                         index = (inst.extra as Label).offset
                     }
                 }

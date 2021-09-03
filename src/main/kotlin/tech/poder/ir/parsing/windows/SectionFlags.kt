@@ -1,6 +1,7 @@
 package tech.poder.ir.parsing.windows
 
 enum class SectionFlags(val position: Int) {
+
     CNT_CODE(0x00000020),
     CNT_INITIALIZED_DATA(0x00000040),
     CNT_UNINITIALIZED_DATA(0x00000080),
@@ -19,17 +20,14 @@ enum class SectionFlags(val position: Int) {
     MEM_SHARED(0x10000000),
     MEM_EXECUTE(0x20000000),
     MEM_READ(0x40000000),
-    MEM_WRITE(0x80000000.toInt());
+    MEM_WRITE(0x80000000.toInt())
+    ;
 
     companion object {
+
         fun getFlags(flags: Int): List<SectionFlags> {
-            val list = mutableListOf<SectionFlags>()
-            values().forEach {
-                if (it.position and flags != 0) {
-                    list.add(it)
-                }
-            }
-            return list
+            return values().filter { it.position and flags != 0 }
         }
+
     }
 }

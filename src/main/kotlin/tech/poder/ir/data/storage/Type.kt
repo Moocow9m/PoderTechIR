@@ -1,116 +1,80 @@
 package tech.poder.ir.data.storage
 
 sealed interface Type {
-    fun copy(): Type
 
     fun defaultValue(): Any
 
-    data class TArray(val type: Type, val size: Int) : Type {
-        override fun copy(): Type {
-            return TArray(type, size)
-        }
 
+    data class TArray(val type: Type, val size: Int) : Type {
         override fun defaultValue(): Any {
             return Array(size) { type.defaultValue() }
         }
     }
 
-    data class TStruct(val name: String, val types: Array<NamedType>) : Type {
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other !is TStruct) return false
-
-            if (!types.contentEquals(other.types)) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            return types.contentHashCode()
-        }
-
-        override fun copy(): Type {
-            return TStruct(name, types)
-        }
-
+    data class TStruct(val name: String, val types: List<NamedType>) : Type {
         override fun defaultValue(): Any {
             return Array(types.size) { types[it].type.defaultValue() }
         }
-
     }
 
-    sealed interface Constant : Type {
-        var constant: Boolean
 
-        data class TByte(override var constant: Boolean = false) : Constant {
-            override fun copy(): Type {
-                return TByte(constant)
-            }
+    // Don't make these data classes unless if you want pain
+    sealed class Primitive : Type {
 
+        abstract var isConstant: Boolean
+
+
+        class TByte(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0.toByte()
             }
         }
 
-        data class TShort(override var constant: Boolean = false) : Constant {
-            override fun copy(): Type {
-                return TShort(constant)
-            }
-
+        class TShort(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0.toShort()
             }
         }
 
-        data class TInt(override var constant: Boolean = false) : Constant {
-            override fun copy(): Type {
-                return TInt(constant)
-            }
-
+        class TInt(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0
             }
         }
 
-        data class TLong(override var constant: Boolean = false) : Constant {
-            override fun copy(): Type {
-                return TLong(constant)
-            }
-
+        class TLong(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0.toLong()
             }
         }
 
-        data class TFloat(override var constant: Boolean = false) : Constant {
-            override fun copy(): Type {
-                return TFloat(constant)
-            }
-
+        class TFloat(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0.toFloat()
             }
         }
 
-        data class TDouble(override var constant: Boolean = false) : Constant {
-            override fun copy(): Type {
-                return TDouble(constant)
-            }
-
+        class TDouble(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return 0.toDouble()
             }
         }
 
-        data class TString(override var constant: Boolean = false) : Constant {
-            override fun copy(): Type {
-                return TString(constant)
-            }
-
+        class TString(override var isConstant: Boolean = false) : Primitive() {
             override fun defaultValue(): Any {
                 return ""
             }
         }
 
+
+        override fun equals(other: Any?): Boolean {
+            return other != null && this::class == other::class
+        }
+
+        override fun hashCode(): Int {
+            return this::class.hashCode()
+        }
+
     }
+
 }

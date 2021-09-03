@@ -6,9 +6,11 @@ import tech.poder.ir.data.storage.memory.MemoryAllocator
 import tech.poder.ir.metadata.Visibility
 import kotlin.test.Test
 
-class VMTest {
+internal class VMTest {
+
     @Test
     fun helloWorld() {
+
         val meth = Packaging.package_.newFloatingMethod("helloWorld", Visibility.PRIVATE) {
             it.push("{\n\tHello World")
             it.push("\n}\n")
@@ -16,16 +18,19 @@ class VMTest {
             it.sysCall(SysCommand.PRINT)
             it.return_()
         }
-        val machine = Machine()
-        machine.loadPackage(Packaging.package_)
-        machine.execute(meth.fullName)
+
+        Machine().apply {
+            loadPackage(Packaging.package_)
+            execute(meth.fullName)
+        }
     }
 
     @Test
     fun allocation() {
-        val mem = MemoryAllocator(1_073_741_824)
 
+        val mem = MemoryAllocator(1_073_741_824)
         val frag = mem.alloc(128)
+
         println(frag)
     }
 }

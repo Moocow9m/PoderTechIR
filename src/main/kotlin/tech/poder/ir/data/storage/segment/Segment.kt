@@ -11,13 +11,13 @@ interface Segment {
     fun eval(
         method: Method,
         stack: Stack<Type>,
-        currentVars: Array<Type?>,
+        currentVars: MutableList<Type?>,
         currentIndex: Int,
         labels: MutableMap<Int, Label>
     ): Int
 
     fun size(): Int
 
-    fun toBulk(storage: ArrayList<Instruction>)
+    fun toBulk(storage: MutableList<Instruction>)
 
 }

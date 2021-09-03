@@ -7,46 +7,40 @@ import tech.poder.ir.data.storage.Type
 import java.util.*
 
 data class LoopHolder(val block: Segment) : Segment {
+
     override fun eval(
         method: Method,
         stack: Stack<Type>,
-        currentVars: Array<Type?>,
+        currentVars: MutableList<Type?>,
         currentIndex: Int,
         labels: MutableMap<Int, Label>
     ): Int {
+
         val loopStack = Stack<Type>()
         val copy = Stack<Type>()
+
         stack.forEach {
-            loopStack.push(it.copy())
-            copy.push(it.copy())
+            loopStack.push(it)
         }
-        var index = currentIndex
-        index = block.eval(method, stack, currentVars, index, labels)
+
+        val index = block.eval(method, stack, currentVars, currentIndex, labels)
+
         check(loopStack.size == copy.size) {
             "Loop stack does not match original!\n\tLoop:\n\t\t${loopStack.joinToString("\n\t\t")}\n\tOriginal:\n\t\t${
-                copy.joinToString(
-                    "\n\t\t"
-                )
+                copy.joinToString("\n\t\t")
             }"
         }
+
         repeat(loopStack.size) {
+
             val popA = loopStack.pop()
             val popB = copy.pop()
-            if (popA is Type.Constant) {
-                popA.constant = false
-            }
-            if (popB is Type.Constant) {
-                popB.constant = false
-            }
+
             check(popA == popB) {
                 "Loop stack does not match original! Loop: $popA Original: $popB\n\tLoop:\n\t\t${
-                    loopStack.joinToString(
-                        "\n\t\t"
-                    )
+                    loopStack.joinToString("\n\t\t")
                 }\n\tOriginal:\n\t\t${
-                    copy.joinToString(
-                        "\n\t\t"
-                    )
+                    copy.joinToString("\n\t\t")
                 }"
             }
         }
@@ -57,7 +51,7 @@ data class LoopHolder(val block: Segment) : Segment {
         return block.size()
     }
 
-    override fun toBulk(storage: ArrayList<Instruction>) {
+    override fun toBulk(storage: MutableList<Instruction>) {
         block.toBulk(storage)
     }
 }

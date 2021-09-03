@@ -19,12 +19,14 @@ import kotlin.io.path.fileSize
 import kotlin.io.path.isRegularFile
 import kotlin.test.Test
 
-class WindowsTest {
+internal class WindowsTest {
 
     @Test
     fun readDll() {
+
         val dlls = Paths.get("testFiles").toAbsolutePath()
         val processableFiles = mutableListOf<WindowsImage>()
+
         Files.walk(dlls, FileVisitOption.FOLLOW_LINKS).filter {
             val name = it.fileName.toString()
             it.isRegularFile() && (name.endsWith("dll") || name.endsWith("exe"))
@@ -416,18 +418,5 @@ class WindowsTest {
         }
 
     }
-/*
-    data class WindowsImage(
-
-    ) {
-
-
-        companion object {
-
-            private fun readCOFF() {
-
-            }
-        }
-    }*/
 
 }

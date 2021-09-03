@@ -14,5 +14,5 @@ enum class SubSystem(val id: Short) {
     EFI_RUNTIME_DRIVER(12),
     EFI_ROM(13),
     XBOX(14),
-    WINDOWS_BOOT_APPLICATION(16)
+    WINDOWS_BOOT_APPLICATION(16),
 }
