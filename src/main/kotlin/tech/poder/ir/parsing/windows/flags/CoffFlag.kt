@@ -1,4 +1,4 @@
-package tech.poder.ir.parsing.windows
+package tech.poder.ir.parsing.windows.flags
 
 import kotlin.experimental.and
 

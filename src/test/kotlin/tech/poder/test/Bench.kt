@@ -18,7 +18,7 @@ class Bench {
 	@Test
 	fun thing() {
 
-		val path = Path("testFiles", "_OverClockingNvc.dll")
+		val path = Path("testFiles", "win", "_OverClockingNvc.dll") //this is too absolute
 		val reader = SegmentUtil.mapFile(path, ByteOrder.LITTLE_ENDIAN, FileChannel.MapMode.READ_ONLY)
 
 		Benchmark("Thing").apply {

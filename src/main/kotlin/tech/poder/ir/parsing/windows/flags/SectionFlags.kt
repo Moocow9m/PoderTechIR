@@ -1,4 +1,4 @@
-package tech.poder.ir.parsing.windows
+package tech.poder.ir.parsing.windows.flags
 
 enum class SectionFlags(val position: Int) {
 

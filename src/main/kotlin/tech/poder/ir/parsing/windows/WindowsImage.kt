@@ -3,6 +3,12 @@ package tech.poder.ir.parsing.windows
 import tech.poder.ir.parsing.generic.OS
 import tech.poder.ir.parsing.generic.RawCode
 import tech.poder.ir.parsing.generic.RawCodeFile
+import tech.poder.ir.parsing.windows.flags.CoffFlag
+import tech.poder.ir.parsing.windows.flags.CoffMachine
+import tech.poder.ir.parsing.windows.flags.DLLFlag
+import tech.poder.ir.parsing.windows.flags.SectionFlags
+import tech.poder.ir.parsing.windows.imports.ImportLookupTable
+import tech.poder.ir.parsing.windows.imports.ImportTable
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.nio.ByteBuffer
 import java.nio.channels.SeekableByteChannel

@@ -1,4 +1,4 @@
-package tech.poder.ir.parsing.windows
+package tech.poder.ir.parsing.windows.imports
 
 data class ImportTable(
     val lookupTableRVA: List<ImportLookupTable>,

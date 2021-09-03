@@ -1,5 +1,7 @@
 package tech.poder.ir.parsing.windows
 
+import tech.poder.ir.parsing.windows.flags.SectionFlags
+
 data class Section(
     val name: String,
     val size: UInt,
