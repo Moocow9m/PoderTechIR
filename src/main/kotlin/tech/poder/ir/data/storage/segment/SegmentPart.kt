@@ -41,12 +41,6 @@ data class SegmentPart(
 
                         val popped = safePop(stack, "SYS_CALL")
 
-                        /*
-                        if (popped is Type.Primitive) {
-                            popped.isConstant = false //Consistency for compares
-                        }
-                        */
-
                         check(popped == it) {
                             "$popped does not match expected $it"
                         }
@@ -61,12 +55,6 @@ data class SegmentPart(
                     val popped = safePop(stack, "SET_VAR")
                     val varId = instruction.extra as Int
                     val compare = currentVars[varId]
-
-                    /*
-                    if (popped is Type.Primitive) {
-                        popped.isConstant = false //todo this should be done to a copy so other optimizers can see it is constant
-                    }
-                    */
 
                     if (compare != null) {
                         check(compare == popped) {
@@ -119,12 +107,6 @@ data class SegmentPart(
                         "Array creation without Int type! Got: $size"
                     }
 
-                    /*
-                    if (arrayType is Type.Primitive) {
-                        arrayType.isConstant = false
-                    }
-                    */
-
                     // TODO: size is unknown at this time... will be a runtime check to prevent illegal access to memory
                     stack.push(Type.TArray(arrayType, 0))
                 }
@@ -166,12 +148,6 @@ data class SegmentPart(
                         "Array set without Number type! Got: $arrayIndex"
                     }
 
-                    /*
-                    if (arrayItem is Type.Primitive) {
-                        arrayItem.isConstant = false
-                    }
-                    */
-
                     check(arrayItem == array.type) {
                         "Array set with incorrect type: $arrayItem! Wanted: ${array.type}"
                     }
@@ -185,11 +161,7 @@ data class SegmentPart(
 
                     holder.args.forEach {
                         val popped = safePop(stack, "${instruction.opCode}_ARG_${it.name}")
-                        /*
-                        if (popped is Type.Primitive) {
-                            popped.isConstant = false
-                        }
-                        */
+
                         check(popped == it.type) {
                             "Invalid type supplied to method! Wanted: ${it.type}, Got: $popped"
                         }
