@@ -44,7 +44,7 @@ class WindowsImage(
         private fun parseCoff(reader: MemorySegmentBuffer): WindowsImage {
             val mId = reader.readShort()
             val machine = CoffMachine.values().firstOrNull { it.id == mId }
-            check(machine != null) {
+            checkNotNull(machine) {
                 "Could not identify machine: ${mId.toUShort().toString(16)}"
             }
             val numOfSections = reader.readUShort()
@@ -185,53 +185,49 @@ class WindowsImage(
     fun process(reader: MemorySegmentBuffer): RawCodeFile {
         val list = mutableMapOf<Int, RawCode.Unprocessed>()
 
-        val imports = sections.filter { it.name.startsWith(".idata", true) }
+        val imports = sections.firstOrNull { it.name.startsWith(".idata", true) }
         val exports = sections.filter { it.name.startsWith(".edata", true) }
         val import = mutableListOf<String>()
 
-        val importTables = mutableListOf<ImportTable>()
-        val offset = if (dataDirs.size > 12) {
-            (dataDirs[1].virtualAddress.toLong() - dataDirs[12].virtualAddress.toLong()).coerceAtLeast(0)
-                .toUInt() //why does this work?
-        } else {
-            0u
-        }
+        val names = mutableListOf<String>()
+        if (imports != null) {
+            val offset = if (dataDirs.size > 1) {
+                dataDirs[1].virtualAddress - imports.address
+            } else {
+                0u
+            }
 
+            val fileOffset = imports.pointerToRawData.toLong() + offset.toLong()
+            reader.position = fileOffset
 
-        imports.forEach {
-            reader.position = it.pointerToRawData.toLong() + offset.toLong()
+            val importTables = mutableListOf<ImportTable>()
             do {
+                val lookupTableRVA = reader.readUInt()
+                val timeStamp = reader.readUInt()
+                val forwardChain = reader.readUInt()
+                val nameRVA = reader.readUInt()
+                val addressTableRVA = reader.readUInt()
+                val position = reader.position
+
+                val name = if (nameRVA == 0u) {
+                    ""
+                } else {
+                    reader.position = (nameRVA - imports.address).toLong() + imports.pointerToRawData.toLong()
+                    reader.readCString()
+                }
+                reader.position = position
                 importTables.add(
                     ImportTable(
-                        reader.readUInt(),
-                        reader.readUInt(),
-                        reader.readUInt(),
-                        reader.readUInt(),
-                        reader.readUInt()
+                        lookupTableRVA,
+                        timeStamp,
+                        forwardChain,
+                        name,
+                        addressTableRVA
                     )
                 )
             } while (!importTables.last().isNull())
             importTables.removeLast()
-        }
-
-
-        val names = mutableListOf<String>()
-        importTables.forEach { table ->
-            val vAddr = dataDirs[1].virtualAddress
-            val raw = sections.first { (it.address..(it.address + it.size)).contains(vAddr) }
-            if (table.nameRVA != 0u) {
-                reader.position =
-                    (table.nameRVA.toLong() - vAddr.toLong()) + raw.pointerToRawData.toLong() + offset.toLong()
-
-                val builder = StringBuilder()
-                var i = reader.readAsciiChar()
-
-                while (i != '\u0000') {
-                    builder.append(i)
-                    i = reader.readAsciiChar()
-                }
-                names.add(builder.toString())
-            }
+            names.addAll(importTables.map { it.name })
         }
 
         if (names.isNotEmpty()) {

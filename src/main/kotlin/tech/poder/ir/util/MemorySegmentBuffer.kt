@@ -69,6 +69,17 @@ data class MemorySegmentBuffer(
         return readByte().toInt().toChar()
     }
 
+    fun readCString(): String {
+        return buildString {
+            var i = readAsciiChar()
+
+            while (i != '\u0000') {
+                append(i)
+                i = readAsciiChar()
+            }
+        }
+    }
+
 
     fun skip(bytes: Int) {
         position += bytes
