@@ -20,14 +20,10 @@ enum class CoffFlag(val position: Short) {
     BYTES_REVERSED_HI(0x8000.toShort());
 
     companion object {
+
         fun getFlags(flags: Short): List<CoffFlag> {
-            val list = mutableListOf<CoffFlag>()
-            values().forEach {
-                if (it.position and flags != 0.toShort()) {
-                    list.add(it)
-                }
-            }
-            return list
+            return values().filter { it.position and flags != 0.toShort() }
         }
+
     }
 }

@@ -16,10 +16,9 @@ data class Method internal constructor(
     var localVarSize: Int = 0,
     internal var instructions: Segment
 ) {
-    val fullName by lazy {
-        val start = parent?.fullName ?: package_.namespace
-        "$start:$name"
-    }
+
+    val fullName = "${parent?.fullName ?: package_.namespace}:$name"
+
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -48,14 +47,10 @@ data class Method internal constructor(
     }
 
     fun toString(tabs: Int): String {
-        val tabBuilder = StringBuilder()
-        repeat(tabs) {
-            tabBuilder.append('\t')
-        }
-        return "$tabBuilder$visibility $fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size()} }"
+        return "${"\t".repeat(tabs)}$visibility $fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size()} }"
     }
 
-    internal fun toBulk(arrayList: ArrayList<Instruction>) {
+    internal fun toBulk(arrayList: MutableList<Instruction>) {
         instructions.toBulk(arrayList)
     }
 }

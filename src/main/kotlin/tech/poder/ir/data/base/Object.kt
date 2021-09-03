@@ -10,7 +10,7 @@ data class Object internal constructor(
     val name: String,
     val visibility: Visibility,
     internal val methods: MutableSet<Method>,
-    internal val fields: Array<NamedType>
+    internal val fields: List<NamedType>
 ) {
 
     val fullName by lazy {
@@ -54,26 +54,33 @@ data class Object internal constructor(
     }
 
     override fun toString(): String {
-        return "$visibility class $fullName {\n\t${fields.joinToString("\n\t")}\n\n\t${methods.joinToString("\n\t")}\n}"
+        return (
+            """
+            $visibility class $fullName {        
+                ${fields.joinToString("\n\t")}
+                
+                ${methods.joinToString("\n\t")}
+            }
+            """.trimIndent()
+        )
     }
 
-    fun toString(tabs: Int): String {
-        val tabBuilder = StringBuilder()
-        repeat(tabs) {
-            tabBuilder.append('\t')
-        }
-        return "$tabBuilder$visibility class $fullName {\n${
-            fields.joinToString("\n") {
-                it.toString(
-                    tabs + 1
-                )
-            }
-        }\n\n${
-            methods.joinToString("\n") {
-                it.toString(
-                    tabs + 1
-                )
-            }
-        }\n$tabBuilder}"
+    fun toString(tabCount: Int): String {
+        return toString().prependIndent("\t".repeat(tabCount))
+        /*
+        val tabs = "\t".repeat(tabCount)
+
+        return (
+            """
+            $tabs$visibility class $fullName {
+            $tabs${fields.joinToString("\n") { it.toString(tabCount + 1) }}
+    
+            
+            $tabs${methods.joinToString("\n") { it.toString(tabCount + 1) }}
+                
+            $tabs}
+            """.trimIndent()
+        )
+        */
     }
 }

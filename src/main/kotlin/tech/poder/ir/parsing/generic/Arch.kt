@@ -6,5 +6,5 @@ enum class Arch {
     AMD64,
     I32,
     ARM,
-    ARM64
+    ARM64,
 }

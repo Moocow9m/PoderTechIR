@@ -11,4 +11,5 @@ data class ImportTable(
     fun isNull(): Boolean {
         return lookupTableRVA == 0u && timeStamp == 0u && forwardChain == 0u && nameRVA == 0u && addressTableRVA == 0u
     }
+
 }

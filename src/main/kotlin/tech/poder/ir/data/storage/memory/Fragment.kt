@@ -10,10 +10,12 @@ data class Fragment(
     val size: Long,
     val objectSize: Int,
 ): Comparable<Fragment> {
-    private var lastId: Int = 0
-    private var count: Int = 0
-    private val freeList: MutableList<Int> = mutableListOf()
+
+    private var lastId = 0
+    private var count  = 0
     var state: State = State.EMPTY
+
+    private val freeList = mutableListOf<Int>()
     private val maxObject = floor(size / objectSize.toDouble()).toInt()
     private val writeLock = ReentrantLock()
 
@@ -30,34 +32,39 @@ data class Fragment(
     }
 
     private fun updateState() {
-        state = if (freeList.isEmpty() && lastId == 0) {
-            State.EMPTY
-        } else if (remaining() == 0) {
-            State.FULL
-        } else {
-            State.PARTIAL
-        }
+        state =
+            if (freeList.isEmpty() && lastId == 0) {
+                State.EMPTY
+            }
+            else if (remaining() == 0) {
+                State.FULL
+            }
+            else {
+                State.PARTIAL
+            }
     }
 
     fun nextFree(): Int {
+
         count++
-        return if (freeList.isEmpty()) { //use fragmented areas first!
-            objectSize * lastId++
-        } else {
-            freeList.removeAt(0)
-        }.let {
-            updateState()
-            it
-        }
+
+        val result = freeList.removeFirstOrNull() ?: (objectSize * lastId++)
+        updateState()
+
+        return result
     }
 
     fun free(location: Int) {
+
         count--
+
         if (lastId * objectSize == location) {
             lastId--
-        } else {
+        }
+        else {
             freeList.add(location)
         }
+
         updateState()
     }
 
@@ -93,11 +100,13 @@ data class Fragment(
         flags or 128.toByte() != 0.toByte()
     }
 
+
     override fun hashCode(): Int {
         return position.hashCode()
     }
 
     override fun equals(other: Any?): Boolean {
+
         if (this === other) return true
         if (other !is Fragment) return false
 

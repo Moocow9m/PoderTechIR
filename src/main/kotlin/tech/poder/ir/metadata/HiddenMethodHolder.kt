@@ -7,12 +7,16 @@ data class HiddenMethodHolder(val id: UInt, val returnType: Type?, val args: Set
     init {
         args.forEach {
             val t = it.type
-            if (t is Type.Constant) {
-                t.constant = false
+            /*
+            if (t is Type.Primitive) {
+                t.isConstant = false
             }
+            */
         }
-        if (returnType is Type.Constant) {
-            returnType.constant = false
+        /*
+        if (returnType is Type.Primitive) {
+            returnType.isConstant = false
         }
+        */
     }
 }

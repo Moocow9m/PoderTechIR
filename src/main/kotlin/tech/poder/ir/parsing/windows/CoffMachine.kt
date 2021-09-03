@@ -27,5 +27,5 @@ enum class CoffMachine(val id: Short, val arch: Arch) {
     MACHINE_SH4(0x1a6, Arch.UNKNOWN),
     MACHINE_SH5(0x1a8, Arch.UNKNOWN),
     MACHINE_THUMB(0x1c2, Arch.UNKNOWN),
-    MACHINE_WCEMIPSV2(0x169, Arch.UNKNOWN)
+    MACHINE_WCEMIPSV2(0x169, Arch.UNKNOWN),
 }

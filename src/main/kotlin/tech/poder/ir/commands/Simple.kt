@@ -42,5 +42,5 @@ enum class Simple : Command {
     NEW_OBJECT,
     BREAKPOINT,
     UNSAFE_GET,
-    UNSAFE_SET
+    UNSAFE_SET,
 }
