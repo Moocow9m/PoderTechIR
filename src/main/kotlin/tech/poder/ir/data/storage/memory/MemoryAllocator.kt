@@ -40,6 +40,7 @@ class MemoryAllocator(memorySize: Long, private val pageSize: Long = 4_096) { //
         repeat(amount) {
             segments.add(selectedFrag.nextFree())
         }
+        selectedFrag.unlock()
         return mem
     }
 

@@ -181,12 +181,6 @@ class WindowsImage(
                 Section(name.toString(), vSize, vAddr, sRD, pRD, pRL, nRL, flags)
             }
 
-
-
-
-
-
-
             return WindowsImage(
                 machine,
                 charFlags,
@@ -339,7 +333,10 @@ class WindowsImage(
     fun processToGeneric(reader: MemorySegmentBuffer): RawCodeFile {
         val list = mutableMapOf<Int, RawCode.Unprocessed>()
 
-
+        if (entryLocation != 0u) {
+            val section = resolveVAToSection(entryLocation, sections)
+            reader.position = resolveSection(entryLocation, section)
+        }
 
         return RawCodeFile(OS.WINDOWS, machine.arch, 0, mutableListOf())
     }
