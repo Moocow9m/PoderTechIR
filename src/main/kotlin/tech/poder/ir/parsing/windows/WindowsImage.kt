@@ -186,27 +186,26 @@ class WindowsImage(
         val list = mutableMapOf<Int, RawCode.Unprocessed>()
 
         val imports = sections.firstOrNull { it.name.startsWith(".idata", true) }
-        val exports = sections.filter { it.name.startsWith(".edata", true) }
-        val import = mutableListOf<String>()
+        val exports = sections.firstOrNull { it.name.startsWith(".edata", true) }
 
         if (imports != null) {
-            val names = mutableListOf<String>()
             val offset = if (dataDirs.size > 1) {
                 dataDirs[1].virtualAddress - imports.address
             } else {
                 0u
             }
 
-            val fileOffset = imports.pointerToRawData.toLong() + offset.toLong()
-            reader.position = fileOffset
+            reader.position = imports.pointerToRawData.toLong() + offset.toLong()
 
             val importTables = mutableListOf<ImportTable>()
             do {
                 val lookupTableRVA = reader.readUInt()
-                val timeStamp = reader.readUInt()
+                reader.position += 4 //skip unneeded
+                //val timeStamp = reader.readUInt()
                 val forwardChain = reader.readUInt()
                 val nameRVA = reader.readUInt()
-                val addressTableRVA = reader.readUInt()
+                reader.position += 4 //skip duplicate table! Reading lookupTableRVA instead
+                //val addressTableRVA = reader.readUInt()
                 val position = reader.position
 
                 val name = if (nameRVA == 0u) {
@@ -215,28 +214,35 @@ class WindowsImage(
                     reader.position = (nameRVA - imports.address).toLong() + imports.pointerToRawData.toLong()
                     reader.readCString()
                 }
+                val table = if (lookupTableRVA == 0u) {
+                    ImportLookupTable(null, null)
+                } else {
+                    reader.position = (lookupTableRVA - imports.address).toLong() + imports.pointerToRawData.toLong()
+                    val value = if (format == ExeFormat.PE32) {
+                        reader.readInt().toULong()
+                    } else {
+                        reader.readULong()
+                    }
+                    ImportLookupTable.compose(value, format)
+                }
                 reader.position = position
                 importTables.add(
                     ImportTable(
-                        lookupTableRVA,
-                        timeStamp,
+                        table,
                         forwardChain,
-                        name,
-                        addressTableRVA
+                        name
                     )
                 )
             } while (!importTables.last().isNull())
             importTables.removeLast()
-            names.addAll(importTables.map { it.name })
 
-            if (names.isNotEmpty()) {
-                println(names.joinToString(", "))
+            if (importTables.isNotEmpty()) {
+                println(importTables.joinToString(", ") { it.name })
             }
         }
-        val export = mutableListOf<String>()
 
-        exports.forEach {
-
+        if (exports != null) {
+            //TODO
         }
 
         return RawCodeFile(OS.WINDOWS, machine.arch, 0, mutableListOf())
