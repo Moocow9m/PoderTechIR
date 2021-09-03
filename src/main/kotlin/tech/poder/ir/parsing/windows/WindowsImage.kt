@@ -23,9 +23,6 @@ class WindowsImage(
     val dataDirs: Array<DataDirectories>,
     val sections: Array<Section>,
     val entryLocation: UInt,
-    //val baseCodeAddress: UInt,
-    //val baseDataAddress: UInt,
-    //val preferredImageBase: ULong,
     val exports: ExportDirectory?,
     val imports: List<ImportTable>?
 ) {
@@ -184,13 +181,92 @@ class WindowsImage(
                 Section(name.toString(), vSize, vAddr, sRD, pRD, pRL, nRL, flags)
             }
 
+
+
+
+
+
+
+            return WindowsImage(
+                machine,
+                charFlags,
+                dllFlags,
+                format,
+                subSystem,
+                dirs,
+                sections,
+                entryPoint,
+                processExports(dirs, sections, reader),
+                processImports(dirs, sections, reader, format)
+            )
+        }
+
+        private fun processExports(
+            dirs: Array<DataDirectories>,
+            sections: Array<Section>,
+            reader: MemorySegmentBuffer
+        ): ExportDirectory? {
+            val exportSection = if (dirs.isNotEmpty() && dirs[0].size > 0u) {
+                resolveVAToSection(dirs[0].virtualAddress, sections)
+            } else {
+                null
+            }
+
+            return if (exportSection != null) {
+                val offset = dirs[0].virtualAddress - exportSection.address
+                reader.position = exportSection.pointerToRawData.toLong() + offset.toLong()
+                reader.position += 12 //skip unneeded
+                //val exportFlags = reader.readInt() //Reserved, should be 0
+                //val timeStamp = reader.readInt()
+                //val userVersion = "${reader.readUShort()}.${reader.readUShort()}"
+                val nameRVA = reader.readUInt()
+                val ordinalBase = reader.readUInt()
+                val numTableEntries = reader.readInt()
+                val numNamePointers = reader.readInt()
+                val tableRVA = reader.readUInt()
+                val namePointerRVA = reader.readUInt()
+                val ordinalTableRVA = reader.readUInt()
+                reader.position = resolveSection(nameRVA, exportSection)
+                val name = reader.readCString()
+                reader.position = resolveSection(tableRVA, exportSection)
+                val listOfTables = mutableListOf<ExportTable>()
+                repeat(numTableEntries) {
+                    listOfTables.add(ExportTable(reader.readUInt(), reader.readUInt()))
+                }
+                reader.position = resolveSection(namePointerRVA, exportSection)
+                val listOfNames = mutableListOf<String>()
+                repeat(numNamePointers) {
+                    val rva = reader.readUInt()
+                    val position = reader.position
+                    reader.position = resolveSection(rva, exportSection)
+                    listOfNames.add(reader.readCString())
+                    reader.position = position
+                }
+
+                reader.position = resolveSection(ordinalTableRVA, exportSection)
+                val listOfNameOrdinal = mutableListOf<NameOrdinal>()
+                repeat(numNamePointers) {
+                    listOfNameOrdinal.add(NameOrdinal(listOfNames[it], reader.readUShort()))
+                }
+                ExportDirectory(name, ordinalBase, listOfTables, listOfNameOrdinal)
+            } else {
+                null
+            }
+        }
+
+        private fun processImports(
+            dirs: Array<DataDirectories>,
+            sections: Array<Section>,
+            reader: MemorySegmentBuffer,
+            format: ExeFormat
+        ): List<ImportTable>? {
             val importSection = if (dirs.size > 1 && dirs[1].size > 0u) {
                 resolveVAToSection(dirs[1].virtualAddress, sections)
             } else {
                 null
             }
 
-            val imports = if (importSection != null) {
+            return if (importSection != null) {
                 val offset = dirs[1].virtualAddress - importSection.address
 
                 reader.position = importSection.pointerToRawData.toLong() + offset.toLong()
@@ -249,69 +325,6 @@ class WindowsImage(
             } else {
                 null
             }
-
-            val exportSection = if (dirs.isNotEmpty() && dirs[0].size > 0u) {
-                resolveVAToSection(dirs[0].virtualAddress, sections)
-            } else {
-                null
-            }
-
-            val export = if (exportSection != null) {
-                val offset = dirs[0].virtualAddress - exportSection.address
-                reader.position = exportSection.pointerToRawData.toLong() + offset.toLong()
-                reader.position += 12 //skip unneeded
-                //val exportFlags = reader.readInt() //Reserved, should be 0
-                //val timeStamp = reader.readInt()
-                //val userVersion = "${reader.readUShort()}.${reader.readUShort()}"
-                val nameRVA = reader.readUInt()
-                val ordinalBase = reader.readUInt()
-                val numTableEntries = reader.readInt()
-                val numNamePointers = reader.readInt()
-                val tableRVA = reader.readUInt()
-                val namePointerRVA = reader.readUInt()
-                val ordinalTableRVA = reader.readUInt()
-                reader.position = resolveSection(nameRVA, exportSection)
-                val name = reader.readCString()
-                reader.position = resolveSection(tableRVA, exportSection)
-                val listOfTables = mutableListOf<ExportTable>()
-                repeat(numTableEntries) {
-                    listOfTables.add(ExportTable(reader.readUInt(), reader.readUInt()))
-                }
-                reader.position = resolveSection(namePointerRVA, exportSection)
-                val listOfNames = mutableListOf<String>()
-                repeat(numNamePointers) {
-                    val rva = reader.readUInt()
-                    val position = reader.position
-                    reader.position = resolveSection(rva, exportSection)
-                    listOfNames.add(reader.readCString())
-                    reader.position = position
-                }
-
-                reader.position = resolveSection(ordinalTableRVA, exportSection)
-                val listOfNameOrdinal = mutableListOf<NameOrdinal>()
-                repeat(numNamePointers) {
-                    listOfNameOrdinal.add(NameOrdinal(listOfNames[it], reader.readUShort()))
-                }
-                ExportDirectory(name, ordinalBase, listOfTables, listOfNameOrdinal)
-            } else {
-                null
-            }
-
-            return WindowsImage(
-                machine,
-                charFlags,
-                dllFlags,
-                format,
-                subSystem,
-                dirs,
-                sections,
-                entryPoint,
-                //baseOfCode,
-                //baseOfData,
-                //imageBase,
-                export,
-                imports
-            )
         }
 
         fun resolveVAToSection(va: UInt, sections: Array<Section>): Section {
