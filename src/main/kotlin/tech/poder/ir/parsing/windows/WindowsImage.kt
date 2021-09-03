@@ -111,7 +111,12 @@ class WindowsImage(
                 "Could not identify subSystem: ${subSystemId.toUShort().toString(16)}"
             }
             val dllFlags = DLLFlag.getFlags(reader.readShort())
-            val stackReserveSize = if (format == ExeFormat.PE32) {
+            if (format == ExeFormat.PE32) { //skip unneeded
+                reader.position += 4 * 4
+            } else {
+                reader.position += 4 * 8
+            }
+            /*val stackReserveSize = if (format == ExeFormat.PE32) {
                 reader.readInt().toULong()
             } else {
                 reader.readULong()
@@ -130,7 +135,7 @@ class WindowsImage(
                 reader.readInt().toULong()
             } else {
                 reader.readULong()
-            }
+            }*/
             reader.position += 4 //skip unused value
             //val loaderFlags = reader.readShort() //should be 0
             val dirs = Array(reader.readInt()) {
