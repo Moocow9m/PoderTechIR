@@ -23,7 +23,7 @@ class Bench {
 
 		Benchmark("Thing").apply {
 			bench("OverClockingNvc") {
-				WindowsImage.read(reader).process(reader)
+				WindowsImage.read(reader).processToGeneric(reader)
 				reader.position = 0
 			}
 		}

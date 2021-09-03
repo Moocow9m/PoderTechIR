@@ -3,6 +3,9 @@ package tech.poder.ir.parsing.windows
 import tech.poder.ir.parsing.generic.OS
 import tech.poder.ir.parsing.generic.RawCode
 import tech.poder.ir.parsing.generic.RawCodeFile
+import tech.poder.ir.parsing.windows.exports.ExportDirectory
+import tech.poder.ir.parsing.windows.exports.ExportTable
+import tech.poder.ir.parsing.windows.exports.NameOrdinal
 import tech.poder.ir.parsing.windows.flags.CoffFlag
 import tech.poder.ir.parsing.windows.flags.CoffMachine
 import tech.poder.ir.parsing.windows.flags.DLLFlag
@@ -10,8 +13,6 @@ import tech.poder.ir.parsing.windows.flags.SectionFlags
 import tech.poder.ir.parsing.windows.imports.ImportLookupTable
 import tech.poder.ir.parsing.windows.imports.ImportTable
 import tech.poder.ir.util.MemorySegmentBuffer
-import java.nio.ByteBuffer
-import java.nio.channels.SeekableByteChannel
 
 class WindowsImage(
     val machine: CoffMachine,
@@ -22,9 +23,11 @@ class WindowsImage(
     val dataDirs: Array<DataDirectories>,
     val sections: Array<Section>,
     val entryLocation: UInt,
-    val baseCodeAddress: UInt,
-    val baseDataAddress: UInt,
-    val preferredImageBase: ULong
+    //val baseCodeAddress: UInt,
+    //val baseDataAddress: UInt,
+    //val preferredImageBase: ULong,
+    val exports: ExportDirectory?,
+    val imports: List<ImportTable>?
 ) {
     companion object {
         fun read(reader: MemorySegmentBuffer): WindowsImage {
@@ -86,17 +89,26 @@ class WindowsImage(
             //val sizeOfInitData = reader.readUInt()
             //val sizeOfUnInitData = reader.readUInt()
             val entryPoint = reader.readUInt()
-            val baseOfCode = reader.readUInt()
-            val baseOfData = if (format == ExeFormat.PE32) {
+            reader.position += 4 //skip unneeded
+            //val baseOfCode = reader.readUInt()
+            if (format == ExeFormat.PE32) { //skip unneeded
+                reader.position += 4
+            }
+            /*val baseOfData = if (format == ExeFormat.PE32) {
                 reader.readUInt()
             } else {
                 0u
+            }*/
+            if (format == ExeFormat.PE32) { //skip unneeded
+                reader.position += 4
+            } else {
+                reader.position += 8
             }
-            val imageBase = if (format == ExeFormat.PE32) {
+            /*val imageBase = if (format == ExeFormat.PE32) {
                 reader.readInt().toULong()
             } else {
                 reader.readULong()
-            }
+            }*/
             reader.position += 8 //skip unneeded
             //val sectionAlignment = reader.readUInt()
             //val fileAlignment = reader.readUInt()
@@ -172,6 +184,119 @@ class WindowsImage(
                 Section(name.toString(), vSize, vAddr, sRD, pRD, pRL, nRL, flags)
             }
 
+            val importSection = if (dirs.size > 1 && dirs[1].size > 0u) {
+                resolveVAToSection(dirs[1].virtualAddress, sections)
+            } else {
+                null
+            }
+
+            val imports = if (importSection != null) {
+                val offset = dirs[1].virtualAddress - importSection.address
+
+                reader.position = importSection.pointerToRawData.toLong() + offset.toLong()
+
+                val importTables = mutableListOf<ImportTable>()
+                do {
+                    val lookupTableRVA = reader.readUInt()
+                    reader.position += 4 //skip unneeded
+                    //val timeStamp = reader.readUInt()
+                    val forwardChain = reader.readUInt()
+                    val nameRVA = reader.readUInt()
+                    reader.position += 4 //skip duplicate table! Reading lookupTableRVA instead
+                    //val addressTableRVA = reader.readUInt()
+                    val position = reader.position
+
+                    val name = if (nameRVA == 0u) {
+                        ""
+                    } else {
+                        reader.position = resolveSection(nameRVA, importSection)
+                        reader.readCString()
+                    }
+                    val tables = if (lookupTableRVA == 0u) {
+                        emptyList()
+                    } else {
+                        val tables = mutableListOf<ImportLookupTable>()
+                        reader.position = resolveSection(lookupTableRVA, importSection)
+                        do {
+                            tables.add(ImportLookupTable.compose(reader, format))
+                        } while (tables.last() !is ImportLookupTable.NullLookup)
+                        tables.removeLast()
+                        tables.map {
+                            if (it is ImportLookupTable.UnresolvedHintName) {
+                                reader.position = resolveSection(it.rva, importSection)
+                                it.resolve(reader)
+                            } else {
+                                it
+                            }
+                        }
+                    }
+                    reader.position = position
+                    importTables.add(
+                        ImportTable(
+                            tables,
+                            forwardChain,
+                            name
+                        )
+                    )
+                } while (!importTables.last().isNull())
+                importTables.removeLast()
+
+                if (importTables.isNotEmpty()) {
+                    importTables
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+
+            val exportSection = if (dirs.isNotEmpty() && dirs[0].size > 0u) {
+                resolveVAToSection(dirs[0].virtualAddress, sections)
+            } else {
+                null
+            }
+
+            val export = if (exportSection != null) {
+                val offset = dirs[0].virtualAddress - exportSection.address
+                reader.position = exportSection.pointerToRawData.toLong() + offset.toLong()
+                reader.position += 12 //skip unneeded
+                //val exportFlags = reader.readInt() //Reserved, should be 0
+                //val timeStamp = reader.readInt()
+                //val userVersion = "${reader.readUShort()}.${reader.readUShort()}"
+                val nameRVA = reader.readUInt()
+                val ordinalBase = reader.readUInt()
+                val numTableEntries = reader.readInt()
+                val numNamePointers = reader.readInt()
+                val tableRVA = reader.readUInt()
+                val namePointerRVA = reader.readUInt()
+                val ordinalTableRVA = reader.readUInt()
+                reader.position = resolveSection(nameRVA, exportSection)
+                val name = reader.readCString()
+                reader.position = resolveSection(tableRVA, exportSection)
+                val listOfTables = mutableListOf<ExportTable>()
+                repeat(numTableEntries) {
+                    listOfTables.add(ExportTable(reader.readUInt(), reader.readUInt()))
+                }
+                reader.position = resolveSection(namePointerRVA, exportSection)
+                val listOfNames = mutableListOf<String>()
+                repeat(numNamePointers) {
+                    val rva = reader.readUInt()
+                    val position = reader.position
+                    reader.position = resolveSection(rva, exportSection)
+                    listOfNames.add(reader.readCString())
+                    reader.position = position
+                }
+
+                reader.position = resolveSection(ordinalTableRVA, exportSection)
+                val listOfNameOrdinal = mutableListOf<NameOrdinal>()
+                repeat(numNamePointers) {
+                    listOfNameOrdinal.add(NameOrdinal(listOfNames[it], reader.readUShort()))
+                }
+                ExportDirectory(name, ordinalBase, listOfTables, listOfNameOrdinal)
+            } else {
+                null
+            }
+
             return WindowsImage(
                 machine,
                 charFlags,
@@ -181,130 +306,28 @@ class WindowsImage(
                 dirs,
                 sections,
                 entryPoint,
-                baseOfCode,
-                baseOfData,
-                imageBase
+                //baseOfCode,
+                //baseOfData,
+                //imageBase,
+                export,
+                imports
             )
         }
+
+        fun resolveVAToSection(va: UInt, sections: Array<Section>): Section {
+            return sections.first { it.range.contains(va) }
+        }
+
+        fun resolveSection(rva: UInt, section: Section): Long {
+            return (rva - section.address).toLong() + section.pointerToRawData.toLong()
+        }
     }
 
-    fun process(reader: MemorySegmentBuffer): RawCodeFile {
+    fun processToGeneric(reader: MemorySegmentBuffer): RawCodeFile {
         val list = mutableMapOf<Int, RawCode.Unprocessed>()
 
-        val imports = if (dataDirs.size > 1 && dataDirs[1].size > 0u) {
-            resolveVAToSection(dataDirs[1].virtualAddress)
-        } else {
-            null
-        }
-        val exports = if (dataDirs.isNotEmpty() && dataDirs[0].size > 0u) {
-            resolveVAToSection(dataDirs[0].virtualAddress)
-        } else {
-            null
-        }
 
-        if (imports != null) {
-            val offset = dataDirs[1].virtualAddress - imports.address
-
-            reader.position = imports.pointerToRawData.toLong() + offset.toLong()
-
-            val importTables = mutableListOf<ImportTable>()
-            do {
-                val lookupTableRVA = reader.readUInt()
-                reader.position += 4 //skip unneeded
-                //val timeStamp = reader.readUInt()
-                val forwardChain = reader.readUInt()
-                val nameRVA = reader.readUInt()
-                reader.position += 4 //skip duplicate table! Reading lookupTableRVA instead
-                //val addressTableRVA = reader.readUInt()
-                val position = reader.position
-
-                val name = if (nameRVA == 0u) {
-                    ""
-                } else {
-                    reader.position = (nameRVA - imports.address).toLong() + imports.pointerToRawData.toLong()
-                    reader.readCString()
-                }
-                val tables = if (lookupTableRVA == 0u) {
-                    emptyList()
-                } else {
-                    val tables = mutableListOf<ImportLookupTable>()
-                    reader.position =
-                        (lookupTableRVA - imports.address).toLong() + imports.pointerToRawData.toLong()
-                    do {
-                        tables.add(ImportLookupTable.compose(reader, format))
-                    } while (tables.last() !is ImportLookupTable.NullLookup)
-                    tables.removeLast()
-                    tables.map {
-                        if (it is ImportLookupTable.UnresolvedHintName) {
-                            reader.position = (it.rva - imports.address).toLong() + imports.pointerToRawData.toLong()
-                            it.resolve(reader)
-                        } else {
-                            it
-                        }
-                    }
-                }
-                reader.position = position
-                importTables.add(
-                    ImportTable(
-                        tables,
-                        forwardChain,
-                        name
-                    )
-                )
-            } while (!importTables.last().isNull())
-            importTables.removeLast()
-
-            if (importTables.isNotEmpty()) {
-                println(importTables.joinToString(", ") { it.name })
-            }
-        }
-
-        if (exports != null) {
-            val offset = dataDirs[0].virtualAddress - exports.address
-            reader.position = exports.pointerToRawData.toLong() + offset.toLong()
-            reader.position += 12 //skip unneeded
-            //val exportFlags = reader.readInt() //Reserved, should be 0
-            //val timeStamp = reader.readInt()
-            //val userVersion = "${reader.readUShort()}.${reader.readUShort()}"
-            val nameRVA = reader.readUInt()
-            val ordinalBase = reader.readUInt()
-            val numTableEntries = reader.readUInt()
-            val numNamePointers = reader.readUInt()
-            val tableRVA = reader.readUInt()
-            val namePointerRVA = reader.readUInt()
-            val ordinalTableRVA = reader.readUInt()
-
-            //TODO
-        }
 
         return RawCodeFile(OS.WINDOWS, machine.arch, 0, mutableListOf())
-    }
-
-    private fun reAllocateIfNeeded(dataSize: Int, remaining: UInt, buf: ByteBuffer, bc: SeekableByteChannel): UInt {
-        return if (buf.remaining() < dataSize) {
-            buf.compact()
-            reAllocate(remaining, buf, bc)
-            remaining - buf.remaining().toUInt()
-        } else {
-            remaining
-        }
-    }
-
-    private fun reAllocate(amount: UInt, buf: ByteBuffer, bc: SeekableByteChannel) {
-        var remaining = (bc.size() - bc.position()).toInt()
-        if (remaining < 0) {
-            remaining = buf.remaining()
-        }
-        var amountLeft = amount.toInt()
-        if (amountLeft < 0) {
-            amountLeft = buf.remaining()
-        }
-        buf.limit(buf.remaining().coerceAtMost(remaining).coerceAtMost(amountLeft))
-        bc.read(buf)
-        buf.flip()
-    }
-
-    fun resolveVAToSection(va: UInt): Section {
-        return sections.first { it.range.contains(va) }
     }
 }
