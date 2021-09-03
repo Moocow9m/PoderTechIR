@@ -327,11 +327,11 @@ class WindowsImage(
             }
         }
 
-        fun resolveVAToSection(va: UInt, sections: Array<Section>): Section {
+        private fun resolveVAToSection(va: UInt, sections: Array<Section>): Section {
             return sections.first { it.range.contains(va) }
         }
 
-        fun resolveSection(rva: UInt, section: Section): Long {
+        private fun resolveSection(rva: UInt, section: Section): Long {
             return (rva - section.address).toLong() + section.pointerToRawData.toLong()
         }
     }
