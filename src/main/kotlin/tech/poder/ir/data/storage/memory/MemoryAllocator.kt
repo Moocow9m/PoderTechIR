@@ -31,8 +31,8 @@ class MemoryAllocator(memorySize: Long, private val pageSize: Long = 4_096) { //
         }
         if (selectedFrag == null) {
             selectedFrag = Fragment(0, (pageSize * lastFrag++), pageSize, objSize)
-            fragments.add(selectedFrag)
             selectedFrag.lock()
+            fragments.add(selectedFrag)
         }
 
         val segments = ArrayList<Int>()
