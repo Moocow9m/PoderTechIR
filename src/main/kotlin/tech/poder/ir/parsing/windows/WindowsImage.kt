@@ -191,15 +191,19 @@ class WindowsImage(
     fun process(reader: MemorySegmentBuffer): RawCodeFile {
         val list = mutableMapOf<Int, RawCode.Unprocessed>()
 
-        val imports = sections.firstOrNull { it.name.startsWith(".idata", true) }
-        val exports = sections.firstOrNull { it.name.startsWith(".edata", true) }
+        val imports = if (dataDirs.size > 1 && dataDirs[1].size > 0u) {
+            sections.first { (it.address..(it.size + it.address)).contains(dataDirs[1].virtualAddress) }
+        } else {
+            null
+        }
+        val exports = if (dataDirs.isNotEmpty() && dataDirs[0].size > 0u) {
+            sections.first { (it.address..(it.size + it.address)).contains(dataDirs[0].virtualAddress) }
+        } else {
+            null
+        }
 
         if (imports != null) {
-            val offset = if (dataDirs.size > 1) {
-                dataDirs[1].virtualAddress - imports.address
-            } else {
-                0u
-            }
+            val offset = dataDirs[1].virtualAddress - imports.address
 
             reader.position = imports.pointerToRawData.toLong() + offset.toLong()
 
@@ -256,6 +260,20 @@ class WindowsImage(
         }
 
         if (exports != null) {
+            val offset = dataDirs[0].virtualAddress - exports.address
+            reader.position = exports.pointerToRawData.toLong() + offset.toLong()
+            reader.position += 12 //skip unneeded
+            //val exportFlags = reader.readInt() //Reserved, should be 0
+            //val timeStamp = reader.readInt()
+            //val userVersion = "${reader.readUShort()}.${reader.readUShort()}"
+            val nameRVA = reader.readUInt()
+            val ordinalBase = reader.readUInt()
+            val numTableEntries = reader.readUInt()
+            val numNamePointers = reader.readUInt()
+            val tableRVA = reader.readUInt()
+            val namePointerRVA = reader.readUInt()
+            val ordinalTableRVA = reader.readUInt()
+
             //TODO
         }
 
