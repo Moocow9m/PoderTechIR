@@ -211,14 +211,15 @@ class WindowsImage(
 
         val importTables = mutableListOf<ImportTable>()
         val offset = if (dataDirs.size > 12) {
-            (dataDirs[1].virtualAddress.toLong() - dataDirs[12].virtualAddress.toLong()).coerceAtLeast(0).toUInt()
+            (dataDirs[1].virtualAddress.toLong() - dataDirs[12].virtualAddress.toLong()).coerceAtLeast(0)
+                .toUInt() //why does this work?
         } else {
             0u
         }
 
 
         imports.forEach {
-            bc.position(it.pointerToRawData.toLong() + offset.toLong()) //why does this work?
+            bc.position(it.pointerToRawData.toLong() + offset.toLong())
             var remaining = it.sizeOfRawData
             buf.clear()
             reAllocate(remaining, buf, bc)

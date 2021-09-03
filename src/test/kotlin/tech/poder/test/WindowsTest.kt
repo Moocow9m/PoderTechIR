@@ -1,12 +1,11 @@
 package tech.poder.test
 
-import jdk.incubator.foreign.MemoryAccess
-import jdk.incubator.foreign.MemorySegment
 import tech.poder.ir.parsing.generic.OS
 import tech.poder.ir.parsing.generic.RawCode
 import tech.poder.ir.parsing.generic.RawCodeFile
 import tech.poder.ir.parsing.windows.*
-import java.io.Closeable
+import tech.poder.ir.util.MemorySegmentReader
+import tech.poder.ir.util.SegmentUtil
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
@@ -15,7 +14,6 @@ import java.nio.file.FileVisitOption
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.io.path.fileSize
 import kotlin.io.path.isRegularFile
 import kotlin.test.Test
 
@@ -30,24 +28,13 @@ internal class WindowsTest {
         Files.walk(dlls, FileVisitOption.FOLLOW_LINKS).filter {
             val name = it.fileName.toString()
             it.isRegularFile() && (name.endsWith("dll") || name.endsWith("exe"))
-        }.forEach {
-            thing(it)
+        }.forEach { path ->
+            SegmentUtil.mapFile(path, ByteOrder.LITTLE_ENDIAN, FileChannel.MapMode.READ_ONLY).use {
+                read(path, it)
+            }
         }
 
         processableFiles.forEach { it.process() }
-    }
-
-    // TODO: Use a datainputstream
-    fun thing(path: Path) {
-
-        val reader = MemorySegmentReader(
-            MemorySegment.mapFile(path, 0, path.fileSize(), FileChannel.MapMode.READ_ONLY),
-            ByteOrder.LITTLE_ENDIAN
-        )
-
-        read(path, reader)
-
-        reader.close()
     }
 
     fun read(path: Path, reader: MemorySegmentReader): RawCodeFile {
@@ -344,79 +331,6 @@ internal class WindowsTest {
             imageBase,
             path
         )
-    }
-
-
-    data class MemorySegmentReader(
-        val memorySegment: MemorySegment,
-        val byteOrder: ByteOrder = ByteOrder.nativeOrder(),
-    ) : Closeable {
-
-        var position = 0L
-
-
-        override fun close() {
-            memorySegment.close()
-        }
-
-
-        fun readByte(): Byte {
-            return MemoryAccess.getByteAtOffset(memorySegment, position).apply {
-                position += Byte.SIZE_BYTES
-            }
-        }
-
-        fun readShort(): Short {
-            return MemoryAccess.getShortAtOffset(memorySegment, position, byteOrder).apply {
-                position += Short.SIZE_BYTES
-            }
-        }
-
-        fun readInt(): Int {
-            return MemoryAccess.getIntAtOffset(memorySegment, position, byteOrder).apply {
-                position += Int.SIZE_BYTES
-            }
-        }
-
-        fun readLong(): Long {
-            return MemoryAccess.getLongAtOffset(memorySegment, position, byteOrder).apply {
-                position += Long.SIZE_BYTES
-            }
-        }
-
-
-        fun readUByte(): UByte {
-            return readByte().toUByte()
-        }
-
-        fun readUShort(): UShort {
-            return readShort().toUShort()
-        }
-
-        fun readUInt(): UInt {
-            return readInt().toUInt()
-        }
-
-        fun readULong(): ULong {
-            return readLong().toULong()
-        }
-
-
-        fun readChar(): Char {
-            return MemoryAccess.getCharAtOffset(memorySegment, position, byteOrder).apply {
-                position += Char.SIZE_BYTES
-            }
-        }
-
-        fun readAsciiChar(): Char {
-            return readByte().toInt().toChar()
-        }
-
-
-        fun skip(bytes: Int) {
-            position += bytes
-        }
-
     }
 
 }
