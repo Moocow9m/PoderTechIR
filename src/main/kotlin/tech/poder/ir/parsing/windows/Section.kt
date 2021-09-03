@@ -11,4 +11,6 @@ data class Section(
     val pointerToRelocations: UInt,
     val numberOfRelocations: UShort,
     val flags: List<SectionFlags>,
-)
+) {
+    val range = address..(size + address)
+}

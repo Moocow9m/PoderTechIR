@@ -192,12 +192,12 @@ class WindowsImage(
         val list = mutableMapOf<Int, RawCode.Unprocessed>()
 
         val imports = if (dataDirs.size > 1 && dataDirs[1].size > 0u) {
-            sections.first { (it.address..(it.size + it.address)).contains(dataDirs[1].virtualAddress) }
+            resolveVAToSection(dataDirs[1].virtualAddress)
         } else {
             null
         }
         val exports = if (dataDirs.isNotEmpty() && dataDirs[0].size > 0u) {
-            sections.first { (it.address..(it.size + it.address)).contains(dataDirs[0].virtualAddress) }
+            resolveVAToSection(dataDirs[0].virtualAddress)
         } else {
             null
         }
@@ -302,5 +302,9 @@ class WindowsImage(
         buf.limit(buf.remaining().coerceAtMost(remaining).coerceAtMost(amountLeft))
         bc.read(buf)
         buf.flip()
+    }
+
+    fun resolveVAToSection(va: UInt): Section {
+        return sections.first { it.range.contains(va) }
     }
 }
