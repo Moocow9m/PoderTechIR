@@ -334,9 +334,9 @@ class WindowsImage(
 
     fun processToGeneric(reader: MemorySegmentBuffer): RawCodeFile {
         val list = mutableMapOf<Int, RawCode.Unprocessed>()
+        val section = resolveVAToSection(baseOfCode, sections)
 
         if (entryLocation != 0u) {
-            val section = resolveVAToSection(baseOfCode, sections)
             reader.position = resolveSection(entryLocation, section)
         }
 
