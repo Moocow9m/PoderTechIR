@@ -1,13 +1,13 @@
 package tech.poder.ir.parsing.windows
 
 data class ImportTable(
-    val lookupTableRVA: ImportLookupTable,
+    val lookupTableRVA: List<ImportLookupTable>,
     val forwardChain: UInt,
     val name: String
 ) {
 
     fun isNull(): Boolean {
-        return lookupTableRVA.isNull() && forwardChain == 0u && name.isBlank()
+        return lookupTableRVA.isEmpty() && forwardChain == 0u && name.isBlank()
     }
 
 }

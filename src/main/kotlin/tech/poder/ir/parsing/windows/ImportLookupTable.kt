@@ -1,22 +1,45 @@
 package tech.poder.ir.parsing.windows
 
-data class ImportLookupTable(val ordinalNumber: UShort? = null, val rva: UInt? = null) {
-    fun isNull(): Boolean {
-        return ordinalNumber == null && rva == null
-    }
+import tech.poder.ir.util.MemorySegmentBuffer
 
+
+sealed interface ImportLookupTable {
     companion object {
-        fun compose(input: ULong, format: ExeFormat): ImportLookupTable {
-            val ordinal = if (format == ExeFormat.PE32) {
-                input and 0x80000000u != 0uL
+        fun compose(reader: MemorySegmentBuffer, format: ExeFormat): ImportLookupTable {
+            return if (format == ExeFormat.PE32) {
+                val input = reader.readUInt()
+                if (input == 0u) {
+                    return NullLookup
+                }
+                if (input and 0x80000000u != 0u) {
+                    Ordinal(input.toUShort())
+                } else {
+                    UnresolvedHintName(input)
+                }
             } else {
-                input and 0x8000000000000000u != 0uL
-            }
-            return if (ordinal) {
-                ImportLookupTable(input.toUShort())
-            } else {
-                ImportLookupTable(rva = input.toUInt())
+                val input = reader.readULong()
+                if (input == 0uL) {
+                    return NullLookup
+                }
+                if (input and 0x8000000000000000u != 0uL) {
+                    Ordinal(input.toUShort())
+                } else {
+                    UnresolvedHintName(input.toUInt())
+                }
             }
         }
     }
+
+    object NullLookup : ImportLookupTable
+
+    data class UnresolvedHintName(val rva: UInt) : ImportLookupTable {
+        fun resolve(reader: MemorySegmentBuffer): HintName {
+            return HintName(reader.readUShort(), reader.readCString())
+        }
+    }
+
+    data class Ordinal(val ordinalNumber: UShort) : ImportLookupTable
+
+    data class HintName(val hint: UShort, val name: String) : ImportLookupTable
 }
+

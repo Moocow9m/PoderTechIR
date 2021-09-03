@@ -214,21 +214,29 @@ class WindowsImage(
                     reader.position = (nameRVA - imports.address).toLong() + imports.pointerToRawData.toLong()
                     reader.readCString()
                 }
-                val table = if (lookupTableRVA == 0u) {
-                    ImportLookupTable(null, null)
+                val tables = if (lookupTableRVA == 0u) {
+                    emptyList()
                 } else {
-                    reader.position = (lookupTableRVA - imports.address).toLong() + imports.pointerToRawData.toLong()
-                    val value = if (format == ExeFormat.PE32) {
-                        reader.readInt().toULong()
-                    } else {
-                        reader.readULong()
+                    val tables = mutableListOf<ImportLookupTable>()
+                    reader.position =
+                        (lookupTableRVA - imports.address).toLong() + imports.pointerToRawData.toLong()
+                    do {
+                        tables.add(ImportLookupTable.compose(reader, format))
+                    } while (tables.last() !is ImportLookupTable.NullLookup)
+                    tables.removeLast()
+                    tables.map {
+                        if (it is ImportLookupTable.UnresolvedHintName) {
+                            reader.position = (it.rva - imports.address).toLong() + imports.pointerToRawData.toLong()
+                            it.resolve(reader)
+                        } else {
+                            it
+                        }
                     }
-                    ImportLookupTable.compose(value, format)
                 }
                 reader.position = position
                 importTables.add(
                     ImportTable(
-                        table,
+                        tables,
                         forwardChain,
                         name
                     )
