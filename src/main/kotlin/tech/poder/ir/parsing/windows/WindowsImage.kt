@@ -189,8 +189,8 @@ class WindowsImage(
         val exports = sections.filter { it.name.startsWith(".edata", true) }
         val import = mutableListOf<String>()
 
-        val names = mutableListOf<String>()
         if (imports != null) {
+            val names = mutableListOf<String>()
             val offset = if (dataDirs.size > 1) {
                 dataDirs[1].virtualAddress - imports.address
             } else {
@@ -228,10 +228,10 @@ class WindowsImage(
             } while (!importTables.last().isNull())
             importTables.removeLast()
             names.addAll(importTables.map { it.name })
-        }
 
-        if (names.isNotEmpty()) {
-            println(names.joinToString(", "))
+            if (names.isNotEmpty()) {
+                println(names.joinToString(", "))
+            }
         }
         val export = mutableListOf<String>()
 
