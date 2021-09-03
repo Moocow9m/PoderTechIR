@@ -12,7 +12,7 @@ import tech.poder.ir.metadata.MethodHolder
 import tech.poder.ir.metadata.ObjectHolder
 import java.util.*
 
-class Machine(maxMemory: Long = 1_073_741_824 /* 1 GB default*/, pageSize: Long = 1_024 /*1 KB default*/) {
+class Machine(maxMemory: Long = 1024 * 1024 /* 1 MB default*/, pageSize: Long = 1_024 /*1 KB default*/) {
 
     private val methods = mutableMapOf<String, List<Instruction>>()
     private val structs = mutableMapOf<String, List<NamedType>>()
