@@ -1,18 +1,11 @@
 package tech.poder.test
 
-import tech.poder.ir.parsing.generic.OS
-import tech.poder.ir.parsing.generic.RawCode
-import tech.poder.ir.parsing.generic.RawCodeFile
-import tech.poder.ir.parsing.windows.*
-import tech.poder.ir.util.MemorySegmentBuffer
+import tech.poder.ir.parsing.windows.WindowsImage
 import tech.poder.ir.util.SegmentUtil
-import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
-import java.nio.channels.SeekableByteChannel
 import java.nio.file.FileVisitOption
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.isRegularFile
 import kotlin.test.Test
@@ -23,23 +16,20 @@ internal class WindowsTest {
     fun readDll() {
 
         val dlls = Paths.get("testFiles").toAbsolutePath()
-        val processableFiles = mutableListOf<WindowsImage>()
 
         Files.walk(dlls, FileVisitOption.FOLLOW_LINKS).filter {
             val name = it.fileName.toString()
             it.isRegularFile() && (name.endsWith("dll") || name.endsWith("exe"))
         }.forEach { path ->
             SegmentUtil.mapFile(path, ByteOrder.LITTLE_ENDIAN, FileChannel.MapMode.READ_ONLY).use {
-                processableFiles.add(WindowsImage.read(it))
-                processableFiles.last().process(it)
-                //read(path, it)
+                val item = WindowsImage.read(it)
+                item.process(it)
+                //read(it)
             }
         }
-
-        //processableFiles.forEach { it.process() }
     }
 
-    fun read(path: Path, reader: MemorySegmentBuffer): RawCodeFile {
+    /*fun read(reader: MemorySegmentBuffer): RawCodeFile {
 
         val header = readHeader(reader)
 
@@ -47,7 +37,7 @@ internal class WindowsTest {
             "Header does not match PE format! Got: $header"
         }
 
-        return processImage(parseCoff(reader, path), reader)
+        return processImage(parseCoff(reader), reader)
     }
 
 
@@ -171,7 +161,7 @@ internal class WindowsTest {
         buf.flip()
     }
 
-    fun parseCoff(reader: MemorySegmentBuffer, path: Path): WindowsImage {
+    fun parseCoff(reader: MemorySegmentBuffer): WindowsImage {
 
         val machineID = reader.readShort()
 
@@ -332,6 +322,5 @@ internal class WindowsTest {
             baseOfData,
             imageBase
         )
-    }
-
+    }*/
 }
