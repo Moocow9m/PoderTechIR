@@ -1,11 +1,10 @@
 package tech.poder.ir.parsing.windows
 
 import tech.poder.ir.parsing.generic.OS
-import tech.poder.ir.parsing.generic.RawCode
 import tech.poder.ir.parsing.generic.RawCodeFile
+import tech.poder.ir.parsing.windows.exports.Export
 import tech.poder.ir.parsing.windows.exports.ExportDirectory
-import tech.poder.ir.parsing.windows.exports.ExportTable
-import tech.poder.ir.parsing.windows.exports.NameOrdinal
+import tech.poder.ir.parsing.windows.exports.ExportEntry
 import tech.poder.ir.parsing.windows.flags.CoffFlag
 import tech.poder.ir.parsing.windows.flags.CoffMachine
 import tech.poder.ir.parsing.windows.flags.DLLFlag
@@ -225,9 +224,21 @@ class WindowsImage(
                 reader.position = resolveSection(nameRVA, exportSection)
                 val name = reader.readCString()
                 reader.position = resolveSection(tableRVA, exportSection)
-                val listOfTables = mutableListOf<ExportTable>()
+                val listOfTables = mutableListOf<Export>()
                 repeat(numTableEntries) {
-                    listOfTables.add(ExportTable(reader.readUInt(), reader.readUInt()))
+                    val addr = reader.readUInt()
+                    listOfTables.add(
+                        if (addr in dirs[0].range) {
+                            /*val pos = reader.position
+                            reader.position = resolveSection(addr, exportSection)
+                            val methodName = reader.readCString()
+                            reader.position = pos
+                            ExportTable.ExportName(methodName)*/
+                            error("Name RVA not validated yet!")
+                        } else {
+                            Export.ExportAddress(addr)
+                        }
+                    )
                 }
                 reader.position = resolveSection(namePointerRVA, exportSection)
                 val listOfNames = mutableListOf<String>()
@@ -240,11 +251,11 @@ class WindowsImage(
                 }
 
                 reader.position = resolveSection(ordinalTableRVA, exportSection)
-                val listOfNameOrdinal = mutableListOf<NameOrdinal>()
+                val listOfExports = mutableListOf<ExportEntry>()
                 repeat(numNamePointers) {
-                    listOfNameOrdinal.add(NameOrdinal(listOfNames[it], reader.readUShort()))
+                    listOfExports.add(ExportEntry(listOfNames[it], listOfTables[it], reader.readUShort()))
                 }
-                ExportDirectory(name, ordinalBase, listOfTables, listOfNameOrdinal)
+                ExportDirectory(name, ordinalBase, listOfExports)
             } else {
                 null
             }
@@ -333,13 +344,23 @@ class WindowsImage(
     }
 
     fun processToGeneric(reader: MemorySegmentBuffer): RawCodeFile {
-        val list = mutableMapOf<Int, RawCode.Unprocessed>()
+
+        val externalCodeStartPoints = mutableSetOf<Long>()
+
         val section = resolveVAToSection(baseOfCode, sections)
 
-        if (entryLocation != 0u) {
-            reader.position = resolveSection(entryLocation, section)
+        val startPoint = if (entryLocation != 0u) {
+            resolveSection(entryLocation, section)
+        } else {
+            -1L
         }
-
+        if (startPoint > 0L) {
+            externalCodeStartPoints.add(startPoint)
+        }
+        //Start point is to be called on Load and Unload of DLL
+        exports?.exportEntries?.filter { it.entry is Export.ExportAddress }?.forEach {
+            externalCodeStartPoints.add(resolveSection((it.entry as Export.ExportAddress).exportRVA, section))
+        }
         return RawCodeFile(OS.WINDOWS, machine.arch, 0, mutableListOf())
     }
 }
