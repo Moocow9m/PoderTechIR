@@ -20,7 +20,7 @@ data class Package(
         name: String,
         vis: Visibility,
         returnType: Type? = null,
-        vararg args: NamedType,
+        args: Set<NamedType>,
         code: (CodeBuilder) -> Unit
     ): Method {
         return CodeBuilder.createMethod(this, name, vis, returnType, args.toSet(), null, code).apply {
@@ -28,7 +28,7 @@ data class Package(
         }
     }
 
-    fun newObject(name: String, vis: Visibility, vararg fields: NamedType): Object {
+    fun newObject(name: String, vis: Visibility, fields: Set<NamedType> = emptySet()): Object {
         return Object(
             this,
             name,
