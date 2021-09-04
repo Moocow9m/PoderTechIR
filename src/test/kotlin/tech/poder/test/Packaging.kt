@@ -30,7 +30,9 @@ internal class Packaging {
     fun loop() {
 
         val meth = package_.newFloatingMethod("loop", Visibility.PRIVATE) {
+
             val jump = it.newLabel()
+
             it.push("{\n")
             it.sysCall(SysCommand.PRINT)
             it.placeLabel(jump)
@@ -49,8 +51,11 @@ internal class Packaging {
 
     @Test
     fun ifOnly() {
+
         val meth = package_.newFloatingMethod("if", Visibility.PRIVATE) {
+
             val after = it.newLabel()
+
             it.push("{\n")
             it.sysCall(SysCommand.PRINT)
             it.push(0)
@@ -65,14 +70,18 @@ internal class Packaging {
             it.sysCall(SysCommand.PRINT)
             it.return_()
         }
+
         println(meth)
     }
 
     @Test
     fun ifInLoop() {
+
         val meth = package_.newFloatingMethod("ifInLoop", Visibility.PRIVATE) {
+
             val jump = it.newLabel()
             val after = it.newLabel()
+
             it.placeLabel(jump)
             it.push("{\n")
             it.sysCall(SysCommand.PRINT)
@@ -89,14 +98,18 @@ internal class Packaging {
             it.jmp(jump)
             it.return_()
         }
+
         println(meth)
     }
 
     @Test
     fun loopInIf() {
+
         val meth = package_.newFloatingMethod("loopInIf", Visibility.PRIVATE) {
+
             val jump = it.newLabel()
             val after = it.newLabel()
+
             it.push("{\n")
             it.sysCall(SysCommand.PRINT)
             it.push(0)
@@ -113,14 +126,18 @@ internal class Packaging {
             it.sysCall(SysCommand.PRINT)
             it.return_()
         }
+
         println(meth)
     }
 
     @Test
     fun ifElse() {
+
         val meth = package_.newFloatingMethod("ifElse", Visibility.PRIVATE) {
+
             val afterLabel = it.newLabel()
             val elseLabel = it.newLabel()
+
             it.push("{\n")
             it.sysCall(SysCommand.PRINT)
             it.push(0)
@@ -139,6 +156,7 @@ internal class Packaging {
             it.sysCall(SysCommand.PRINT)
             it.return_()
         }
+
         println(meth)
     }
 }

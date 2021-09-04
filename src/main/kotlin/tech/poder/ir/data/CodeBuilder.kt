@@ -16,7 +16,7 @@ import java.util.*
 
 data class CodeBuilder(
     private val storage: Method,
-    val instructions: ArrayList<Instruction> = arrayListOf()
+    val instructions: MutableList<Instruction> = mutableListOf()
 ) {
     companion object {
         fun createMethod(

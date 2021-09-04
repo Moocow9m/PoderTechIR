@@ -1,5 +1,6 @@
 package tech.poder.ir.data.base
 
+import tech.poder.ir.api.CodeHolder
 import tech.poder.ir.data.CodeBuilder
 import tech.poder.ir.data.storage.ConstantPool
 import tech.poder.ir.data.storage.NamedType
@@ -13,7 +14,8 @@ data class Package(
     val floating: MutableSet<Method> = mutableSetOf(),
     val constPool: ConstantPool = ConstantPool(mutableMapOf()),
     val requiredLibs: MutableSet<String> = mutableSetOf(),
-) {
+) : CodeHolder {
+
     fun newFloatingMethod(
         name: String,
         vis: Visibility,
@@ -21,9 +23,9 @@ data class Package(
         vararg args: NamedType,
         code: (CodeBuilder) -> Unit
     ): Method {
-        val meth = CodeBuilder.createMethod(this, name, vis, returnType, args.toSet(), null, code)
-        floating.add(meth)
-        return meth
+        return CodeBuilder.createMethod(this, name, vis, returnType, args.toSet(), null, code).apply {
+            floating.add(this)
+        }
     }
 
     fun newObject(name: String, vis: Visibility, vararg fields: NamedType): Object {

@@ -8,6 +8,7 @@ import kotlin.math.floor
 
 //based off SLUB
 class MemoryAllocator(memorySize: Long, private val pageSize: Long = 4_096) { //todo per process tracking
+
     private val fragments = ConcurrentSkipListSet<Fragment>() //todo per_cpu maintain, mass delete on process death
     private var lastFrag = 0
     private val memory = MemorySegment.allocateNative(memorySize)
@@ -43,10 +44,9 @@ class MemoryAllocator(memorySize: Long, private val pageSize: Long = 4_096) { //
             selectedFrag.nextFree()
         }
 
-        val mem = AllocatedMemory(segments, selectedFrag)
-
-        selectedFrag.unlock()
-        return mem
+        return AllocatedMemory(segments, selectedFrag).apply {
+            selectedFrag.unlock()
+        }
     }
 
     fun read(location: Long): Byte {
