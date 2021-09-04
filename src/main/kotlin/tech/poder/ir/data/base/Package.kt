@@ -20,10 +20,10 @@ data class Package(
         name: String,
         vis: Visibility,
         returnType: Type? = null,
-        args: Set<NamedType>,
+        args: Set<NamedType> = emptySet(),
         code: (CodeBuilder) -> Unit
     ): Method {
-        return CodeBuilder.createMethod(this, name, vis, returnType, args.toSet(), null, code).apply {
+        return CodeBuilder.createMethod(this, name, vis, returnType, args, null, code).apply {
             floating.add(this)
         }
     }
