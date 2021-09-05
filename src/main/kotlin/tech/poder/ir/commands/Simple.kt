@@ -43,4 +43,5 @@ enum class Simple : Command {
     BREAKPOINT,
     UNSAFE_GET,
     UNSAFE_SET,
+    UNSIGNED_UPSCALE
 }

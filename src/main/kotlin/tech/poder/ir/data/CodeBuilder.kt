@@ -238,6 +238,10 @@ data class CodeBuilder(
         instructions.add(Instruction(Simple.INVOKE_METHOD, MethodHolder(fullName, returnType, args.toSet())))
     }
 
+    fun unsignedUpscale() {
+        instructions.add(Instruction(Simple.UNSIGNED_UPSCALE))
+    }
+
     fun launch(method: Method, priority: Int) {
 
         checkNotNull(method.returnType) {

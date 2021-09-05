@@ -155,6 +155,17 @@ data class SegmentPart(
                     stack.push(array.type)
                 }
 
+                Simple.UNSIGNED_UPSCALE -> {
+                    val type = stack.pop()
+                    check(type is Type.Primitive) {
+                        "Upscale on a $type?"
+                    }
+                    when (type) {
+                        is Type.Primitive.Double, is Type.Primitive.Float, is Type.Primitive.String -> error("Doesn't work on $type")
+                        else -> stack.push(type)
+                    }
+                }
+
                 Simple.LAUNCH, Simple.INVOKE_METHOD -> {
 
                     val holder = instruction.extra as MethodHolder

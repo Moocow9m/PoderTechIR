@@ -7,14 +7,25 @@ import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.Type
 import tech.poder.ir.metadata.Visibility
 
-data class Package(
+data class Package internal constructor(
     val namespace: String,
     val visibility: Visibility,
-    val objects: MutableSet<Object> = mutableSetOf(),
-    val floating: MutableSet<Method> = mutableSetOf(),
-    val constPool: ConstantPool = ConstantPool(mutableMapOf()),
-    val requiredLibs: MutableSet<String> = mutableSetOf(),
+    internal var children: MutableSet<Package> = mutableSetOf(),
+    internal val objects: MutableSet<Object> = mutableSetOf(),
+    internal val floating: MutableSet<Method> = mutableSetOf(),
+    internal val constPool: ConstantPool = ConstantPool(mutableMapOf()),
+    internal val requiredLibs: MutableSet<String> = mutableSetOf(),
 ) : CodeHolder {
+
+    fun addLib(name: String) {
+        requiredLibs.add(name)
+    }
+
+    fun newChildPackage(name: String, vis: Visibility): Package {
+        val pkg = Package(name, vis)
+        children.add(pkg)
+        return pkg
+    }
 
     fun newFloatingMethod(
         name: String,

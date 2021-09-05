@@ -240,6 +240,22 @@ class Machine(maxMemory: Long = 1024 * 1024 /* 1 MB default*/, pageSize: Long = 
                         stack.push(execute(holder.fullName, *newArgs))
                     }
                 }
+                Simple.UNSIGNED_UPSCALE -> {
+                    when (val x = stack.pop() as Number) {
+                        is Byte -> {
+                            stack.push(x.toUByte())
+                        }
+                        is Short -> {
+                            stack.push(x.toUShort())
+                        }
+                        is Int -> {
+                            stack.push(x.toUInt())
+                        }
+                        is Long -> {
+                            stack.push(x.toULong())
+                        }
+                    }
+                }
                 Simple.LAUNCH -> TODO()
                 Simple.NEW_OBJECT -> {
                     val objDef = stack.pop() as ObjectHolder//todo add HiddenObjectHolder support
