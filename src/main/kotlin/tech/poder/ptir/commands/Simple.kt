@@ -5,7 +5,7 @@ import kotlin.reflect.jvm.jvmName
 
 sealed class Simple : Command {
 
-    internal val sizeBits = MemorySegmentBuffer.varSize(id).toLong() * 8L
+    private val sizeBits by lazy { MemorySegmentBuffer.varSize(id).toLong() * 8L }
 
     override fun sizeBits(): Long {
         return sizeBits
