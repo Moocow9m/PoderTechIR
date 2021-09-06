@@ -7,7 +7,10 @@ import kotlin.math.ceil
 import kotlin.math.floor
 
 //based off SLUB
-class MemoryAllocator(memorySize: Long, private val pageSize: Long = 4_096) { //todo per process tracking
+class MemoryAllocator(
+    memorySize: Long = 1_024 * 1024 * 1024,
+    private val pageSize: Long = 4_096
+) { //todo per process tracking
 
     private val fragments = ConcurrentSkipListSet<Fragment>() //todo per_cpu maintain, mass delete on process death
     private var lastFrag = 0

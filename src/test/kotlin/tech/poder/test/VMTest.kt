@@ -1,6 +1,6 @@
 package tech.poder.test
 
-import tech.poder.ir.Machine
+import tech.poder.ir.Runner
 import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.storage.memory.MemoryAllocator
 import tech.poder.ir.metadata.Visibility
@@ -19,7 +19,7 @@ internal class VMTest {
             it.return_()
         }
 
-        Machine().apply {
+        Runner().apply {
             loadPackage(Packaging.package_)
             execute(meth.fullName)
         }

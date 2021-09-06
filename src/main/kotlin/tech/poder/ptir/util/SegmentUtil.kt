@@ -1,4 +1,4 @@
-package tech.poder.ir.util
+package tech.poder.ptir.util
 
 import jdk.incubator.foreign.MemorySegment
 import java.nio.ByteOrder

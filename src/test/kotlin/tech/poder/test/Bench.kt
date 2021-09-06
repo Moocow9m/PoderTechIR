@@ -1,7 +1,7 @@
 package tech.poder.test
 
 import tech.poder.ir.parsing.windows.WindowsImage
-import tech.poder.ir.util.SegmentUtil
+import tech.poder.ptir.util.SegmentUtil
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
 import kotlin.io.path.Path

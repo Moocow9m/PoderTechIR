@@ -11,7 +11,7 @@ import tech.poder.ir.parsing.windows.flags.DLLFlag
 import tech.poder.ir.parsing.windows.flags.SectionFlags
 import tech.poder.ir.parsing.windows.imports.ImportLookupTable
 import tech.poder.ir.parsing.windows.imports.ImportTable
-import tech.poder.ir.util.MemorySegmentBuffer
+import tech.poder.ptir.util.MemorySegmentBuffer
 
 class WindowsImage(
     val machine: CoffMachine,

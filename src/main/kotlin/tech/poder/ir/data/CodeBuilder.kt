@@ -13,6 +13,7 @@ import tech.poder.ir.metadata.MethodHolder
 import tech.poder.ir.metadata.ObjectHolder
 import tech.poder.ir.metadata.Visibility
 import java.util.*
+import kotlin.reflect.KClass
 
 data class CodeBuilder(
     private val storage: Method,
@@ -23,7 +24,7 @@ data class CodeBuilder(
             package_: Package,
             name: String,
             vis: Visibility,
-            returnType: Type? = null,
+            returnType: KClass<out Type>? = null,
             args: Set<NamedType> = emptySet(),
             parent: Object? = null,
             block: (CodeBuilder) -> Unit
@@ -234,7 +235,7 @@ data class CodeBuilder(
         )
     }
 
-    fun invokeMethod(fullName: String, returnType: Type? = null, vararg args: NamedType) {
+    fun invokeMethod(fullName: String, returnType: KClass<out Type>? = null, vararg args: NamedType) {
         instructions.add(Instruction(Simple.INVOKE_METHOD, MethodHolder(fullName, returnType, args.toSet())))
     }
 
@@ -298,7 +299,7 @@ data class CodeBuilder(
         val segment = MultiSegment.buildSegments(instructions)!!
         val stack = Stack<Type>()
 
-        val vars = MutableList<Type?>(localVars.size) {
+        val vars = MutableList<KClass<out Type>?>(localVars.size) {
             null
         }
 

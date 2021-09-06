@@ -1,7 +1,7 @@
 package tech.poder.ir.parsing.windows.imports
 
 import tech.poder.ir.parsing.windows.ExeFormat
-import tech.poder.ir.util.MemorySegmentBuffer
+import tech.poder.ptir.util.MemorySegmentBuffer
 
 
 sealed interface ImportLookupTable {

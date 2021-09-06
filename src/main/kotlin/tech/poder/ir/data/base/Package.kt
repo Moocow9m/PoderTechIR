@@ -1,11 +1,12 @@
 package tech.poder.ir.data.base
 
-import tech.poder.ir.api.CodeHolder
 import tech.poder.ir.data.CodeBuilder
 import tech.poder.ir.data.storage.ConstantPool
 import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.Type
 import tech.poder.ir.metadata.Visibility
+import tech.poder.ptir.api.CodeHolder
+import kotlin.reflect.KClass
 
 data class Package internal constructor(
     val namespace: String,
@@ -30,7 +31,7 @@ data class Package internal constructor(
     fun newFloatingMethod(
         name: String,
         vis: Visibility,
-        returnType: Type? = null,
+        returnType: KClass<out Type>? = null,
         args: Set<NamedType> = emptySet(),
         code: (CodeBuilder) -> Unit
     ): Method {

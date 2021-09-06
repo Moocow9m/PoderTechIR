@@ -2,48 +2,15 @@ package tech.poder.ir
 
 import tech.poder.ir.commands.Simple
 import tech.poder.ir.commands.SysCommand
-import tech.poder.ir.data.base.Package
 import tech.poder.ir.data.storage.Instruction
 import tech.poder.ir.data.storage.Label
 import tech.poder.ir.data.storage.NamedType
-import tech.poder.ir.data.storage.memory.MemoryAllocator
 import tech.poder.ir.data.ugly.StackNumberParse
 import tech.poder.ir.metadata.MethodHolder
 import tech.poder.ir.metadata.ObjectHolder
 import java.util.*
 
-class Machine(maxMemory: Long = 1024 * 1024 /* 1 MB default*/, pageSize: Long = 1_024 /*1 KB default*/) {
-
-    private val methods = mutableMapOf<String, List<Instruction>>()
-    private val structs = mutableMapOf<String, List<NamedType>>()
-    private val allocator = MemoryAllocator(maxMemory, pageSize)
-
-    fun loadPackage(package_: Package) {
-
-        package_.floating.forEach {
-            val list = mutableListOf<Instruction>()
-            it.toBulk(list)
-            methods[it.fullName] = list
-        }
-
-        package_.objects.forEach { obj ->
-            structs[obj.fullName] = obj.fields
-            obj.methods.forEach {
-                val list = ArrayList<Instruction>()
-                it.toBulk(list)
-                methods[it.fullName] = list
-            }
-        }
-    }
-
-    fun execute(name: String, vararg args: Any) {
-
-        val method = checkNotNull(methods[name]) {
-            "Method \"$name\" does not exist!"
-        }
-
-        execute(method, *args)
-    }
+class Runner {
 
     private fun execute(instructions: List<Instruction>, vararg args: Any): Any? {
 
@@ -234,11 +201,11 @@ class Machine(maxMemory: Long = 1024 * 1024 /* 1 MB default*/, pageSize: Long = 
                     val newArgs = Array(holder.args.size) {
                         stack.pop()
                     }
-                    if (holder.returnType == null) {
+                    /*if (holder.returnType == null) {
                         execute(holder.fullName, *newArgs)
                     } else {
                         stack.push(execute(holder.fullName, *newArgs))
-                    }
+                    }*/
                 }
                 Simple.UNSIGNED_UPSCALE -> {
                     when (val x = stack.pop() as Number) {

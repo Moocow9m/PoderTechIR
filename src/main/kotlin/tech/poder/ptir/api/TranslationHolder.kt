@@ -1,4 +1,4 @@
-package tech.poder.ir.api
+package tech.poder.ptir.api
 
 import kotlin.reflect.KClass
 

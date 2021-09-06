@@ -5,12 +5,13 @@ import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.Type
 import tech.poder.ir.data.storage.segment.Segment
 import tech.poder.ir.metadata.Visibility
+import kotlin.reflect.KClass
 
 data class Method internal constructor(
     val package_: Package,
     val parent: Object?,
     val name: String,
-    val returnType: Type?,
+    val returnType: KClass<out Type>?,
     val args: Set<NamedType>,
     val visibility: Visibility,
     var localVarSize: Int = 0,
