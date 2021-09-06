@@ -24,7 +24,7 @@ data class Object internal constructor(
         vararg args: NamedType,
         code: (CodeBuilder) -> Unit
     ): Method {
-        val meth = CodeBuilder.createMethod(
+        /*val meth = CodeBuilder.createMethod(
             parent,
             name,
             vis,
@@ -32,9 +32,9 @@ data class Object internal constructor(
             setOf(NamedType("this", Type.Struct(fullName, fields)), *args),
             this,
             code
-        )
-        methods.add(meth)
-        return meth
+        )*/
+        //methods.add(meth)
+        TODO()
     }
 
     override fun equals(other: Any?): Boolean {

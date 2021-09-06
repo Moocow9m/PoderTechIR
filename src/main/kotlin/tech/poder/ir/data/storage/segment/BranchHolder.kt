@@ -5,6 +5,7 @@ import tech.poder.ir.data.storage.Instruction
 import tech.poder.ir.data.storage.Label
 import tech.poder.ir.data.storage.Type
 import java.util.*
+import kotlin.reflect.KClass
 
 data class BranchHolder(
     val ifBlock: Segment,
@@ -14,7 +15,7 @@ data class BranchHolder(
     override fun eval(
         method: Method,
         stack: Stack<Type>,
-        currentVars: MutableList<Type?>,
+        currentVars: MutableList<KClass<out Type>?>,
         currentIndex: Int,
         labels: MutableMap<Int, Label>
     ): Int {

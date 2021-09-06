@@ -1,16 +1,11 @@
 package tech.poder.ir.data.storage.segment
 
-import tech.poder.ir.commands.Simple
-import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.storage.Instruction
 import tech.poder.ir.data.storage.Label
-import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.Type
-import tech.poder.ir.data.ugly.StackNumberParse
-import tech.poder.ir.metadata.MethodHolder
-import tech.poder.ir.metadata.ObjectHolder
 import java.util.*
+import kotlin.reflect.KClass
 
 data class SegmentPart(
     val instructions: MutableList<Instruction> = mutableListOf()
@@ -19,13 +14,13 @@ data class SegmentPart(
     override fun eval(
         method: Method,
         stack: Stack<Type>,
-        currentVars: MutableList<Type?>,
+        currentVars: MutableList<KClass<out Type>?>,
         currentIndex: Int,
         labels: MutableMap<Int, Label>
     ): Int {
 
         var index = 0
-        while (index < instructions.size) {
+        /*while (index < instructions.size) {
 
             val instruction = instructions[index]
 
@@ -305,7 +300,15 @@ data class SegmentPart(
                     offset--
                 }
             }
-        }
+        }*/
+        return 0
+    }
 
+    override fun size(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun toBulk(storage: MutableList<Instruction>) {
+        TODO("Not yet implemented")
     }
 }

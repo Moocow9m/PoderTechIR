@@ -1,11 +1,8 @@
 package tech.poder.ir.data.ugly
 
-import tech.poder.ir.commands.Simple
 import tech.poder.ir.data.storage.Instruction
 import tech.poder.ir.data.storage.Label
 import tech.poder.ir.data.storage.Type
-import tech.poder.ir.data.storage.segment.SegmentPart.Companion.deleteInstruction
-import tech.poder.ir.data.storage.segment.SegmentPart.Companion.safePop
 import java.util.*
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -21,7 +18,7 @@ object StackNumberParse {
         labels: MutableMap<Int, Label>
     ): Int {
         var index = cIndex
-        when (instruction.opCode) {
+        /*when (instruction.opCode) {
             Simple.INC -> {
                 val popped = safePop(stack, "INC")
                 check(popped is Type.Primitive && popped !is Type.Primitive.String) {
@@ -407,7 +404,7 @@ object StackNumberParse {
                 )
             }
             else -> error("Unknown number command: ${instruction.opCode}")
-        }
+        }*/
         return index
     }
 
@@ -423,7 +420,7 @@ object StackNumberParse {
     }
 
     internal fun toLarger(a: Type.Primitive, b: Type.Primitive): Type.Primitive {
-        return when {
+        /*return when {
             a is Type.Primitive.String || b is Type.Primitive.String -> Type.Primitive.String()
             a is Type.Primitive.Double || b is Type.Primitive.Double -> Type.Primitive.Double()
             a is Type.Primitive.Float || b is Type.Primitive.Float -> Type.Primitive.Float()
@@ -431,7 +428,8 @@ object StackNumberParse {
             a is Type.Primitive.Int || b is Type.Primitive.Int -> Type.Primitive.Int()
             a is Type.Primitive.Short || b is Type.Primitive.Short -> Type.Primitive.Short()
             else -> Type.Primitive.Byte()
-        }
+        }*/
+        TODO()
     }
 
     internal fun toSameNumbers(from: Number, to: Number): Number {

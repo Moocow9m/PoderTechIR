@@ -1,13 +1,11 @@
 package tech.poder.ir
 
 import tech.poder.ir.commands.Simple
-import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.storage.Instruction
 import tech.poder.ir.data.storage.Label
 import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.ugly.StackNumberParse
 import tech.poder.ir.metadata.MethodHolder
-import tech.poder.ir.metadata.ObjectHolder
 import java.util.*
 
 class Runner {
@@ -34,13 +32,13 @@ class Runner {
                     }
                 }
                 Simple.SYS_CALL -> {
-                    when (inst.extra as SysCommand) {
+                    /*when (inst.extra as SysCommand) {
                         SysCommand.SLEEP -> TODO()
                         SysCommand.SUSPEND -> TODO()
                         SysCommand.LOAD_LIB -> TODO()
                         SysCommand.YIELD -> TODO()
                         SysCommand.PRINT -> print(stack.pop())
-                    }
+                    }*/
                 }
                 Simple.PUSH -> {
                     stack.push(inst.extra)
@@ -225,13 +223,13 @@ class Runner {
                 }
                 Simple.LAUNCH -> TODO()
                 Simple.NEW_OBJECT -> {
-                    val objDef = stack.pop() as ObjectHolder//todo add HiddenObjectHolder support
+                    /*val objDef = stack.pop() as ObjectHolder//todo add HiddenObjectHolder support
                     val fields = mutableMapOf<String, Any>()
                     repeat(objDef.fields.size) {
                         val f = objDef.fields[it]
                         fields[f.name] = f.type.defaultValue()
                     }
-                    stack.push(fields)
+                    stack.push(fields)*/
                 }
                 Simple.BREAKPOINT -> {
                     System.err.println("BREAKPOINT")
