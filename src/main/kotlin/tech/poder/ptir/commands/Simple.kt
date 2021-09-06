@@ -1,10 +1,9 @@
 package tech.poder.ptir.commands
 
 import tech.poder.ptir.util.MemorySegmentBuffer
-import kotlin.reflect.jvm.jvmName
 
-enum class Simple :
-    Command { //todo all IDs are subject to change based on analysis of program samples (more common get smaller numbers)
+enum class Simple : Command {
+    //todo all IDs are subject to change based on analysis of program samples (more common get smaller numbers)
     RET,
     POP,
     DUP,
@@ -36,14 +35,14 @@ enum class Simple :
     UPSCALE_UNSIGNED;
 
     override val id: Int = ordinal
-    private val sizeBits = MemorySegmentBuffer.varSize(ordinal).toLong() * 8L
+    private val sizeBits = MemorySegmentBuffer.varSize(id).toLong() * 8L
 
     override fun sizeBits(): Long {
         return sizeBits
     }
 
     override fun toString(): String {
-        return this::class.simpleName ?: this::class.jvmName
+        return "[$id] $name"
     }
 
     override fun toBin(output: MemorySegmentBuffer) {
