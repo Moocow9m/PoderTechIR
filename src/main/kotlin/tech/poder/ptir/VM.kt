@@ -1,9 +1,9 @@
 package tech.poder.ptir
 
-import tech.poder.ir.data.base.Portable
 import tech.poder.ir.data.storage.Instruction
 import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.memory.MemoryAllocator
+import tech.poder.ptir.data.base.Container
 import java.util.concurrent.atomic.AtomicBoolean
 
 object VM {
@@ -12,7 +12,7 @@ object VM {
     internal val allocator = MemoryAllocator()
     private var running = AtomicBoolean(true)
 
-    fun loadPortable(portable: Portable) {
+    fun loadPortable(portable: Container) {
         portable.roots.forEach { pkg ->
             pkg.floating.forEach {
                 val list = mutableListOf<Instruction>()

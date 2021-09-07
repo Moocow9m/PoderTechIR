@@ -1,18 +1,8 @@
 package tech.poder.test
 
-import tech.poder.ir.parsing.windows.WindowsImage
-import tech.poder.ptir.util.SegmentUtil
-import java.nio.ByteOrder
-import java.nio.channels.FileChannel
-import java.nio.file.FileVisitOption
-import java.nio.file.Files
-import java.nio.file.Paths
-import kotlin.io.path.isRegularFile
-import kotlin.test.Test
-
 internal class WindowsTest {
 
-    @Test
+    /*@Test
     fun readDll() {
 
         val dlls = Paths.get("testFiles").toAbsolutePath()
@@ -25,5 +15,5 @@ internal class WindowsTest {
                 WindowsImage.read(it).processToGeneric(it)
             }
         }
-    }
+    }*/
 }

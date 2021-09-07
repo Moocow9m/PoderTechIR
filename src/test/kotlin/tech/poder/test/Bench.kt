@@ -1,12 +1,6 @@
 package tech.poder.test
 
-import tech.poder.ir.parsing.windows.WindowsImage
-import tech.poder.ptir.util.SegmentUtil
-import java.nio.ByteOrder
-import java.nio.channels.FileChannel
-import kotlin.io.path.Path
 import kotlin.system.measureNanoTime
-import kotlin.test.Test
 
 class Bench {
 
@@ -15,7 +9,7 @@ class Bench {
 	}
 
 
-	@Test
+	/*@Test
 	fun thing() {
 
 		val path = Path("testFiles", "win", "_OverClockingNvc.dll") //this is too absolute
@@ -27,7 +21,7 @@ class Bench {
 				reader.position = 0
 			}
 		}
-	}
+	}*/
 
 
 	class Benchmark(val name: String) {

@@ -1,6 +1,6 @@
 package tech.poder.ptir.commands
 
-import tech.poder.ir.data.storage.Type
+import tech.poder.ptir.data.Type
 
 enum class SysCommand(val return_: Type?, vararg val args: Type) {
     /*SLEEP(null, Type.Primitive.Long()),

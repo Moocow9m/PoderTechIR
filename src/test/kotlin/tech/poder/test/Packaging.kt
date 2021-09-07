@@ -1,6 +1,6 @@
 package tech.poder.test
 
-import tech.poder.ir.data.base.Package
+import tech.poder.ptir.data.base.Package
 import tech.poder.ptir.metadata.Visibility
 
 
