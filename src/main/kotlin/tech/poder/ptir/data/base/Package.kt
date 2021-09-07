@@ -2,11 +2,10 @@ package tech.poder.ptir.data.base
 
 import tech.poder.ir.data.CodeBuilder
 import tech.poder.ir.data.storage.ConstantPool
-import tech.poder.ir.data.storage.NamedType
 import tech.poder.ptir.api.CodeHolder
 import tech.poder.ptir.data.Type
+import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.metadata.Visibility
-import kotlin.reflect.KClass
 
 data class Package internal constructor(
     val namespace: String,
@@ -15,12 +14,7 @@ data class Package internal constructor(
     internal val objects: MutableSet<Object> = mutableSetOf(),
     internal val floating: MutableSet<Method> = mutableSetOf(),
     internal val constPool: ConstantPool = ConstantPool(mutableMapOf()),
-    internal val requiredLibs: MutableSet<String> = mutableSetOf(),
 ) : CodeHolder {
-
-    fun addLib(name: String) {
-        requiredLibs.add(name)
-    }
 
     fun newChildPackage(name: String, vis: Visibility): Package {
         val pkg = Package(name, vis)
@@ -31,7 +25,7 @@ data class Package internal constructor(
     fun newFloatingMethod(
         name: String,
         vis: Visibility,
-        returnType: KClass<out Type>? = null,
+        returnType: Type = Type.Unit,
         args: Set<NamedType> = emptySet(),
         code: (CodeBuilder) -> Unit
     ): Method {

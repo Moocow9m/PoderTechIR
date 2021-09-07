@@ -1,9 +1,8 @@
-package tech.poder.ir.data.storage
+package tech.poder.ptir.data.storage
 
 import tech.poder.ptir.data.Type
-import kotlin.reflect.KClass
 
-data class NamedType(val name: String, val type: KClass<out Type>) {
+data class NamedType(val name: String, val type: Type) {
 
     override fun toString(): String {
         return "$name = $type"

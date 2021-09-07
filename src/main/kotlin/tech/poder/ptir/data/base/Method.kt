@@ -1,20 +1,19 @@
 package tech.poder.ptir.data.base
 
 import tech.poder.ir.data.storage.Instruction
-import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.segment.Segment
 import tech.poder.ptir.data.Type
+import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.metadata.Visibility
-import kotlin.reflect.KClass
 
 data class Method internal constructor(
     val package_: Package,
     val parent: Object?,
     val name: String,
-    val returnType: KClass<out Type>?,
+    val returnType: Type,
     val args: Set<NamedType>,
     val visibility: Visibility,
-    var localVarSize: Int = 0,
+    internal var localVarSize: Int = 0,
     internal var instructions: Segment
 ) {
 
@@ -44,11 +43,11 @@ data class Method internal constructor(
     }
 
     override fun toString(): String {
-        return "$visibility $fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size()} }"
+        return "$visibility $fullName(${args.joinToString(", ")}): ${returnType} { Size: ${instructions.size()} }"
     }
 
     fun toString(tabs: Int): String {
-        return "${"\t".repeat(tabs)}$visibility $fullName(${args.joinToString(", ")}): ${returnType ?: "VOID"} { Size: ${instructions.size()} }"
+        return "${"\t".repeat(tabs)}$visibility $fullName(${args.joinToString(", ")}): ${returnType} { Size: ${instructions.size()} }"
     }
 
     internal fun toBulk(arrayList: MutableList<Instruction>) {

@@ -1,6 +1,6 @@
 package tech.poder.ptir.data
 
-import tech.poder.ir.data.storage.NamedType
+import tech.poder.ptir.data.storage.NamedType
 
 sealed interface Type {
 

@@ -5,7 +5,6 @@ import tech.poder.ptir.data.Label
 import tech.poder.ptir.data.Type
 import tech.poder.ptir.data.base.Method
 import java.util.*
-import kotlin.reflect.KClass
 
 data class MultiSegment(
     val instructions: MutableList<Segment> = mutableListOf()
@@ -165,7 +164,7 @@ data class MultiSegment(
     override fun eval(
         method: Method,
         stack: Stack<Type>,
-        currentVars: MutableList<KClass<out Type>?>,
+        currentVars: MutableList<Type>,
         currentIndex: Int,
         labels: MutableMap<Int, Label>
     ): Int {

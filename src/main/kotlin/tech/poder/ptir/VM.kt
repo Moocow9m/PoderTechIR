@@ -1,9 +1,9 @@
 package tech.poder.ptir
 
 import tech.poder.ir.data.storage.Instruction
-import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.memory.MemoryAllocator
 import tech.poder.ptir.data.base.Container
+import tech.poder.ptir.data.storage.NamedType
 import java.util.concurrent.atomic.AtomicBoolean
 
 object VM {

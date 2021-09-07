@@ -1,14 +1,13 @@
 package tech.poder.ir.data
 
 import tech.poder.ir.data.storage.Instruction
-import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.segment.MultiSegment
 import tech.poder.ptir.data.Type
 import tech.poder.ptir.data.base.Method
 import tech.poder.ptir.data.base.Object
 import tech.poder.ptir.data.base.Package
+import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.metadata.Visibility
-import kotlin.reflect.KClass
 
 data class CodeBuilder(
     private val storage: Method,
@@ -19,7 +18,7 @@ data class CodeBuilder(
             package_: Package,
             name: String,
             vis: Visibility,
-            returnType: KClass<out Type>? = null,
+            returnType: Type = Type.Unit,
             args: Set<NamedType> = emptySet(),
             parent: Object? = null,
             block: (CodeBuilder) -> Unit

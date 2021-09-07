@@ -2,7 +2,7 @@ package tech.poder.ptir.commands
 
 import tech.poder.ptir.data.Type
 
-enum class SysCommand(val return_: Type?, vararg val args: Type) {
+enum class SysCommand(val return_: Type = Type.Unit, val args: List<Type> = emptyList()) {
     /*SLEEP(null, Type.Primitive.Long()),
     SUSPEND(null, Type.Primitive.Long()),
     YIELD(null),

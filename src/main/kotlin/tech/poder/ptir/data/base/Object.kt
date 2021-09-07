@@ -1,8 +1,8 @@
 package tech.poder.ptir.data.base
 
 import tech.poder.ir.data.CodeBuilder
-import tech.poder.ir.data.storage.NamedType
 import tech.poder.ptir.data.Type
+import tech.poder.ptir.data.storage.NamedType
 import tech.poder.ptir.metadata.Visibility
 
 data class Object internal constructor(
@@ -20,8 +20,8 @@ data class Object internal constructor(
     fun newMethod(
         name: String,
         vis: Visibility,
-        returnType: Type? = null,
-        vararg args: NamedType,
+        returnType: Type = Type.Unit,
+        args: Set<NamedType> = emptySet(),
         code: (CodeBuilder) -> Unit
     ): Method {
         /*val meth = CodeBuilder.createMethod(

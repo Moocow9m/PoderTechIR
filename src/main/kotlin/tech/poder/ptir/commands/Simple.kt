@@ -29,7 +29,7 @@ enum class Simple : Command {
     UNSAFE_GET,
     UNSAFE_SET;
 
-    val id: Int = ordinal
+    private val id: Int = ordinal
     private val sizeBits = MemorySegmentBuffer.varSize(id).toLong() * 8L
 
     override fun id(): Int {

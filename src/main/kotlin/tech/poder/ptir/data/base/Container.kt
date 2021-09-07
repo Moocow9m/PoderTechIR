@@ -5,10 +5,16 @@ import tech.poder.ptir.metadata.Visibility
 class Container {
     internal val roots: MutableSet<Package> = mutableSetOf()
     internal var entrypoint: String? = null
+    internal val requiredLibs: MutableSet<String> = mutableSetOf()
+
     fun newPackage(namespace: String, visibility: Visibility = Visibility.INTERNAL): Package {
         val pkg = Package(namespace, visibility)
         roots.add(pkg)
         return pkg
+    }
+
+    fun addLib(name: String) {
+        requiredLibs.add(name)
     }
 
     fun entryPoint(method: Method) {

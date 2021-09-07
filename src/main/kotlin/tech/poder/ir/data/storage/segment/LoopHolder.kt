@@ -5,14 +5,13 @@ import tech.poder.ptir.data.Label
 import tech.poder.ptir.data.Type
 import tech.poder.ptir.data.base.Method
 import java.util.*
-import kotlin.reflect.KClass
 
 data class LoopHolder(val block: Segment) : Segment {
 
     override fun eval(
         method: Method,
         stack: Stack<Type>,
-        currentVars: MutableList<KClass<out Type>?>,
+        currentVars: MutableList<Type>,
         currentIndex: Int,
         labels: MutableMap<Int, Label>
     ): Int {
