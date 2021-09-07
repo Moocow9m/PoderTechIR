@@ -31,20 +31,6 @@ value class LoopHolder(val block: Segment) : Segment {
                 copy.joinToString("\n\t\t")
             }"
         }
-
-        repeat(loopStack.size) {
-
-            val popA = loopStack.pop()
-            val popB = copy.pop()
-
-            check(popA == popB) {
-                "Loop stack does not match original! Loop: $popA Original: $popB\n\tLoop:\n\t\t${
-                    loopStack.joinToString("\n\t\t")
-                }\n\tOriginal:\n\t\t${
-                    copy.joinToString("\n\t\t")
-                }"
-            }
-        }
         return index
     }
 
