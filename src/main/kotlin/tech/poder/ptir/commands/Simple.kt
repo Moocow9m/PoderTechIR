@@ -24,10 +24,7 @@ enum class Simple : Command {
     ROL,
     ROR,
     ARRAY_SET,
-    ARRAY_GET,
-    ARRAY_CREATE,
-    UNSAFE_GET,
-    UNSAFE_SET;
+    ARRAY_GET;
 
     private val id: Int = ordinal
     private val sizeBits = MemorySegmentBuffer.varSize(id).toLong() * 8L

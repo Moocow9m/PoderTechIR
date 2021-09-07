@@ -2,6 +2,7 @@ package tech.poder.ptir.commands
 
 import tech.poder.ptir.data.Label
 import tech.poder.ptir.data.LocationRef
+import tech.poder.ptir.data.Type
 import tech.poder.ptir.util.MemorySegmentBuffer
 
 sealed interface SimpleValue : Command {
@@ -22,6 +23,9 @@ sealed interface SimpleValue : Command {
         private val invokeMethod = getField + 1
         private val launch = invokeMethod + 1
         private val newObject = launch + 1
+        private val arrayCreate = newObject + 1
+        private val unsafeGet = arrayCreate + 1
+        private val unsafeSet = unsafeGet + 1
     }
 
     @JvmInline
@@ -229,34 +233,34 @@ sealed interface SimpleValue : Command {
     }
 
     @JvmInline
-    value class SetVar(val data: UInt) : Command {
+    value class SetVar(val data: LocationRef) : Command {
         override fun id(): Int {
             return setVar
         }
 
         override fun sizeBits(): Long {
-            return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.toInt())) * 8L
+            return (MemorySegmentBuffer.varSize(id()) + data.size()) * 8L
         }
 
         override fun toBin(output: MemorySegmentBuffer) {
             output.writeVar(id())
-            output.writeVar(data.toInt())
+            data.toBin(output)
         }
     }
 
     @JvmInline
-    value class GetVar(val data: UInt) : Command {
+    value class GetVar(val data: LocationRef) : Command {
         override fun id(): Int {
             return getVar
         }
 
         override fun sizeBits(): Long {
-            return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.toInt())) * 8L
+            return (MemorySegmentBuffer.varSize(id()) + data.size()) * 8L
         }
 
         override fun toBin(output: MemorySegmentBuffer) {
             output.writeVar(id())
-            output.writeVar(data.toInt())
+            data.toBin(output)
         }
     }
 
@@ -477,6 +481,54 @@ sealed interface SimpleValue : Command {
     value class NewObject(val data: LocationRef) : Command {
         override fun id(): Int {
             return newObject
+        }
+
+        override fun sizeBits(): Long {
+            return (MemorySegmentBuffer.varSize(id()) + data.size()) * 8L
+        }
+
+        override fun toBin(output: MemorySegmentBuffer) {
+            output.writeVar(id())
+            data.toBin(output)
+        }
+    }
+
+    @JvmInline
+    value class ArrayCreate(val data: Type) : Command {
+        override fun id(): Int {
+            return arrayCreate
+        }
+
+        override fun sizeBits(): Long {
+            return (MemorySegmentBuffer.varSize(id()) + data.size()) * 8L
+        }
+
+        override fun toBin(output: MemorySegmentBuffer) {
+            output.writeVar(id())
+            data.toBin(output)
+        }
+    }
+
+    @JvmInline
+    value class UnsafeGet(val data: Type) : Command {
+        override fun id(): Int {
+            return unsafeGet
+        }
+
+        override fun sizeBits(): Long {
+            return (MemorySegmentBuffer.varSize(id()) + data.size()) * 8L
+        }
+
+        override fun toBin(output: MemorySegmentBuffer) {
+            output.writeVar(id())
+            data.toBin(output)
+        }
+    }
+
+    @JvmInline
+    value class UnsafeSet(val data: Type) : Command {
+        override fun id(): Int {
+            return unsafeSet
         }
 
         override fun sizeBits(): Long {

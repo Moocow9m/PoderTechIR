@@ -1,7 +1,6 @@
 package tech.poder.ptir.data.base
 
 import tech.poder.ir.data.CodeBuilder
-import tech.poder.ir.data.storage.ConstantPool
 import tech.poder.ptir.api.CodeHolder
 import tech.poder.ptir.data.Type
 import tech.poder.ptir.data.storage.NamedType
@@ -13,7 +12,6 @@ data class Package internal constructor(
     internal var children: MutableSet<Package> = mutableSetOf(),
     internal val objects: MutableSet<Object> = mutableSetOf(),
     internal val floating: MutableSet<Method> = mutableSetOf(),
-    internal val constPool: ConstantPool = ConstantPool(mutableMapOf()),
 ) : CodeHolder {
 
     fun newChildPackage(name: String, vis: Visibility): Package {
