@@ -1,8 +1,8 @@
 package tech.poder.ir.data.ugly
 
-import tech.poder.ir.data.storage.Instruction
-import tech.poder.ptir.data.Label
-import tech.poder.ptir.data.Type
+import tech.poder.ir.commands.Command
+import tech.poder.ir.data.Label
+import tech.poder.ir.data.Type
 import java.util.*
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -12,9 +12,9 @@ object StackNumberParse {
     internal fun parse(
         cIndex: Int,
         oIndex: Int,
-        instruction: Instruction,
+        instruction: Command,
         stack: Stack<Type>,
-        instructions: MutableList<Instruction>,
+        instructions: MutableList<Command>,
         labels: MutableMap<Int, Label>
     ): Int {
         var index = cIndex

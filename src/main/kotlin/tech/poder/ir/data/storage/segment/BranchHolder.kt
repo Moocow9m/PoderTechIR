@@ -1,9 +1,9 @@
 package tech.poder.ir.data.storage.segment
 
-import tech.poder.ir.data.storage.Instruction
-import tech.poder.ptir.data.Label
-import tech.poder.ptir.data.Type
-import tech.poder.ptir.data.base.Method
+import tech.poder.ir.commands.Command
+import tech.poder.ir.data.Label
+import tech.poder.ir.data.Type
+import tech.poder.ir.data.base.Method
 import java.util.*
 
 data class BranchHolder(
@@ -86,7 +86,7 @@ data class BranchHolder(
         return ifBlock.size() + (elseBlock?.size() ?: 0)
     }
 
-    override fun toBulk(storage: MutableList<Instruction>) {
+    override fun toBulk(storage: MutableList<Command>) {
         ifBlock.toBulk(storage)
         elseBlock?.toBulk(storage)
     }

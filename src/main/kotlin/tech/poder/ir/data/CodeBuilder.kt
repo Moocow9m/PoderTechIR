@@ -1,119 +1,80 @@
 package tech.poder.ir.data
 
-import tech.poder.ir.data.storage.Instruction
-import tech.poder.ir.data.storage.segment.MultiSegment
-import tech.poder.ptir.data.Type
-import tech.poder.ptir.data.base.Method
-import tech.poder.ptir.data.base.Object
-import tech.poder.ptir.data.base.Package
-import tech.poder.ptir.data.storage.NamedType
-import tech.poder.ptir.metadata.Visibility
+import tech.poder.ir.commands.Command
+import tech.poder.ir.commands.Simple
+import tech.poder.ir.commands.SimpleValue
+import tech.poder.ir.commands.SysCommand
+import tech.poder.ir.data.base.Method
+import tech.poder.ir.data.base.Object
 
-data class CodeBuilder(
+data class CodeBuilder internal constructor(
     private val storage: Method,
-    val instructions: MutableList<Instruction> = mutableListOf()
+    private val instructions: MutableList<Command> = mutableListOf()
 ) {
-    companion object {
-        fun createMethod(
-            package_: Package,
-            name: String,
-            vis: Visibility,
-            returnType: Type = Type.Unit,
-            args: Set<NamedType> = emptySet(),
-            parent: Object? = null,
-            block: (CodeBuilder) -> Unit
-        ): Method {
-
-            val method = Method(package_, parent, name, returnType, args, vis, 0, MultiSegment())
-            val builder = CodeBuilder(method)
-
-            block.invoke(builder)
-            //method.instructions = builder.finalize()
-
-            return method
-        }
-
-        /*private val constantMethods = mutableMapOf<Command, Instruction>()
-
-        private fun getOrPut(command: Command): Instruction {
-            return constantMethods.getOrPut(command) {
-                Instruction(command)
-            }
-        }*/
-    }
-
-    private val localVars = storage.args.mapTo(mutableSetOf()) {
-        it.name
-    }
-
-    val fullName by lazy {
-        storage.fullName
-    }
-
     //Bit Operations
-    /*fun and() {
-        instructions.add(getOrPut(Simple.AND))
+    fun and() {
+        instructions.add(Simple.AND)
     }
 
     fun or() {
-        instructions.add(getOrPut(Simple.OR))
+        instructions.add(Simple.OR)
     }
 
     fun xor() {
-        instructions.add(getOrPut(Simple.XOR))
+        instructions.add(Simple.XOR)
     }
 
     fun unsignedShiftLeft() {
-        instructions.add(getOrPut(Simple.SHL))
+        instructions.add(Simple.SHL)
     }
 
     fun signedShiftLeft() {
-        instructions.add(getOrPut(Simple.SAL))
+        instructions.add(Simple.SAL)
     }
 
     fun signedShiftRight() {
-        instructions.add(getOrPut(Simple.SAR))
+        instructions.add(Simple.SAR)
     }
 
     fun unsignedShiftRight() {
-        instructions.add(getOrPut(Simple.SHR))
+        instructions.add(Simple.SHR)
     }
 
     fun rotateRight() {
-        instructions.add(getOrPut(Simple.ROR))
+        instructions.add(Simple.ROR)
     }
 
     fun rotateLeft() {
-        instructions.add(getOrPut(Simple.ROL))
+        instructions.add(Simple.ROL)
     }
 
     //Math
     fun inc() {
-        instructions.add(getOrPut(Simple.INC))
+        instructions.add(Simple.INC)
     }
 
     fun add() {
-        instructions.add(getOrPut(Simple.ADD))
+        instructions.add(Simple.ADD)
     }
 
     fun mul() {
-        instructions.add(getOrPut(Simple.MUL))
+        instructions.add(Simple.MUL)
     }
 
     fun dec() {
-        instructions.add(getOrPut(Simple.DEC))
+        instructions.add(Simple.DEC)
     }
 
     fun sub() {
-        instructions.add(getOrPut(Simple.SUB))
+        instructions.add(Simple.SUB)
     }
 
     fun div() {
-        instructions.add(getOrPut(Simple.DIV))
+        instructions.add(Simple.DIV)
     }
 
     fun neg() {
-        instructions.add(getOrPut(Simple.NEG))
+        instructions.add(Simple.NEG)
     }
 
     //Labels
@@ -124,7 +85,7 @@ data class CodeBuilder(
     }
 
     fun jmp(to: Label) {
-        instructions.add(Instruction(Simple.JMP, to))
+        instructions.add(SimpleValue.Jump(to))
     }
 
     fun placeLabel(label: Label) {
@@ -133,184 +94,162 @@ data class CodeBuilder(
 
     //Local Vars
     fun setVar(name: String) {
-        localVars.add(name)
-        instructions.add(Instruction(Simple.SET_VAR, localVars.indexOf(name)))
+        instructions.add(SimpleValue.SetVar(LocationRef.LocationByName(name)))
     }
 
     fun getVar(name: String) {
-
-        check(name in localVars) {
-            "Variable $name does not have a value on get!\n\tKnown Variables:\n\t\t${localVars.joinToString("\n\t\t")}"
-        }
-
-        instructions.add(Instruction(Simple.GET_VAR, localVars.indexOf(name)))
+        instructions.add(SimpleValue.GetVar(LocationRef.LocationByName(name)))
     }
 
     //Array
     fun getArrayItem() {
-        instructions.add(getOrPut(Simple.ARRAY_GET))
+        instructions.add(Simple.ARRAY_GET)
     }
 
     fun setArrayItem() {
-        instructions.add(getOrPut(Simple.ARRAY_SET))
+        instructions.add(Simple.ARRAY_SET)
     }
 
     fun createArray(type: Type) {
-        instructions.add(Instruction(Simple.ARRAY_CREATE, type))
+        instructions.add(SimpleValue.ArrayCreate(type))
     }
 
     //Fields
-    private fun getFieldType(name: String): NamedType {
-        check(storage.parent != null) {
-            "Floating method has no fields!"
-        }
-        val fName = "${storage.parent.fullName}.$name"
-        return storage.parent.fields.first { it.name == fName }
-    }
-
     fun getField(name: String) {
-        getField(getFieldType(name))
+        instructions.add(SimpleValue.GetField(LocationRef.LocationByName(name)))
     }
 
     fun setField(name: String) {
-        setField(getFieldType(name))
-    }
-
-    fun getField(field: NamedType) {
-        instructions.add(Instruction(Simple.GET_FIELD, field))
-    }
-
-    fun setField(field: NamedType) {
-        instructions.add(Instruction(Simple.SET_FIELD, field))
+        instructions.add(SimpleValue.SetField(LocationRef.LocationByName(name)))
     }
 
     //Unsafe
-    fun getUnsafeData(offset: Int, type: Type) {
-        instructions.add(Instruction(Simple.UNSAFE_GET, OffsetType(offset, type)))
+    fun getUnsafeData(type: Type) {
+        instructions.add(SimpleValue.UnsafeGet(type))
     }
 
-    fun setUnsafeData(offset: Int, type: Type) {
-        instructions.add(Instruction(Simple.UNSAFE_SET, OffsetType(offset, type)))
+    fun setUnsafeData(type: Type) {
+        instructions.add(SimpleValue.UnsafeSet(type))
     }
 
     //Statements
-    fun ifEquals(elseJump: Label) { //todo all statements should have fragments for parsing ease
-        instructions.add(Instruction(Simple.IF_EQ, elseJump))
+    fun ifEquals(elseJump: Label) {
+        instructions.add(SimpleValue.IfEquals(elseJump))
     }
 
     fun ifNotEquals(elseJump: Label) {
-        instructions.add(Instruction(Simple.IF_NOT_EQ, elseJump))
+        instructions.add(SimpleValue.IfNotEquals(elseJump))
     }
 
     fun ifGreaterThan(elseJump: Label) {
-        instructions.add(Instruction(Simple.IF_GT, elseJump))
+        instructions.add(SimpleValue.IfGreaterThan(elseJump))
     }
 
     fun ifLessThan(elseJump: Label) {
-        instructions.add(Instruction(Simple.IF_LT, elseJump))
+        instructions.add(SimpleValue.IfLessThan(elseJump))
     }
 
     fun ifGreaterThanEqual(elseJump: Label) {
-        instructions.add(Instruction(Simple.IF_GT_EQ, elseJump))
+        instructions.add(SimpleValue.IfGreaterThanEquals(elseJump))
     }
 
     fun ifLessThanEqual(elseJump: Label) {
-        instructions.add(Instruction(Simple.IF_LT_EQ, elseJump))
-    }
-
-    fun switch(lowCase: Int, highCase: Int, default: Label, vararg cases: Label) {
-        instructions.add(Instruction(Simple.SWITCH, arrayOf(lowCase, highCase, default, *cases)))
+        instructions.add(SimpleValue.IfLessThanEquals(elseJump))
     }
 
     //Methods
     fun invokeMethod(method: Method) {
+        invokeMethod(method.fullName)
+    }
+
+    fun invokeMethod(fullName: String) {
         instructions.add(
-            Instruction(Simple.INVOKE_METHOD, MethodHolder(method.fullName, method.returnType, method.args))
+            SimpleValue.Invoke(LocationRef.LocationByName(fullName))
         )
     }
 
-    fun invokeMethod(fullName: String, returnType: KClass<out Type>? = null, vararg args: NamedType) {
-        instructions.add(Instruction(Simple.INVOKE_METHOD, MethodHolder(fullName, returnType, args.toSet())))
-    }
-
-    fun unsignedUpscale() {
-        instructions.add(Instruction(Simple.UNSIGNED_UPSCALE))
-    }
-
     fun launch(method: Method, priority: Int) {
-
-        checkNotNull(method.returnType) {
-            "Launched methods cannot have a return type!"
-        }
-
-        launch(method.fullName, priority, *method.args.toTypedArray())
+        launch(method.fullName, priority)
     }
 
-    fun launch(fullName: String, priority: Int, vararg args: NamedType) {
-        instructions.add(Instruction(Simple.LAUNCH, Pair(priority, MethodHolder(fullName, null, args.toSet()))))
+    fun launch(fullName: String, priority: Int) {
+        instructions.add(SimpleValue.Launch(LocationRef.LocationByName("$fullName\u0000$priority")))
     }
 
     //Misc
     fun return_() {
-        instructions.add(getOrPut(Simple.RETURN))
+        instructions.add(Simple.RETURN)
     }
 
     fun newObject(object_: Object) {
-        instructions.add(Instruction(Simple.NEW_OBJECT, ObjectHolder(object_.fullName, object_.fields)))
+        newObject(object_.fullName)
     }
 
-    fun newObject(fullName: String, vararg fields: NamedType) {
-        instructions.add(Instruction(Simple.NEW_OBJECT, ObjectHolder(fullName, fields.toSet().toList())))
+    fun newObject(fullName: String) {
+        instructions.add(SimpleValue.NewObject(LocationRef.LocationByName(fullName)))
     }
 
-    fun breakpoint() {
-        instructions.add(getOrPut(Simple.BREAKPOINT))
-    }
-
-    fun dup() {
-        instructions.add(getOrPut(Simple.DUP))
+    fun duplicate() {
+        instructions.add(Simple.DUP)
     }
 
     fun pop() {
-        instructions.add(getOrPut(Simple.POP))
+        instructions.add(Simple.POP)
     }
 
-    fun push(constant: Any) {
-        instructions.add(Instruction(Simple.PUSH, constant))
+    fun push(constant: Byte) {
+        instructions.add(SimpleValue.PushByte(constant))
+    }
+
+    fun push(constant: Short) {
+        instructions.add(SimpleValue.PushShort(constant))
+    }
+
+    fun push(constant: Int) {
+        instructions.add(SimpleValue.PushInt(constant))
+    }
+
+    fun push(constant: Long) {
+        instructions.add(SimpleValue.PushLong(constant))
+    }
+
+    fun push(constant: Float) {
+        instructions.add(SimpleValue.PushFloat(constant))
+    }
+
+    fun push(constant: Double) {
+        instructions.add(SimpleValue.PushDouble(constant))
+    }
+
+    fun push(constant: UByte) {
+        instructions.add(SimpleValue.PushUByte(constant))
+    }
+
+    fun push(constant: UShort) {
+        instructions.add(SimpleValue.PushUShort(constant))
+    }
+
+    fun push(constant: UInt) {
+        instructions.add(SimpleValue.PushUInt(constant))
+    }
+
+    fun push(constant: ULong) {
+        instructions.add(SimpleValue.PushULong(constant))
+    }
+
+    fun push(constant: Char) {
+        instructions.add(SimpleValue.PushChar(constant))
+    }
+
+    fun push(constant: CharSequence) {
+        instructions.add(SimpleValue.PushChars(constant))
     }
 
     fun sysCall(call: SysCommand) {
-        instructions.add(Instruction(Simple.SYS_CALL, call))
+        instructions.add(SimpleValue.SystemCall(call))
     }
 
-    private fun finalize(): Segment {
-
-        // TODO: Validation and minor code merging of constant ops
-        if (instructions.isEmpty() || instructions.last().opCode != Simple.RETURN) {
-            return_()
-        }
-
-        val segment = MultiSegment.buildSegments(instructions)!!
-        val stack = Stack<Type>()
-
-        val vars = MutableList<KClass<out Type>?>(localVars.size) {
-            null
-        }
-
-        if (storage.args.isNotEmpty() && vars[0] == null && storage.args.isNotEmpty()) {
-            storage.args.forEach {
-                vars[localVars.indexOf(it.name)] = it.type
-            }
-        }
-
-        val labels = mutableMapOf<Int, Label>()
-        instructions.forEachIndexed { i, instruction ->
-            if (instruction.extra is Label) {
-                labels[i] = instruction.extra as Label
-            }
-        }
-        segment.eval(storage, stack, vars, 0, labels)
-
-        return segment
-    }*/
+    fun finalize() {
+        TODO()
+    }
 }

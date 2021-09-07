@@ -1,7 +1,7 @@
 package tech.poder.test
 
-import tech.poder.ptir.data.base.Package
-import tech.poder.ptir.metadata.Visibility
+import tech.poder.ir.data.base.Package
+import tech.poder.ir.metadata.Visibility
 
 
 internal class Packaging {

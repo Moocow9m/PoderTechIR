@@ -1,9 +1,9 @@
 package tech.poder.ir.data.storage.segment
 
-import tech.poder.ir.data.storage.Instruction
-import tech.poder.ptir.data.Label
-import tech.poder.ptir.data.Type
-import tech.poder.ptir.data.base.Method
+import tech.poder.ir.commands.Command
+import tech.poder.ir.data.Label
+import tech.poder.ir.data.Type
+import tech.poder.ir.data.base.Method
 import java.util.*
 
 interface Segment {
@@ -18,6 +18,6 @@ interface Segment {
 
     fun size(): Int
 
-    fun toBulk(storage: MutableList<Instruction>)
+    fun toBulk(storage: MutableList<Command>)
 
 }

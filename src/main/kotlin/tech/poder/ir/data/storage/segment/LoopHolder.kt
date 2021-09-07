@@ -1,12 +1,13 @@
 package tech.poder.ir.data.storage.segment
 
-import tech.poder.ir.data.storage.Instruction
-import tech.poder.ptir.data.Label
-import tech.poder.ptir.data.Type
-import tech.poder.ptir.data.base.Method
+import tech.poder.ir.commands.Command
+import tech.poder.ir.data.Label
+import tech.poder.ir.data.Type
+import tech.poder.ir.data.base.Method
 import java.util.*
 
-data class LoopHolder(val block: Segment) : Segment {
+@JvmInline
+value class LoopHolder(val block: Segment) : Segment {
 
     override fun eval(
         method: Method,
@@ -51,7 +52,7 @@ data class LoopHolder(val block: Segment) : Segment {
         return block.size()
     }
 
-    override fun toBulk(storage: MutableList<Instruction>) {
+    override fun toBulk(storage: MutableList<Command>) {
         block.toBulk(storage)
     }
 }
