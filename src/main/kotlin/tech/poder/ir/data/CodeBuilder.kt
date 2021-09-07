@@ -1,18 +1,13 @@
 package tech.poder.ir.data
 
-import tech.poder.ir.commands.Command
-import tech.poder.ir.commands.Simple
-import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.Object
 import tech.poder.ir.data.base.Package
-import tech.poder.ir.data.storage.*
+import tech.poder.ir.data.storage.Instruction
+import tech.poder.ir.data.storage.NamedType
+import tech.poder.ir.data.storage.Type
 import tech.poder.ir.data.storage.segment.MultiSegment
-import tech.poder.ir.data.storage.segment.Segment
-import tech.poder.ir.metadata.MethodHolder
-import tech.poder.ir.metadata.ObjectHolder
-import tech.poder.ir.metadata.Visibility
-import java.util.*
+import tech.poder.ptir.metadata.Visibility
 import kotlin.reflect.KClass
 
 data class CodeBuilder(
@@ -34,18 +29,18 @@ data class CodeBuilder(
             val builder = CodeBuilder(method)
 
             block.invoke(builder)
-            method.instructions = builder.finalize()
+            //method.instructions = builder.finalize()
 
             return method
         }
 
-        private val constantMethods = mutableMapOf<Command, Instruction>()
+        /*private val constantMethods = mutableMapOf<Command, Instruction>()
 
         private fun getOrPut(command: Command): Instruction {
             return constantMethods.getOrPut(command) {
                 Instruction(command)
             }
-        }
+        }*/
     }
 
     private val localVars = storage.args.mapTo(mutableSetOf()) {
@@ -57,7 +52,7 @@ data class CodeBuilder(
     }
 
     //Bit Operations
-    fun and() {
+    /*fun and() {
         instructions.add(getOrPut(Simple.AND))
     }
 
@@ -318,5 +313,5 @@ data class CodeBuilder(
         segment.eval(storage, stack, vars, 0, labels)
 
         return segment
-    }
+    }*/
 }

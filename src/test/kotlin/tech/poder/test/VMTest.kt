@@ -1,14 +1,8 @@
 package tech.poder.test
 
-import tech.poder.ir.Runner
-import tech.poder.ir.commands.SysCommand
-import tech.poder.ir.data.storage.memory.MemoryAllocator
-import tech.poder.ir.metadata.Visibility
-import kotlin.test.Test
-
 internal class VMTest {
 
-    @Test
+    /*@Test
     fun helloWorld() {
 
         val meth = Packaging.package_.newFloatingMethod("helloWorld", Visibility.PRIVATE) {
@@ -32,5 +26,5 @@ internal class VMTest {
         val frag = mem.alloc(128)
 
         println(frag)
-    }
+    }*/
 }

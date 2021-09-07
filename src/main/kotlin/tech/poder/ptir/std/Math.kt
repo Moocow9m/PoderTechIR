@@ -1,12 +1,7 @@
 package tech.poder.ptir.std
 
-import tech.poder.ir.data.base.Portable
-import tech.poder.ir.data.storage.NamedType
-import tech.poder.ir.data.storage.Type
-import tech.poder.ir.metadata.Visibility
-
 object Math {
-    val mathLib = Portable()
+    /*val mathLib = Portable()
 
     val mathPackage = mathLib.newPackage("std", Visibility.PUBLIC)
 
@@ -50,5 +45,5 @@ object Math {
         it.jmp(start)
         it.placeLabel(end)
         it.getVar("pow")
-    }
+    }*/
 }

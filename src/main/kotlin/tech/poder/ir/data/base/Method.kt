@@ -4,7 +4,7 @@ import tech.poder.ir.data.storage.Instruction
 import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.Type
 import tech.poder.ir.data.storage.segment.Segment
-import tech.poder.ir.metadata.Visibility
+import tech.poder.ptir.metadata.Visibility
 import kotlin.reflect.KClass
 
 data class Method internal constructor(

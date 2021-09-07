@@ -1,10 +1,9 @@
 package tech.poder.ir.data.storage.segment
 
-import tech.poder.ir.commands.Simple
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.storage.Instruction
-import tech.poder.ir.data.storage.Label
 import tech.poder.ir.data.storage.Type
+import tech.poder.ptir.data.Label
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -12,7 +11,7 @@ data class MultiSegment(
     val instructions: MutableList<Segment> = mutableListOf()
 ) : Segment {
 
-    companion object {
+    /*companion object {
 
         fun buildSegments(raw: List<Instruction>?, startIndex: Int = 0): Segment? {
 
@@ -162,5 +161,22 @@ data class MultiSegment(
         instructions.forEach {
             it.toBulk(storage)
         }
+    }*/
+    override fun eval(
+        method: Method,
+        stack: Stack<Type>,
+        currentVars: MutableList<KClass<out Type>?>,
+        currentIndex: Int,
+        labels: MutableMap<Int, Label>
+    ): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun size(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun toBulk(storage: MutableList<Instruction>) {
+        TODO("Not yet implemented")
     }
 }

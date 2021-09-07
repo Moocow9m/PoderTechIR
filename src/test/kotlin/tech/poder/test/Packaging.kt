@@ -1,9 +1,7 @@
 package tech.poder.test
 
-import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.base.Package
-import tech.poder.ir.metadata.Visibility
-import kotlin.test.Test
+import tech.poder.ptir.metadata.Visibility
 
 
 internal class Packaging {
@@ -12,7 +10,7 @@ internal class Packaging {
         val package_ = Package("test", Visibility.PUBLIC)
     }
 
-    @Test
+    /*@Test
     fun linear() {
 
         val meth = package_.newFloatingMethod("linear", Visibility.PRIVATE) {
@@ -158,5 +156,5 @@ internal class Packaging {
         }
 
         println(meth)
-    }
+    }*/
 }

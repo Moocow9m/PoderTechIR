@@ -1,8 +1,8 @@
 package tech.poder.ir.data.ugly
 
 import tech.poder.ir.data.storage.Instruction
-import tech.poder.ir.data.storage.Label
 import tech.poder.ir.data.storage.Type
+import tech.poder.ptir.data.Label
 import java.util.*
 import kotlin.experimental.and
 import kotlin.experimental.or

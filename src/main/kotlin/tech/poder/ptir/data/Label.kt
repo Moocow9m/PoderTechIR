@@ -1,4 +1,4 @@
-package tech.poder.ir.data.storage
+package tech.poder.ptir.data
 
 data class Label internal constructor(val id: UShort, internal var offset: Int = -2) {
 

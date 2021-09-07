@@ -1,4 +1,4 @@
-package tech.poder.ir.commands
+package tech.poder.ptir.commands
 
 import tech.poder.ir.data.storage.Type
 

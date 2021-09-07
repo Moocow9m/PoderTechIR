@@ -4,8 +4,8 @@ import tech.poder.ir.data.CodeBuilder
 import tech.poder.ir.data.storage.ConstantPool
 import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.Type
-import tech.poder.ir.metadata.Visibility
 import tech.poder.ptir.api.CodeHolder
+import tech.poder.ptir.metadata.Visibility
 import kotlin.reflect.KClass
 
 data class Package internal constructor(

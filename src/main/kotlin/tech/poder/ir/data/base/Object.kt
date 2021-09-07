@@ -3,7 +3,7 @@ package tech.poder.ir.data.base
 import tech.poder.ir.data.CodeBuilder
 import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.Type
-import tech.poder.ir.metadata.Visibility
+import tech.poder.ptir.metadata.Visibility
 
 data class Object internal constructor(
     val parent: Package,

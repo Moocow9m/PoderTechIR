@@ -4,7 +4,7 @@ import tech.poder.ptir.util.MemorySegmentBuffer
 
 enum class Simple : Command {
     //todo all IDs are subject to change based on analysis of program samples (more common get smaller numbers)
-    RET,
+    RETURN,
     POP,
     DUP,
     INC,
@@ -23,15 +23,11 @@ enum class Simple : Command {
     SHR,
     ROL,
     ROR,
-    IF_EQ,
-    IF_NOT_EQ,
-    IF_GT,
-    IF_LT,
-    IF_GT_EQ,
-    IF_LT_EQ,
     ARRAY_SET,
     ARRAY_GET,
-    ARRAY_CREATE;
+    ARRAY_CREATE,
+    UNSAFE_GET,
+    UNSAFE_SET;
 
     val id: Int = ordinal
     private val sizeBits = MemorySegmentBuffer.varSize(id).toLong() * 8L

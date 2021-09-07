@@ -1,6 +1,6 @@
 package tech.poder.ir.data.base
 
-import tech.poder.ir.metadata.Visibility
+import tech.poder.ptir.metadata.Visibility
 
 class Portable {
     internal val roots: MutableSet<Package> = mutableSetOf()
