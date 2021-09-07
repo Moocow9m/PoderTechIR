@@ -31,11 +31,14 @@ enum class Simple : Command {
     IF_LT_EQ,
     ARRAY_SET,
     ARRAY_GET,
-    ARRAY_CREATE,
-    UPSCALE_UNSIGNED;
+    ARRAY_CREATE;
 
-    override val id: Int = ordinal
+    val id: Int = ordinal
     private val sizeBits = MemorySegmentBuffer.varSize(id).toLong() * 8L
+
+    override fun id(): Int {
+        return id
+    }
 
     override fun sizeBits(): Long {
         return sizeBits
@@ -46,6 +49,6 @@ enum class Simple : Command {
     }
 
     override fun toBin(output: MemorySegmentBuffer) {
-        output.writeVar(ordinal)
+        output.writeVar(id)
     }
 }

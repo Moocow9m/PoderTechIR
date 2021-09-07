@@ -10,6 +10,17 @@ data class MemorySegmentBuffer(
 ) : AutoCloseable {
 
     companion object {
+        /*fun varSize(number: Number): Byte {
+            return (when (number) {
+                is Int -> varSize(number)
+                is Long -> varSize(number)
+                is Double -> varSize(number)
+                is Float -> varSize(number)
+                is Short -> varSize(number)
+                else -> error("Variable length number not supported on: ${number::class}")
+            } + 1).toByte()
+        }*/
+
         fun varSize(short: Short): Byte {
             return varSize(short.toInt())
         }
@@ -40,6 +51,14 @@ data class MemorySegmentBuffer(
 
         fun varSize(double: Double): Byte {
             return varSize(double.toBits())
+        }
+
+        fun sequenceSize(charSequence: CharSequence): Int {
+            var bytes = 1
+            charSequence.forEach {
+                bytes += varSize(it.code)
+            }
+            return bytes
         }
     }
 
@@ -94,8 +113,37 @@ data class MemorySegmentBuffer(
         }
     }
 
-    fun write(byte: UByte) {
-        write(byte.toByte())
+    /*fun writeVar(number: Number) {
+        when (number) {
+            is Int -> {
+                write(0.toByte())
+                writeVar(number)
+            }
+            is Long -> {
+                write(1.toByte())
+                writeVar(number)
+            }
+            is Double -> {
+                write(2.toByte())
+                writeVar(number)
+            }
+            is Float -> {
+                write(3.toByte())
+                writeVar(number)
+            }
+            is Short -> {
+                write(4.toByte())
+                writeVar(number)
+            }
+            else -> error("Variable length number not supported on: ${number::class}")
+        }
+    }*/
+
+    fun writeSequence(charSequence: CharSequence) {
+        charSequence.forEach {
+            writeVar(it.code)
+        }
+        write(0) //null terminator
     }
 
     fun readByte(): Byte {
@@ -103,6 +151,31 @@ data class MemorySegmentBuffer(
             position += Byte.SIZE_BYTES
         }
     }
+
+    fun peakByte(): Byte {
+        return MemoryAccess.getByteAtOffset(memorySegment, position)
+    }
+
+    /*fun readVarNumber(): Number {
+        return when (readByte()) {
+            0.toByte() -> {
+                readVarInt()
+            }
+            1.toByte() -> {
+                readVarLong()
+            }
+            2.toByte() -> {
+                readVarDouble()
+            }
+            3.toByte() -> {
+                readVarFloat()
+            }
+            4.toByte() -> {
+                readShort()
+            }
+            else -> error("Variable length decoding error!")
+        }
+    }*/
 
     fun readVarShort(): Short {
         return readVarInt().toShort()
@@ -180,7 +253,6 @@ data class MemorySegmentBuffer(
         return readLong().toULong()
     }
 
-
     fun readChar(): Char {
         return MemoryAccess.getCharAtOffset(memorySegment, position, byteOrder).apply {
             position += Char.SIZE_BYTES
@@ -199,6 +271,15 @@ data class MemorySegmentBuffer(
                 append(i)
                 i = readAsciiChar()
             }
+        }
+    }
+
+    fun readSequence(): CharSequence {
+        return buildString {
+            while (peakByte() != 0.toByte()) {
+                append(Char(readVarInt()))
+            }
+            skip(1)
         }
     }
 
