@@ -14,7 +14,6 @@ data class Method internal constructor(
     val returnType: Type,
     val args: Set<NamedType>,
     val visibility: Visibility = Visibility.PRIVATE,
-    internal var localVarSize: Int = 0,
     internal var instructions: Segment = MultiSegment()
 ) {
     companion object {

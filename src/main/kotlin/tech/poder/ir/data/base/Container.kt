@@ -39,21 +39,20 @@ class Container(val name: String) {
         if (mappingCache != null) {
             return mappingCache!!
         }
-        var nextMethodId = 0u
-        var nextObjectId = 0u
-        var nextFieldId = 0u
+        val base = getSelfMapping()
         val map = mutableMapOf<String, UInt>()
         roots.filter { it.visibility == Visibility.PUBLIC }.forEach { pkg ->
             pkg.floating.filter { it.visibility == Visibility.PUBLIC }.forEach {
-                map[it.fullName] = nextMethodId++
+                map[it.fullName] = base[it.fullName]!!
             }
             pkg.objects.filter { it.visibility == Visibility.PUBLIC }.forEach { obj ->
-                map[obj.fullName] = nextObjectId++
+                map[obj.fullName] = base[obj.fullName]!!
                 obj.methods.filter { it.visibility == Visibility.PUBLIC }.forEach {
-                    map[it.fullName] = nextMethodId++
+                    map[it.fullName] = base[it.fullName]!!
                 }
                 obj.fields.forEach {
-                    map["${obj.fullName}${Object.fieldSeparator}${it.name}"] = nextFieldId++
+                    val fieldName = "${obj.fullName}${Object.fieldSeparator}${it.name}"
+                    map[fieldName] = base[fieldName]!!
                 }
             }
         }
