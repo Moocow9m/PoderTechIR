@@ -1,19 +1,22 @@
 package tech.poder.test
 
-import tech.poder.ir.data.base.unlinked.UnlinkedPackage
+import tech.poder.ir.commands.SysCommand
+import tech.poder.ir.data.base.Container
 import tech.poder.ir.metadata.Visibility
+import kotlin.test.Test
 
 
 internal class Packaging {
 
     companion object {
-        val package_ = UnlinkedPackage("test", Visibility.PUBLIC)
+        val container = Container.newContainer("test")
+        val package_ = container.newPackage("Packaging", Visibility.PUBLIC)
     }
 
-    /*@Test
+    @Test
     fun linear() {
 
-        val meth = package_.newFloatingMethod("linear", Visibility.PRIVATE) {
+        val meth = package_.newFloatingMethod("linear", Visibility.PUBLIC) {
             it.push("{\nHello World")
             it.push("\n}")
             it.add()
@@ -27,7 +30,7 @@ internal class Packaging {
     @Test
     fun loop() {
 
-        val meth = package_.newFloatingMethod("loop", Visibility.PRIVATE) {
+        val meth = package_.newFloatingMethod("loop", Visibility.PUBLIC) {
 
             val jump = it.newLabel()
 
@@ -50,7 +53,7 @@ internal class Packaging {
     @Test
     fun ifOnly() {
 
-        val meth = package_.newFloatingMethod("if", Visibility.PRIVATE) {
+        val meth = package_.newFloatingMethod("if", Visibility.PUBLIC) {
 
             val after = it.newLabel()
 
@@ -75,7 +78,7 @@ internal class Packaging {
     @Test
     fun ifInLoop() {
 
-        val meth = package_.newFloatingMethod("ifInLoop", Visibility.PRIVATE) {
+        val meth = package_.newFloatingMethod("ifInLoop", Visibility.PUBLIC) {
 
             val jump = it.newLabel()
             val after = it.newLabel()
@@ -103,7 +106,7 @@ internal class Packaging {
     @Test
     fun loopInIf() {
 
-        val meth = package_.newFloatingMethod("loopInIf", Visibility.PRIVATE) {
+        val meth = package_.newFloatingMethod("loopInIf", Visibility.PUBLIC) {
 
             val jump = it.newLabel()
             val after = it.newLabel()
@@ -131,7 +134,7 @@ internal class Packaging {
     @Test
     fun ifElse() {
 
-        val meth = package_.newFloatingMethod("ifElse", Visibility.PRIVATE) {
+        val meth = package_.newFloatingMethod("ifElse", Visibility.PUBLIC) {
 
             val afterLabel = it.newLabel()
             val elseLabel = it.newLabel()
@@ -156,5 +159,5 @@ internal class Packaging {
         }
 
         println(meth)
-    }*/
+    }
 }

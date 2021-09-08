@@ -246,9 +246,7 @@ value class SegmentPart(
         return index + currentIndex
     }
 
-    override fun size(): Int {
-        return instructions.size
-    }
+
 
     override fun toBulk(storage: MutableList<Instruction>) {
         storage.addAll(instructions)
@@ -305,7 +303,7 @@ value class SegmentPart(
     }
 
     override fun size(): Int {
-        TODO("Not yet implemented")
+        return instructions.size
     }
 
     override fun toBulk(storage: MutableList<Command>) {

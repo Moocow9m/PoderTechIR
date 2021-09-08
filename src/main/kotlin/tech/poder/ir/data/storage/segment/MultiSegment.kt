@@ -151,9 +151,7 @@ value class MultiSegment(
         return index
     }
 
-    override fun size(): Int {
-        return instructions.sumOf { it.size() }
-    }
+
 
     override fun toBulk(storage: MutableList<Instruction>) {
         instructions.forEach {
@@ -171,7 +169,7 @@ value class MultiSegment(
     }
 
     override fun size(): Int {
-        TODO("Not yet implemented")
+        return instructions.sumOf { it.size() }
     }
 
     override fun toBulk(storage: MutableList<Command>) {
