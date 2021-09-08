@@ -22,7 +22,7 @@ data class Package internal constructor(
 
     fun newFloatingMethod(
         name: String,
-        vis: Visibility,
+        vis: Visibility = Visibility.PRIVATE,
         returnType: Type = Type.Unit,
         args: Set<NamedType> = emptySet(),
         code: (CodeBuilder) -> Unit
@@ -35,7 +35,7 @@ data class Package internal constructor(
         return meth
     }
 
-    fun newObject(name: String, vis: Visibility, fields: Set<NamedType> = emptySet()): Object {
+    fun newObject(name: String, vis: Visibility = Visibility.PRIVATE, fields: Set<NamedType> = emptySet()): Object {
         return Object(
             this,
             name,

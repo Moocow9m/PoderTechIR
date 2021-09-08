@@ -7,7 +7,7 @@ class Container {
     internal var entrypoint: String? = null
     internal val requiredLibs: MutableSet<String> = mutableSetOf()
 
-    fun newPackage(namespace: String, visibility: Visibility = Visibility.INTERNAL): Package {
+    fun newPackage(namespace: String, visibility: Visibility = Visibility.PRIVATE): Package {
         val pkg = Package(namespace, visibility)
         roots.add(pkg)
         return pkg

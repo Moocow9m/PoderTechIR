@@ -1,4 +1,4 @@
-package tech.poder.ir.data.ugly
+package tech.poder.ir.data.storage.segment.ugly
 
 import tech.poder.ir.commands.Command
 import tech.poder.ir.data.Label

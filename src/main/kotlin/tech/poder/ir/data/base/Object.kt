@@ -19,7 +19,7 @@ data class Object internal constructor(
 
     fun newMethod(
         name: String,
-        vis: Visibility,
+        vis: Visibility = Visibility.PRIVATE,
         returnType: Type = Type.Unit,
         args: Set<NamedType> = emptySet(),
         code: (CodeBuilder) -> Unit
