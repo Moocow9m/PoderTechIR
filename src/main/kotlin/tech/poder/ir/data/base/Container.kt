@@ -5,33 +5,39 @@ import tech.poder.ir.metadata.Visibility
 class Container(val name: String) {
     internal val roots: MutableSet<Package> = mutableSetOf()
     internal var entrypoint: String? = null
-    private var validated = false
     private var resolved = false
 
-    fun isValidated(): Boolean {
-        return validated
+    fun getMapping(): Map<String, UInt> {
+        var nextMethodId = 0u
+        var nextObjectId = 0u
+        var nextFieldId = 0u
+        val map = mutableMapOf<String, UInt>()
+        roots.forEach { pkg ->
+            pkg.floating.forEach {
+                map[it.fullName] = nextMethodId++
+            }
+            pkg.objects.forEach { obj ->
+                map[obj.fullName] = nextObjectId++
+                obj.methods.forEach {
+                    map[it.fullName] = nextMethodId++
+                }
+                obj.fields.forEach {
+                    map["${obj.fullName}\$${it.name}"] = nextFieldId++
+                }
+            }
+        }
+        return map
     }
 
     fun isLinked(): Boolean {
         return resolved
     }
 
-    fun validate() {
-        if (validated) {
-            return
-        }
-        //this will assign every method and object to a number for calling, ordered by fullName. may be overridden later to user assigned id
-        TODO()
-    }
-
     fun link(dependencies: Set<Container>) {
         if (resolved) {
             return
         }
-        if (!validated) {
-            validate()
-        }
-        //this will validate the stack, resolve methods and objects to numeric ids(with container name separating items)
+        //this will validate the stack, resolve methods and objects to ids(with container name separating items)
         TODO() //set resolved=true after making sure everything resolves
     }
 
