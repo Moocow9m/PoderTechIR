@@ -6,6 +6,7 @@ import tech.poder.ir.commands.SimpleValue
 import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.Object
+import tech.poder.ir.data.storage.segment.MultiSegment
 
 data class CodeBuilder internal constructor(
     private val storage: Method,
@@ -134,27 +135,27 @@ data class CodeBuilder internal constructor(
 
     //Statements
     fun ifEquals(elseJump: Label) {
-        instructions.add(SimpleValue.IfEquals(elseJump))
+        instructions.add(SimpleValue.IfType.IfEquals(elseJump))
     }
 
     fun ifNotEquals(elseJump: Label) {
-        instructions.add(SimpleValue.IfNotEquals(elseJump))
+        instructions.add(SimpleValue.IfType.IfNotEquals(elseJump))
     }
 
     fun ifGreaterThan(elseJump: Label) {
-        instructions.add(SimpleValue.IfGreaterThan(elseJump))
+        instructions.add(SimpleValue.IfType.IfGreaterThan(elseJump))
     }
 
     fun ifLessThan(elseJump: Label) {
-        instructions.add(SimpleValue.IfLessThan(elseJump))
+        instructions.add(SimpleValue.IfType.IfLessThan(elseJump))
     }
 
     fun ifGreaterThanEqual(elseJump: Label) {
-        instructions.add(SimpleValue.IfGreaterThanEquals(elseJump))
+        instructions.add(SimpleValue.IfType.IfGreaterThanEquals(elseJump))
     }
 
     fun ifLessThanEqual(elseJump: Label) {
-        instructions.add(SimpleValue.IfLessThanEquals(elseJump))
+        instructions.add(SimpleValue.IfType.IfLessThanEquals(elseJump))
     }
 
     //Methods
@@ -250,6 +251,6 @@ data class CodeBuilder internal constructor(
     }
 
     fun finalize() {
-        TODO()
+        storage.instructions = MultiSegment.buildSegments(instructions)
     }
 }

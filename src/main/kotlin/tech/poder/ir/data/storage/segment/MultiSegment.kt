@@ -14,11 +14,7 @@ value class MultiSegment(
 
     companion object {
 
-        fun buildSegments(raw: List<Command>?, startIndex: Int = 0): Segment? {
-
-            if (raw == null) {
-                return null
-            }
+        fun buildSegments(raw: List<Command>, startIndex: Int = 0): Segment {
 
             val loopIndexes = mutableMapOf<Int, Int>()
 
@@ -74,10 +70,17 @@ value class MultiSegment(
                         }
 
                         head.instructions.add(
-                            BranchHolder(
-                                buildSegments(ifRaw, startIndex + savedA + 1)!!,
-                                buildSegments(elseRaw, startIndex + savedB + 1)
-                            )
+                            if (elseRaw == null) {
+                                BranchHolder(
+                                    buildSegments(ifRaw, startIndex + savedA + 1),
+                                    null
+                                )
+                            } else {
+                                BranchHolder(
+                                    buildSegments(ifRaw, startIndex + savedA + 1),
+                                    buildSegments(elseRaw, startIndex + savedB + 1)
+                                )
+                            }
                         )
 
                         tmpStorage = SegmentPart()
@@ -103,7 +106,7 @@ value class MultiSegment(
                             }
 
                             val newRaw = (internalIndex..first.first).map { raw[it] }
-                            head.instructions.add(LoopHolder(buildSegments(newRaw, startIndex + internalIndex + 1)!!))
+                            head.instructions.add(LoopHolder(buildSegments(newRaw, startIndex + internalIndex + 1)))
 
                             if (tmpStorage.instructions.isNotEmpty()) {
                                 tmpStorage = SegmentPart()
