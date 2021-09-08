@@ -13,7 +13,7 @@ data class Method internal constructor(
     val name: String,
     val returnType: Type,
     val args: Set<NamedType>,
-    val visibility: Visibility,
+    val visibility: Visibility = Visibility.PRIVATE,
     internal var localVarSize: Int = 0,
     internal var instructions: Segment = MultiSegment()
 ) {

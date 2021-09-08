@@ -8,7 +8,7 @@ import tech.poder.ir.metadata.Visibility
 data class Object internal constructor(
     val parent: Package,
     val name: String,
-    val visibility: Visibility,
+    val visibility: Visibility = Visibility.PRIVATE,
     internal val methods: MutableSet<Method>,
     internal val fields: List<NamedType>
 ) {

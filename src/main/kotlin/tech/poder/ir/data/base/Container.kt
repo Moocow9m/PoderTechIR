@@ -2,19 +2,43 @@ package tech.poder.ir.data.base
 
 import tech.poder.ir.metadata.Visibility
 
-class Container {
+class Container(val name: String) {
     internal val roots: MutableSet<Package> = mutableSetOf()
     internal var entrypoint: String? = null
-    internal val requiredLibs: MutableSet<String> = mutableSetOf()
+    private var validated = false
+    private var resolved = false
+
+    fun isValidated(): Boolean {
+        return validated
+    }
+
+    fun isLinked(): Boolean {
+        return resolved
+    }
+
+    fun validate() {
+        if (validated) {
+            return
+        }
+        //this will assign every method and object to a number for calling, ordered by fullName. may be overridden later to user assigned id
+        TODO()
+    }
+
+    fun link(dependencies: Set<Container>) {
+        if (resolved) {
+            return
+        }
+        if (!validated) {
+            validate()
+        }
+        //this will validate the stack, resolve methods and objects to numeric ids(with container name separating items)
+        TODO() //set resolved=true after making sure everything resolves
+    }
 
     fun newPackage(namespace: String, visibility: Visibility = Visibility.PRIVATE): Package {
         val pkg = Package(namespace, visibility)
         roots.add(pkg)
         return pkg
-    }
-
-    fun addLib(name: String) {
-        requiredLibs.add(name)
     }
 
     fun entryPoint(method: Method) {
