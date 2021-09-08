@@ -9,32 +9,21 @@ class Container(val name: String) {
     private var mappingCache: Map<String, UInt>? = null
     private var internalMappingCache: Map<String, UInt>? = null
 
-    internal fun getAllMapping(): Map<String, UInt> { //private items will have their name-dropped from binary on link!
+    internal fun getSelfMapping(): Map<String, UInt> { //private items will have their name-dropped from binary on link!
         if (internalMappingCache != null) {
             return internalMappingCache!!
         }
-        val defMap = getMapping()
         var nextMethodId = 0u
         var nextObjectId = 0u
         var nextFieldId = 0u
         val map = mutableMapOf<String, UInt>()
-        defMap.forEach { (name, value) ->
-            if (name.contains(Method.methodSeparator)) {
-                nextMethodId++
-            } else if (name.contains(Object.fieldSeparator)) {
-                nextFieldId++
-            } else {
-                nextObjectId++
-            }
-            map[name] = value
-        }
-        roots.filter { it.visibility == Visibility.PRIVATE }.forEach { pkg ->
-            pkg.floating.filter { it.visibility == Visibility.PRIVATE }.forEach {
+        roots.forEach { pkg ->
+            pkg.floating.forEach {
                 map[it.fullName] = nextMethodId++
             }
-            pkg.objects.filter { it.visibility == Visibility.PRIVATE }.forEach { obj ->
+            pkg.objects.forEach { obj ->
                 map[obj.fullName] = nextObjectId++
-                obj.methods.filter { it.visibility == Visibility.PRIVATE }.forEach {
+                obj.methods.forEach {
                     map[it.fullName] = nextMethodId++
                 }
                 obj.fields.forEach {
