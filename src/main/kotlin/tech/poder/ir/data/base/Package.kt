@@ -13,6 +13,21 @@ data class Package internal constructor(
     internal val floating: MutableSet<Method> = mutableSetOf(),
 ) : CodeHolder {
 
+    init {
+        check(namespace.isNotBlank()) {
+            "Namespace cannot be blank!"
+        }
+        check(!namespace.contains(Object.objectSeparator)) {
+            "Namespace cannot contain ${Object.objectSeparator}!"
+        }
+        check(!namespace.contains(Object.fieldSeparator)) {
+            "Namespace cannot contain ${Object.fieldSeparator}!"
+        }
+        check(!namespace.contains(Method.methodSeparator)) {
+            "Namespace cannot contain ${Method.methodSeparator}!"
+        }
+    }
+
     fun newFloatingMethod(
         name: String,
         vis: Visibility = Visibility.PRIVATE,

@@ -7,6 +7,44 @@ class Container(val name: String) {
     internal var entrypoint: String? = null
     private var resolved = false
     private var mappingCache: Map<String, UInt>? = null
+    private var internalMappingCache: Map<String, UInt>? = null
+
+    internal fun getAllMapping(): Map<String, UInt> { //private items will have their name-dropped from binary on link!
+        if (internalMappingCache != null) {
+            return internalMappingCache!!
+        }
+        val defMap = getMapping()
+        var nextMethodId = 0u
+        var nextObjectId = 0u
+        var nextFieldId = 0u
+        val map = mutableMapOf<String, UInt>()
+        defMap.forEach { (name, value) ->
+            if (name.contains(Method.methodSeparator)) {
+                nextMethodId++
+            } else if (name.contains(Object.fieldSeparator)) {
+                nextFieldId++
+            } else {
+                nextObjectId++
+            }
+            map[name] = value
+        }
+        roots.filter { it.visibility == Visibility.PRIVATE }.forEach { pkg ->
+            pkg.floating.filter { it.visibility == Visibility.PRIVATE }.forEach {
+                map[it.fullName] = nextMethodId++
+            }
+            pkg.objects.filter { it.visibility == Visibility.PRIVATE }.forEach { obj ->
+                map[obj.fullName] = nextObjectId++
+                obj.methods.filter { it.visibility == Visibility.PRIVATE }.forEach {
+                    map[it.fullName] = nextMethodId++
+                }
+                obj.fields.forEach {
+                    map["${obj.fullName}${Object.fieldSeparator}${it.name}"] = nextFieldId++
+                }
+            }
+        }
+        internalMappingCache = map
+        return map
+    }
 
     fun getMapping(): Map<String, UInt> {
         if (mappingCache != null) {
@@ -16,17 +54,17 @@ class Container(val name: String) {
         var nextObjectId = 0u
         var nextFieldId = 0u
         val map = mutableMapOf<String, UInt>()
-        roots.forEach { pkg ->
-            pkg.floating.forEach {
+        roots.filter { it.visibility == Visibility.PUBLIC }.forEach { pkg ->
+            pkg.floating.filter { it.visibility == Visibility.PUBLIC }.forEach {
                 map[it.fullName] = nextMethodId++
             }
-            pkg.objects.forEach { obj ->
+            pkg.objects.filter { it.visibility == Visibility.PUBLIC }.forEach { obj ->
                 map[obj.fullName] = nextObjectId++
-                obj.methods.forEach {
+                obj.methods.filter { it.visibility == Visibility.PUBLIC }.forEach {
                     map[it.fullName] = nextMethodId++
                 }
                 obj.fields.forEach {
-                    map["${obj.fullName}\$${it.name}"] = nextFieldId++
+                    map["${obj.fullName}${Object.fieldSeparator}${it.name}"] = nextFieldId++
                 }
             }
         }
@@ -39,9 +77,6 @@ class Container(val name: String) {
     }
 
     fun link(dependencies: Set<Container>) {
-        if (resolved) {
-            return
-        }
         //this will validate the stack, resolve methods and objects to ids(with container name separating items)
         TODO() //set resolved=true after making sure everything resolves
     }

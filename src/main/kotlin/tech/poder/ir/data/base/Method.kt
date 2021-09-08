@@ -17,8 +17,26 @@ data class Method internal constructor(
     internal var localVarSize: Int = 0,
     internal var instructions: Segment = MultiSegment()
 ) {
+    companion object {
+        const val methodSeparator = ':'
+    }
 
-    val fullName = "${parent?.fullName ?: package_.namespace}:$name"
+    init {
+        check(name.isNotBlank()) {
+            "Namespace cannot be blank!"
+        }
+        check(!name.contains(Object.objectSeparator)) {
+            "Namespace cannot contain ${Object.objectSeparator}!"
+        }
+        check(!name.contains(Object.fieldSeparator)) {
+            "Namespace cannot contain ${Object.fieldSeparator}!"
+        }
+        check(!name.contains(Method.methodSeparator)) {
+            "Namespace cannot contain ${Method.methodSeparator}!"
+        }
+    }
+
+    val fullName = "${parent?.fullName ?: package_.namespace}${methodSeparator}$name"
 
 
     override fun equals(other: Any?): Boolean {

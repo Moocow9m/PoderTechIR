@@ -13,8 +13,28 @@ data class Object internal constructor(
     internal val fields: List<NamedType>
 ) {
 
+    companion object {
+        const val objectSeparator = '^'
+        const val fieldSeparator = '$'
+    }
+
+    init {
+        check(name.isNotBlank()) {
+            "Namespace cannot be blank!"
+        }
+        check(!name.contains(Object.objectSeparator)) {
+            "Namespace cannot contain ${Object.objectSeparator}!"
+        }
+        check(!name.contains(Object.fieldSeparator)) {
+            "Namespace cannot contain ${Object.fieldSeparator}!"
+        }
+        check(!name.contains(Method.methodSeparator)) {
+            "Namespace cannot contain ${Method.methodSeparator}!"
+        }
+    }
+
     val fullName by lazy {
-        "${parent.namespace}_$name"
+        "${parent.namespace}${objectSeparator}$name"
     }
 
     fun newMethod(
