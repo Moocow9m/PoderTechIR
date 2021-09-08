@@ -65,7 +65,7 @@ class UnlinkedContainer(val name: String) : Container {
         return resolved
     }
 
-    fun link(dependencies: Set<UnlinkedContainer>) {
+    fun link(dependencies: Set<Container>) {
         //this will validate the stack, resolve methods and objects to ids(with container name separating items)
         TODO() //set resolved=true after making sure everything resolves
     }
