@@ -4,12 +4,12 @@ import tech.poder.ir.commands.Command
 import tech.poder.ir.commands.Simple
 import tech.poder.ir.commands.SimpleValue
 import tech.poder.ir.commands.SysCommand
-import tech.poder.ir.data.base.Method
-import tech.poder.ir.data.base.Object
+import tech.poder.ir.data.base.unlinked.UnlinkedMethod
+import tech.poder.ir.data.base.unlinked.UnlinkedObject
 import tech.poder.ir.data.storage.segment.MultiSegment
 
 data class CodeBuilder internal constructor(
-    private val storage: Method,
+    private val storage: UnlinkedMethod,
     private val instructions: MutableList<Command> = mutableListOf()
 ) {
     //Bit Operations
@@ -159,7 +159,7 @@ data class CodeBuilder internal constructor(
     }
 
     //Methods
-    fun invokeMethod(method: Method) {
+    fun invokeMethod(method: UnlinkedMethod) {
         invokeMethod(method.fullName)
     }
 
@@ -169,7 +169,7 @@ data class CodeBuilder internal constructor(
         )
     }
 
-    fun launch(method: Method, priority: Int) {
+    fun launch(method: UnlinkedMethod, priority: Int) {
         launch(method.fullName, priority)
     }
 
@@ -182,7 +182,7 @@ data class CodeBuilder internal constructor(
         instructions.add(Simple.RETURN)
     }
 
-    fun newObject(object_: Object) {
+    fun newObject(object_: UnlinkedObject) {
         newObject(object_.fullName)
     }
 

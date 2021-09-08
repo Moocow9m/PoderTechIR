@@ -1,13 +1,13 @@
 package tech.poder.test
 
-import tech.poder.ir.data.base.Package
+import tech.poder.ir.data.base.unlinked.UnlinkedPackage
 import tech.poder.ir.metadata.Visibility
 
 
 internal class Packaging {
 
     companion object {
-        val package_ = Package("test", Visibility.PUBLIC)
+        val package_ = UnlinkedPackage("test", Visibility.PUBLIC)
     }
 
     /*@Test
