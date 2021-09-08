@@ -6,8 +6,12 @@ class Container(val name: String) {
     internal val roots: MutableSet<Package> = mutableSetOf()
     internal var entrypoint: String? = null
     private var resolved = false
+    private var mappingCache: Map<String, UInt>? = null
 
     fun getMapping(): Map<String, UInt> {
+        if (mappingCache != null) {
+            return mappingCache!!
+        }
         var nextMethodId = 0u
         var nextObjectId = 0u
         var nextFieldId = 0u
@@ -26,6 +30,7 @@ class Container(val name: String) {
                 }
             }
         }
+        mappingCache = map
         return map
     }
 
