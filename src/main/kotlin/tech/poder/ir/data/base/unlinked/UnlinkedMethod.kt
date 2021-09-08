@@ -7,6 +7,7 @@ import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.segment.MultiSegment
 import tech.poder.ir.data.storage.segment.Segment
 import tech.poder.ir.metadata.Visibility
+import tech.poder.ir.util.MemorySegmentBuffer
 
 data class UnlinkedMethod internal constructor(
     val package_: UnlinkedPackage,
@@ -37,6 +38,22 @@ data class UnlinkedMethod internal constructor(
     }
 
     val fullName = "${parent?.fullName ?: package_.namespace}$methodSeparator$name"
+
+    override fun size(): Long {
+        return 2L + MemorySegmentBuffer.sequenceSize(name) + returnType.size() + MemorySegmentBuffer.varSize(args.size) + args.sumOf { it.size() } + instructions.sizeBytes()
+    }
+
+    override fun save(buffer: MemorySegmentBuffer) {
+        buffer.write(0.toByte())
+        buffer.write(visibility.ordinal.toByte())
+        buffer.writeSequence(name)
+        returnType.toBin(buffer)
+        buffer.writeVar(args.size)
+        args.forEach {
+            it.toBin(buffer)
+        }
+        instructions.toBin(buffer)
+    }
 
 
     override fun equals(other: Any?): Boolean {

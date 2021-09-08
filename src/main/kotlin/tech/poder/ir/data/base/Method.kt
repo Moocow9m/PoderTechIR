@@ -1,3 +1,9 @@
 package tech.poder.ir.data.base
 
-interface Method
+import tech.poder.ir.util.MemorySegmentBuffer
+
+interface Method {
+    fun size(): Long
+
+    fun save(buffer: MemorySegmentBuffer)
+}

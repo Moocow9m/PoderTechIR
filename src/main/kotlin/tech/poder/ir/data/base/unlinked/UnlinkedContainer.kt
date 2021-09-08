@@ -2,11 +2,11 @@ package tech.poder.ir.data.base.unlinked
 
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.metadata.Visibility
+import tech.poder.ir.util.MemorySegmentBuffer
 
-class UnlinkedContainer(val name: String) : Container {
+class UnlinkedContainer(override val name: String) : Container {
     internal val roots: MutableSet<UnlinkedPackage> = mutableSetOf()
-    internal var entrypoint: String? = null
-    private var resolved = false
+    internal var entrypoint: String = ""
     private var mappingCache: Map<String, UInt>? = null
     private var internalMappingCache: Map<String, UInt>? = null
 
@@ -61,13 +61,9 @@ class UnlinkedContainer(val name: String) : Container {
         return map
     }
 
-    fun isLinked(): Boolean {
-        return resolved
-    }
-
-    fun link(dependencies: Set<Container>) {
-        //this will validate the stack, resolve methods and objects to ids(with container name separating items)
-        TODO() //set resolved=true after making sure everything resolves
+    fun link(dependencies: Set<Container>): Container {
+        //this will validate the stack, resolve methods and objects to ids(with container name separating items) and spit ot a LinkedContainer
+        TODO()
     }
 
     fun newPackage(namespace: String, visibility: Visibility = Visibility.PRIVATE): UnlinkedPackage {
@@ -95,5 +91,21 @@ class UnlinkedContainer(val name: String) : Container {
 
     fun entryPoint(): String? {
         return entrypoint
+    }
+
+    override fun size(): Long {
+        return 1 + MemorySegmentBuffer.sequenceSize(name) + MemorySegmentBuffer.sequenceSize(entrypoint) + MemorySegmentBuffer.varSize(
+            roots.size
+        ) + roots.sumOf { it.size() }
+    }
+
+    override fun save(buffer: MemorySegmentBuffer) {
+        buffer.write(0.toByte())
+        buffer.writeSequence(name)
+        buffer.writeSequence(entrypoint)
+        buffer.writeVar(roots.size)
+        roots.forEach {
+            it.save(buffer)
+        }
     }
 }

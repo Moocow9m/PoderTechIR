@@ -5,6 +5,7 @@ import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Package
 import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.metadata.Visibility
+import tech.poder.ir.util.MemorySegmentBuffer
 
 data class UnlinkedPackage internal constructor(
     val namespace: String,
@@ -86,5 +87,25 @@ data class UnlinkedPackage internal constructor(
         if (namespace != other.namespace) return false
 
         return true
+    }
+
+    override fun size(): Long {
+        return 2L + MemorySegmentBuffer.sequenceSize(namespace) + MemorySegmentBuffer.varSize(objects.size) + objects.sumOf { it.size() } + MemorySegmentBuffer.varSize(
+            floating.size
+        ) + floating.sumOf { it.size() }
+    }
+
+    override fun save(buffer: MemorySegmentBuffer) {
+        buffer.write(0.toByte())
+        buffer.write(visibility.ordinal.toByte())
+        buffer.writeSequence(namespace)
+        buffer.writeVar(objects.size)
+        objects.forEach {
+            it.save(buffer)
+        }
+        buffer.writeVar(floating.size)
+        floating.forEach {
+            it.save(buffer)
+        }
     }
 }

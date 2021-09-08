@@ -57,11 +57,7 @@ sealed interface Type {
     data class Struct(val name: String, val types: List<NamedType>) : Type {
         override fun size(): Int {
             val typesSize = MemorySegmentBuffer.varSize(types.size)
-            return 1 + MemorySegmentBuffer.sequenceSize(name) + typesSize + types.sumOf {
-                MemorySegmentBuffer.sequenceSize(
-                    it.name
-                ) + it.type.size()
-            }
+            return 1 + MemorySegmentBuffer.sequenceSize(name) + typesSize + types.sumOf { it.size() }
         }
 
         override fun toBin(buffer: MemorySegmentBuffer) {
@@ -69,8 +65,7 @@ sealed interface Type {
             buffer.writeSequence(name)
             buffer.writeVar(types.size)
             types.forEach {
-                buffer.writeSequence(it.name)
-                it.type.toBin(buffer)
+                it.toBin(buffer)
             }
         }
     }

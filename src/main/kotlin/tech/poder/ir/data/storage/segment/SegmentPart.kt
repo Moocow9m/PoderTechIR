@@ -4,7 +4,9 @@ import tech.poder.ir.commands.Command
 import tech.poder.ir.data.Label
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
+import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
+import kotlin.math.ceil
 
 @JvmInline
 value class SegmentPart(
@@ -306,7 +308,19 @@ value class SegmentPart(
         return instructions.size
     }
 
-    override fun toBulk(storage: MutableList<Command>) {
+    override fun toBulk(storage: List<Command>) {
         TODO("Not yet implemented")
+    }
+
+    override fun toBin(buffer: MemorySegmentBuffer) {
+        buffer.write(1.toByte())
+        buffer.writeVar(instructions.size)
+        instructions.forEach {
+            it.toBin(buffer)
+        }
+    }
+
+    override fun sizeBytes(): Long {
+        return 1L + MemorySegmentBuffer.varSize(instructions.size) + ceil(instructions.sumOf { it.sizeBits() } / 8.0).toLong()
     }
 }

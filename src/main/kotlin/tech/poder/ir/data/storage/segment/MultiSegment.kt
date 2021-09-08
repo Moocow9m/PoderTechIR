@@ -5,6 +5,7 @@ import tech.poder.ir.commands.SimpleValue
 import tech.poder.ir.data.Label
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
+import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
 
 @JvmInline
@@ -172,7 +173,19 @@ value class MultiSegment(
         return instructions.sumOf { it.size() }
     }
 
-    override fun toBulk(storage: MutableList<Command>) {
+    override fun toBulk(storage: List<Command>) {
         TODO("Not yet implemented")
+    }
+
+    override fun toBin(buffer: MemorySegmentBuffer) {
+        buffer.write(0.toByte())
+        buffer.writeVar(instructions.size)
+        instructions.forEach {
+            it.toBin(buffer)
+        }
+    }
+
+    override fun sizeBytes(): Long {
+        return 1L + MemorySegmentBuffer.varSize(instructions.size) + instructions.sumOf { it.sizeBytes() }
     }
 }

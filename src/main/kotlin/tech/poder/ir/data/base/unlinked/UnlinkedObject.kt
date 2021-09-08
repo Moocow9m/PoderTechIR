@@ -5,6 +5,7 @@ import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Object
 import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.metadata.Visibility
+import tech.poder.ir.util.MemorySegmentBuffer
 
 data class UnlinkedObject internal constructor(
     val parent: UnlinkedPackage,
@@ -58,6 +59,26 @@ data class UnlinkedObject internal constructor(
         builder.finalize()
         methods.add(meth)
         return meth
+    }
+
+    override fun size(): Long {
+        return 2L + MemorySegmentBuffer.sequenceSize(name) + MemorySegmentBuffer.varSize(fields.size) + fields.sumOf { it.size() } + MemorySegmentBuffer.varSize(
+            methods.size
+        ) + methods.sumOf { it.size() }
+    }
+
+    override fun save(buffer: MemorySegmentBuffer) {
+        buffer.write(0.toByte())
+        buffer.write(visibility.ordinal.toByte())
+        buffer.writeSequence(name)
+        buffer.writeVar(fields.size)
+        fields.forEach {
+            it.toBin(buffer)
+        }
+        buffer.writeVar(methods.size)
+        methods.forEach {
+            it.save(buffer)
+        }
     }
 
     override fun equals(other: Any?): Boolean {

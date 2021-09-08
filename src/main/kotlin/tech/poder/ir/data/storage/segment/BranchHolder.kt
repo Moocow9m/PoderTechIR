@@ -4,6 +4,7 @@ import tech.poder.ir.commands.Command
 import tech.poder.ir.data.Label
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
+import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
 
 data class BranchHolder(
@@ -86,8 +87,23 @@ data class BranchHolder(
         return ifBlock.size() + (elseBlock?.size() ?: 0)
     }
 
-    override fun toBulk(storage: MutableList<Command>) {
+    override fun toBulk(storage: List<Command>) {
         ifBlock.toBulk(storage)
         elseBlock?.toBulk(storage)
+    }
+
+    override fun toBin(buffer: MemorySegmentBuffer) {
+        buffer.write(3.toByte())
+        ifBlock.toBin(buffer)
+        if (elseBlock == null) {
+            buffer.write(0.toByte())
+        } else {
+            buffer.write(1.toByte())
+            elseBlock.toBin(buffer)
+        }
+    }
+
+    override fun sizeBytes(): Long {
+        return 2L + ifBlock.sizeBytes() + (elseBlock?.sizeBytes() ?: 0)
     }
 }
