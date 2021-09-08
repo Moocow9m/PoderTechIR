@@ -27,7 +27,7 @@ value class LoopHolder(val block: Segment) : Segment {
         val index = block.eval(method, stack, currentVars, currentIndex, labels)
 
         check(loopStack.size == copy.size) {
-            "Loop stack does not match original!\n\tLoop:\n\t\t${loopStack.joinToString("\n\t\t")}\n\tOriginal:\n\t\t${
+            "Loop stack size does not match original!\n\tLoop:\n\t\t${loopStack.joinToString("\n\t\t")}\n\tOriginal:\n\t\t${
                 copy.joinToString("\n\t\t")
             }"
         }
