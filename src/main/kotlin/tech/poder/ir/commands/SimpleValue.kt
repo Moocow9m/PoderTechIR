@@ -283,118 +283,147 @@ sealed interface SimpleValue : Command {
         }
     }
 
-    @JvmInline
-    value class IfEquals(val data: Label) : Command {
-        override fun id(): Int {
-            return ifEquals
+    sealed interface IfType : Command {
+        fun label(): Label
+
+        @JvmInline
+        value class IfEquals(val data: Label) : IfType {
+            override fun label(): Label {
+                return data
+            }
+
+            override fun id(): Int {
+                return ifEquals
+            }
+
+            override fun sizeBits(): Long {
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
+                    data.offset
+                )) * 8L
+            }
+
+            override fun toBin(output: MemorySegmentBuffer) {
+                output.writeVar(id())
+                output.writeVar(data.id.toShort())
+                output.writeVar(data.offset)
+            }
         }
 
-        override fun sizeBits(): Long {
-            return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                data.offset
-            )) * 8L
+        @JvmInline
+        value class IfNotEquals(val data: Label) : IfType {
+            override fun label(): Label {
+                return data
+            }
+
+            override fun id(): Int {
+                return ifNEquals
+            }
+
+            override fun sizeBits(): Long {
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
+                    data.offset
+                )) * 8L
+            }
+
+            override fun toBin(output: MemorySegmentBuffer) {
+                output.writeVar(id())
+                output.writeVar(data.id.toShort())
+                output.writeVar(data.offset)
+            }
         }
 
-        override fun toBin(output: MemorySegmentBuffer) {
-            output.writeVar(id())
-            output.writeVar(data.id.toShort())
-            output.writeVar(data.offset)
-        }
-    }
+        @JvmInline
+        value class IfGreaterThan(val data: Label) : IfType {
+            override fun label(): Label {
+                return data
+            }
 
-    @JvmInline
-    value class IfNotEquals(val data: Label) : Command {
-        override fun id(): Int {
-            return ifNEquals
-        }
+            override fun id(): Int {
+                return ifGT
+            }
 
-        override fun sizeBits(): Long {
-            return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                data.offset
-            )) * 8L
-        }
+            override fun sizeBits(): Long {
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
+                    data.offset
+                )) * 8L
+            }
 
-        override fun toBin(output: MemorySegmentBuffer) {
-            output.writeVar(id())
-            output.writeVar(data.id.toShort())
-            output.writeVar(data.offset)
-        }
-    }
-
-    @JvmInline
-    value class IfGreaterThan(val data: Label) : Command {
-        override fun id(): Int {
-            return ifGT
+            override fun toBin(output: MemorySegmentBuffer) {
+                output.writeVar(id())
+                output.writeVar(data.id.toShort())
+                output.writeVar(data.offset)
+            }
         }
 
-        override fun sizeBits(): Long {
-            return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                data.offset
-            )) * 8L
+        @JvmInline
+        value class IfLessThan(val data: Label) : IfType {
+            override fun label(): Label {
+                return data
+            }
+
+            override fun id(): Int {
+                return ifLT
+            }
+
+            override fun sizeBits(): Long {
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
+                    data.offset
+                )) * 8L
+            }
+
+            override fun toBin(output: MemorySegmentBuffer) {
+                output.writeVar(id())
+                output.writeVar(data.id.toShort())
+                output.writeVar(data.offset)
+            }
         }
 
-        override fun toBin(output: MemorySegmentBuffer) {
-            output.writeVar(id())
-            output.writeVar(data.id.toShort())
-            output.writeVar(data.offset)
-        }
-    }
+        @JvmInline
+        value class IfLessThanEquals(val data: Label) : IfType {
+            override fun label(): Label {
+                return data
+            }
 
-    @JvmInline
-    value class IfLessThan(val data: Label) : Command {
-        override fun id(): Int {
-            return ifLT
-        }
+            override fun id(): Int {
+                return ifLTEquals
+            }
 
-        override fun sizeBits(): Long {
-            return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                data.offset
-            )) * 8L
-        }
+            override fun sizeBits(): Long {
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
+                    data.offset
+                )) * 8L
+            }
 
-        override fun toBin(output: MemorySegmentBuffer) {
-            output.writeVar(id())
-            output.writeVar(data.id.toShort())
-            output.writeVar(data.offset)
-        }
-    }
-
-    @JvmInline
-    value class IfLessThanEquals(val data: Label) : Command {
-        override fun id(): Int {
-            return ifLTEquals
+            override fun toBin(output: MemorySegmentBuffer) {
+                output.writeVar(id())
+                output.writeVar(data.id.toShort())
+                output.writeVar(data.offset)
+            }
         }
 
-        override fun sizeBits(): Long {
-            return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                data.offset
-            )) * 8L
+        @JvmInline
+        value class IfGreaterThanEquals(val data: Label) : IfType {
+            override fun label(): Label {
+                return data
+            }
+
+            override fun id(): Int {
+                return ifGTEquals
+            }
+
+            override fun sizeBits(): Long {
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
+                    data.offset
+                )) * 8L
+            }
+
+            override fun toBin(output: MemorySegmentBuffer) {
+                output.writeVar(id())
+                output.writeVar(data.id.toShort())
+                output.writeVar(data.offset)
+            }
         }
 
-        override fun toBin(output: MemorySegmentBuffer) {
-            output.writeVar(id())
-            output.writeVar(data.id.toShort())
-            output.writeVar(data.offset)
-        }
-    }
-
-    @JvmInline
-    value class IfGreaterThanEquals(val data: Label) : Command {
-        override fun id(): Int {
-            return ifGTEquals
-        }
-
-        override fun sizeBits(): Long {
-            return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                data.offset
-            )) * 8L
-        }
-
-        override fun toBin(output: MemorySegmentBuffer) {
-            output.writeVar(id())
-            output.writeVar(data.id.toShort())
-            output.writeVar(data.offset)
-        }
     }
 
     @JvmInline

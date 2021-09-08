@@ -1,6 +1,7 @@
 package tech.poder.ir.data.storage.segment
 
 import tech.poder.ir.commands.Command
+import tech.poder.ir.commands.SimpleValue
 import tech.poder.ir.data.Label
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Method
@@ -11,9 +12,9 @@ value class MultiSegment(
     val instructions: MutableList<Segment> = mutableListOf()
 ) : Segment {
 
-    /*companion object {
+    companion object {
 
-        fun buildSegments(raw: List<Instruction>?, startIndex: Int = 0): Segment? {
+        fun buildSegments(raw: List<Command>?, startIndex: Int = 0): Segment? {
 
             if (raw == null) {
                 return null
@@ -23,11 +24,11 @@ value class MultiSegment(
 
             raw.forEachIndexed { index, instruction ->
 
-                if (instruction.opCode != Simple.JMP) {
+                if (instruction !is SimpleValue.Jump) {
                     return@forEachIndexed
                 }
 
-                val offset = (instruction.extra as Label).offset
+                val offset = instruction.data.offset
                 val instIndex = (offset - startIndex) + 1
 
                 if (instIndex >= 0 && offset < index + startIndex) {
@@ -42,14 +43,11 @@ value class MultiSegment(
 
             while (internalIndex < raw.size) {
 
-                when (raw[internalIndex].opCode) {
+                when (val instruction = raw[internalIndex]) {
 
-                    Simple.IF_EQ, Simple.IF_LT_EQ,
-                    Simple.IF_LT, Simple.IF_NOT_EQ,
-                    Simple.IF_GT, Simple.IF_GT_EQ,
+                    is SimpleValue.IfType,
                     -> {
-
-                        val potentialElse = raw[internalIndex].extra as Label
+                        val potentialElse = instruction.label()
 
                         tmpStorage.instructions.add(raw[internalIndex])
                         head.instructions.add(tmpStorage)
@@ -64,15 +62,15 @@ value class MultiSegment(
 
                         val savedB = internalIndex
                         val last = ifRaw.last()
-                        var elseRaw: List<Instruction>? = null
+                        var elseRaw: List<Command>? = null
 
-                        if (last.opCode == Simple.JMP && (last.extra as Label).offset > (startIndex + internalIndex)) {
+                        if (last is SimpleValue.Jump && last.data.offset > (startIndex + internalIndex)) {
 
-                            elseRaw = ((internalIndex + 1)..(last.extra as Label).offset).map {
+                            elseRaw = ((internalIndex + 1)..last.data.offset).map {
                                 raw[it]
                             }
 
-                            internalIndex = (last.extra as Label).offset
+                            internalIndex = last.data.offset
                         }
 
                         head.instructions.add(
@@ -83,9 +81,6 @@ value class MultiSegment(
                         )
 
                         tmpStorage = SegmentPart()
-                    }
-                    Simple.SWITCH -> {
-                        TODO("SWITCH STATEMENTS NOT SUPPORTED YET!")
                     }
                     else -> {
 
@@ -136,7 +131,7 @@ value class MultiSegment(
         }
     }
 
-    override fun eval(
+    /*override fun eval(
         method: Method,
         stack: Stack<Type>,
         currentVars: MutableList<KClass<out Type>?>,
