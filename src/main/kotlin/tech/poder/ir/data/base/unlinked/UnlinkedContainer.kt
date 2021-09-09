@@ -68,7 +68,7 @@ class UnlinkedContainer(override val name: String) : Container {
         return map
     }
 
-    fun link(dependencies: Set<Container>, optimizers: List<Optimizer>): Container {
+    fun link(dependencies: Set<Container> = emptySet(), optimizers: List<Optimizer> = emptyList()): Container {
         val map = getSelfMapping()
         val packages = mutableSetOf<LinkedPackage>()
         val stack = Stack<Type>()

@@ -29,8 +29,8 @@ data class BranchHolder(
         }
 
         stack.clear()
-        var index = ifBlock.eval(dependencies, self, method, stack, currentIndex)
-        index = elseBlock?.eval(dependencies, self, method, stack, index) ?: index
+        var index = ifBlock.eval(dependencies, self, method, ifStack, currentIndex)
+        index = elseBlock?.eval(dependencies, self, method, elseStack, index) ?: index
 
         check(ifStack.size == elseStack.size) {
             "Branch stacks do not match!\n\tIf:\n\t\t${ifStack.joinToString("\n\t\t")}\n\tElse:\n\t\t${

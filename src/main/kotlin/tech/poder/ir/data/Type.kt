@@ -142,13 +142,25 @@ sealed interface Type {
             }
         }
 
-        object String : Primitive {
-            override fun size(): Int {
-                return 1
+        sealed interface CharBased : Primitive {
+            object String : CharBased {
+                override fun size(): Int {
+                    return 1
+                }
+
+                override fun toBin(buffer: MemorySegmentBuffer) {
+                    buffer.write(7.toByte())
+                }
             }
 
-            override fun toBin(buffer: MemorySegmentBuffer) {
-                buffer.write(7.toByte())
+            object Char : CharBased {
+                override fun size(): Int {
+                    return 1
+                }
+
+                override fun toBin(buffer: MemorySegmentBuffer) {
+                    buffer.write(11.toByte())
+                }
             }
         }
 

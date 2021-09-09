@@ -18,20 +18,14 @@ value class LoopHolder(val block: Segment) : Segment {
         currentIndex: Int
     ): Int {
 
-        val loopStack = Stack<Type>()
-        val copy = Stack<Type>()
-
-        stack.forEach {
-            loopStack.push(it)
-        }
+        val prevSize = stack.size
 
         val index = block.eval(dependencies, self, method, stack, currentIndex)
 
-        check(loopStack.size == copy.size) {
-            "Loop stack size does not match original!\n\tLoop:\n\t\t${loopStack.joinToString("\n\t\t")}\n\tOriginal:\n\t\t${
-                copy.joinToString("\n\t\t")
-            }"
+        check(stack.size == prevSize) {
+            "Loop stack size does not match original! (leaky stack?) Original: $prevSize New: ${stack.size}"
         }
+
         return index
     }
 
