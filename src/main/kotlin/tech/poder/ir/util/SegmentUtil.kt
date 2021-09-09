@@ -17,4 +17,11 @@ object SegmentUtil {
             order
         )
     }
+
+    fun allocate(size: Long, order: ByteOrder = ByteOrder.nativeOrder()): MemorySegmentBuffer {
+        return MemorySegmentBuffer(
+            MemorySegment.allocateNative(size),
+            order
+        )
+    }
 }

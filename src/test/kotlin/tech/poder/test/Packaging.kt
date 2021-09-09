@@ -2,21 +2,18 @@ package tech.poder.test
 
 import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.base.Container
-import tech.poder.ir.metadata.Visibility
+import tech.poder.ir.util.SegmentUtil
 import kotlin.test.Test
 
 
 internal class Packaging {
 
-    companion object {
-        val container = Container.newContainer("test")
-        val package_ = container.newPackage("Packaging", Visibility.PUBLIC)
-    }
-
     @Test
     fun linear() {
+        val container = Container.newContainer("test")
+        val package_ = container.newPackage("Packaging")
 
-        val meth = package_.newFloatingMethod("linear", Visibility.PUBLIC) {
+        val meth = package_.newFloatingMethod("linear") {
             it.push("{\nHello World")
             it.push("\n}")
             it.add()
@@ -24,13 +21,21 @@ internal class Packaging {
             it.return_()
         }
 
-        println(meth)
+        SegmentUtil.allocate(container.size()).use {
+            container.save(it)
+            check(it.remaining() == 0L) {
+                "Method did not use full segment!"
+            }
+        }
+        println("$meth -- Binary Size: ${container.size()}")
     }
 
     @Test
     fun loop() {
+        val container = Container.newContainer("test")
+        val package_ = container.newPackage("Packaging")
 
-        val meth = package_.newFloatingMethod("loop", Visibility.PUBLIC) {
+        val meth = package_.newFloatingMethod("loop") {
 
             val jump = it.newLabel()
 
@@ -47,13 +52,21 @@ internal class Packaging {
             it.return_()
         }
 
-        println(meth)
+        SegmentUtil.allocate(container.size()).use {
+            container.save(it)
+            check(it.remaining() == 0L) {
+                "Method did not use full segment!"
+            }
+        }
+        println("$meth -- Binary Size: ${container.size()}")
     }
 
     @Test
     fun ifOnly() {
+        val container = Container.newContainer("test")
+        val package_ = container.newPackage("Packaging")
 
-        val meth = package_.newFloatingMethod("if", Visibility.PUBLIC) {
+        val meth = package_.newFloatingMethod("if") {
 
             val after = it.newLabel()
 
@@ -72,13 +85,21 @@ internal class Packaging {
             it.return_()
         }
 
-        println(meth)
+        SegmentUtil.allocate(container.size()).use {
+            container.save(it)
+            check(it.remaining() == 0L) {
+                "Method did not use full segment!"
+            }
+        }
+        println("$meth -- Binary Size: ${container.size()}")
     }
 
     @Test
     fun ifInLoop() {
+        val container = Container.newContainer("test")
+        val package_ = container.newPackage("Packaging")
 
-        val meth = package_.newFloatingMethod("ifInLoop", Visibility.PUBLIC) {
+        val meth = package_.newFloatingMethod("ifInLoop") {
 
             val jump = it.newLabel()
             val after = it.newLabel()
@@ -100,13 +121,21 @@ internal class Packaging {
             it.return_()
         }
 
-        println(meth)
+        SegmentUtil.allocate(container.size()).use {
+            container.save(it)
+            check(it.remaining() == 0L) {
+                "Method did not use full segment!"
+            }
+        }
+        println("$meth -- Binary Size: ${container.size()}")
     }
 
     @Test
     fun loopInIf() {
+        val container = Container.newContainer("test")
+        val package_ = container.newPackage("Packaging")
 
-        val meth = package_.newFloatingMethod("loopInIf", Visibility.PUBLIC) {
+        val meth = package_.newFloatingMethod("loopInIf") {
 
             val jump = it.newLabel()
             val after = it.newLabel()
@@ -128,13 +157,21 @@ internal class Packaging {
             it.return_()
         }
 
-        println(meth)
+        SegmentUtil.allocate(container.size()).use {
+            container.save(it)
+            check(it.remaining() == 0L) {
+                "Method did not use full segment!"
+            }
+        }
+        println("$meth -- Binary Size: ${container.size()}")
     }
 
     @Test
     fun ifElse() {
+        val container = Container.newContainer("test")
+        val package_ = container.newPackage("Packaging")
 
-        val meth = package_.newFloatingMethod("ifElse", Visibility.PUBLIC) {
+        val meth = package_.newFloatingMethod("ifElse") {
 
             val afterLabel = it.newLabel()
             val elseLabel = it.newLabel()
@@ -158,6 +195,12 @@ internal class Packaging {
             it.return_()
         }
 
-        println(meth)
+        SegmentUtil.allocate(container.size()).use {
+            container.save(it)
+            check(it.remaining() == 0L) {
+                "Method did not use full segment!"
+            }
+        }
+        println("$meth -- Binary Size: ${container.size()}")
     }
 }

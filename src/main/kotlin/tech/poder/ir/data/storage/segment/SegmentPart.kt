@@ -1,8 +1,8 @@
 package tech.poder.ir.data.storage.segment
 
 import tech.poder.ir.commands.Command
-import tech.poder.ir.data.Label
 import tech.poder.ir.data.Type
+import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
@@ -14,15 +14,25 @@ value class SegmentPart(
 ) : Segment {
 
     override fun eval(
+        dependencies: Set<Container>,
+        self: Container,
         method: UnlinkedMethod,
         stack: Stack<Type>,
-        currentVars: MutableList<Type>,
-        currentIndex: Int,
-        labels: MutableMap<Int, Label>
+        currentIndex: Int
+    ): Int {
+        TODO("Not yet implemented")
+    }
+
+    /*override fun eval(
+        dependencies: Set<Container>,
+        self: Container,
+        method: UnlinkedMethod,
+        stack: Stack<Type>,
+        currentIndex: Int
     ): Int {
 
         var index = 0
-        /*while (index < instructions.size) {
+        while (index < instructions.size) {
 
             val instruction = instructions[index]
 
@@ -246,15 +256,9 @@ value class SegmentPart(
         }
 
         return index + currentIndex
-    }
+    }*/
 
-
-
-    override fun toBulk(storage: MutableList<Instruction>) {
-        storage.addAll(instructions)
-    }
-
-    private fun toType(any: Any): Type {
+    /*private fun toType(any: Any): Type {
         return when (any) {
             is Byte -> Type.Primitive.Byte(true)
             is Short -> Type.Primitive.Short(true)
@@ -265,9 +269,9 @@ value class SegmentPart(
             is String -> Type.Primitive.String(true)
             else -> error("Unknown push: ${any::class.java}")
         }
-    }
+    }*/
 
-    companion object {
+    /*companion object {
 
         internal fun safePop(stack: Stack<Type>, message: String): Type {
 
@@ -300,16 +304,16 @@ value class SegmentPart(
                     offset--
                 }
             }
-        }*/
+        }
         return 0
-    }
+    }*/
 
     override fun size(): Int {
         return instructions.size
     }
 
-    override fun toBulk(storage: List<Command>) {
-        TODO("Not yet implemented")
+    override fun toBulk(storage: MutableList<Command>) {
+        storage.addAll(instructions)
     }
 
     override fun toBin(buffer: MemorySegmentBuffer) {

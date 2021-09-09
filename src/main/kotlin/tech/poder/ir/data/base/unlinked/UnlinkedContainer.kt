@@ -1,12 +1,19 @@
 package tech.poder.ir.data.base.unlinked
 
+import tech.poder.ir.api.Optimizer
+import tech.poder.ir.commands.Command
+import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Container
+import tech.poder.ir.data.base.Method
+import tech.poder.ir.data.base.Object
+import tech.poder.ir.data.base.linked.*
 import tech.poder.ir.metadata.Visibility
 import tech.poder.ir.util.MemorySegmentBuffer
+import java.util.*
 
 class UnlinkedContainer(override val name: String) : Container {
     internal val roots: MutableSet<UnlinkedPackage> = mutableSetOf()
-    internal var entrypoint: String = ""
+    internal var entryPoint: String = ""
     private var mappingCache: Map<String, UInt>? = null
     private var internalMappingCache: Map<String, UInt>? = null
 
@@ -14,7 +21,7 @@ class UnlinkedContainer(override val name: String) : Container {
         if (internalMappingCache != null) {
             return internalMappingCache!!
         }
-        var nextMethodId = 0u
+        var nextMethodId = 1u //start at 1 so 0 can be null for entryPoint
         var nextObjectId = 0u
         var nextFieldId = 0u
         val map = mutableMapOf<String, UInt>()
@@ -61,9 +68,72 @@ class UnlinkedContainer(override val name: String) : Container {
         return map
     }
 
-    fun link(dependencies: Set<Container>): Container {
-        //this will validate the stack, resolve methods and objects to ids(with container name separating items) and spit ot a LinkedContainer
-        TODO()
+    fun link(dependencies: Set<Container>, optimizers: List<Optimizer>): Container {
+        val map = getSelfMapping()
+        val packages = mutableSetOf<LinkedPackage>()
+        val stack = Stack<Type>()
+        roots.forEach { unlinkedPackage ->
+            val methods = mutableSetOf<Method>()
+            val objects = mutableSetOf<Object>()
+            unlinkedPackage.floating.forEach {
+                methods.add(processMethod(stack, it, dependencies, map, optimizers))
+            }
+            unlinkedPackage.objects.forEach { unlinkedObject ->
+                val methods2 = mutableSetOf<Method>()
+                unlinkedObject.methods.forEach {
+                    methods2.add(processMethod(stack, it, dependencies, map, optimizers))
+                }
+                if (unlinkedObject.visibility == Visibility.PRIVATE) {
+                    objects.add(
+                        PrivateObject(
+                            map[unlinkedObject.fullName]!!,
+                            unlinkedObject.fields.map { it.type },
+                            methods2.map { it as PrivateMethod })
+                    )
+                } else {
+                    objects.add(
+                        PublicObject(
+                            map[unlinkedObject.fullName]!!,
+                            unlinkedObject.name,
+                            unlinkedObject.fields,
+                            methods2.toList()
+                        )
+                    )
+                }
+            }
+            packages.add(LinkedPackage(methods.toList(), objects.toList()))
+        }
+        val entrypoint = if (entryPoint.isBlank()) {
+            0u
+        } else {
+            map[entryPoint]!!
+        }
+        return LinkedContainer(name, entrypoint, packages.toList())
+    }
+
+    private fun processMethod(
+        stack: Stack<Type>,
+        method: UnlinkedMethod,
+        dependencies: Set<Container>,
+        map: Map<String, UInt>,
+        optimizers: List<Optimizer>
+    ): Method {
+        stack.clear()
+        method.instructions.eval(dependencies, this, method, stack, 0)
+        optimizers.forEach { it.visitSegment(method.instructions) }
+        val bulk = mutableListOf<Command>()
+        method.instructions.toBulk(bulk)
+        return if (method.visibility == Visibility.PRIVATE) {
+            PrivateMethod(map[method.fullName]!!, method.args.size.toByte(), method.returnType != Type.Unit, bulk)
+        } else {
+            PublicMethod(
+                map[method.fullName]!!,
+                method.name,
+                method.args.size.toByte(),
+                method.returnType != Type.Unit,
+                bulk
+            )
+        }
     }
 
     fun newPackage(namespace: String, visibility: Visibility = Visibility.PRIVATE): UnlinkedPackage {
@@ -86,15 +156,15 @@ class UnlinkedContainer(override val name: String) : Container {
     }
 
     fun entryPoint(namespace: String) {
-        entrypoint = namespace
+        entryPoint = namespace
     }
 
     fun entryPoint(): String? {
-        return entrypoint
+        return entryPoint
     }
 
     override fun size(): Long {
-        return 1 + MemorySegmentBuffer.sequenceSize(name) + MemorySegmentBuffer.sequenceSize(entrypoint) + MemorySegmentBuffer.varSize(
+        return 1 + MemorySegmentBuffer.sequenceSize(name) + MemorySegmentBuffer.sequenceSize(entryPoint) + MemorySegmentBuffer.varSize(
             roots.size
         ) + roots.sumOf { it.size() }
     }
@@ -102,7 +172,7 @@ class UnlinkedContainer(override val name: String) : Container {
     override fun save(buffer: MemorySegmentBuffer) {
         buffer.write(0.toByte())
         buffer.writeSequence(name)
-        buffer.writeSequence(entrypoint)
+        buffer.writeSequence(entryPoint)
         buffer.writeVar(roots.size)
         roots.forEach {
             it.save(buffer)

@@ -4,7 +4,7 @@ import jdk.incubator.foreign.MemoryAccess
 import jdk.incubator.foreign.MemorySegment
 import java.nio.ByteOrder
 
-data class MemorySegmentBuffer(
+data class MemorySegmentBuffer internal constructor(
     val memorySegment: MemorySegment,
     val byteOrder: ByteOrder = ByteOrder.nativeOrder(),
 ) : AutoCloseable {
@@ -293,6 +293,10 @@ data class MemorySegmentBuffer(
 
     fun skip(bytes: Int) {
         position += bytes
+    }
+
+    fun remaining(): Long {
+        return memorySegment.byteSize() - position
     }
 
 }

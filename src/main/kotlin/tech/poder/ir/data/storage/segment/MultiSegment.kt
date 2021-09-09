@@ -2,8 +2,8 @@ package tech.poder.ir.data.storage.segment
 
 import tech.poder.ir.commands.Command
 import tech.poder.ir.commands.SimpleValue
-import tech.poder.ir.data.Label
 import tech.poder.ir.data.Type
+import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
@@ -160,11 +160,11 @@ value class MultiSegment(
         }
     }*/
     override fun eval(
+        dependencies: Set<Container>,
+        self: Container,
         method: UnlinkedMethod,
         stack: Stack<Type>,
-        currentVars: MutableList<Type>,
-        currentIndex: Int,
-        labels: MutableMap<Int, Label>
+        currentIndex: Int
     ): Int {
         TODO("Not yet implemented")
     }
@@ -173,7 +173,7 @@ value class MultiSegment(
         return instructions.sumOf { it.size() }
     }
 
-    override fun toBulk(storage: List<Command>) {
+    override fun toBulk(storage: MutableList<Command>) {
         TODO("Not yet implemented")
     }
 

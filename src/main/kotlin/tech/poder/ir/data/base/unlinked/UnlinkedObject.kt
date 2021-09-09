@@ -46,13 +46,18 @@ data class UnlinkedObject internal constructor(
         args: Set<NamedType> = emptySet(),
         code: (CodeBuilder) -> Unit
     ): UnlinkedMethod {
+        val trueVis = if (visibility == Visibility.PRIVATE) {
+            Visibility.PRIVATE
+        } else {
+            vis
+        }
         val meth = UnlinkedMethod(
             parent,
             this,
             name,
             returnType,
             setOf(NamedType("this", Type.Struct(fullName, fields)), *args.toTypedArray()),
-            vis
+            trueVis
         )
         val builder = CodeBuilder(meth)
         code.invoke(builder)

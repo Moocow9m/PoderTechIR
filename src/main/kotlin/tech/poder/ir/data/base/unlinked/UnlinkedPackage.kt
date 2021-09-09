@@ -36,7 +36,12 @@ data class UnlinkedPackage internal constructor(
         args: Set<NamedType> = emptySet(),
         code: (CodeBuilder) -> Unit
     ): UnlinkedMethod {
-        val meth = UnlinkedMethod(this, null, name, returnType, args, vis)
+        val trueVis = if (visibility == Visibility.PRIVATE) {
+            Visibility.PRIVATE
+        } else {
+            vis
+        }
+        val meth = UnlinkedMethod(this, null, name, returnType, args, trueVis)
         val builder = CodeBuilder(meth)
         code.invoke(builder)
         builder.finalize()
@@ -49,10 +54,15 @@ data class UnlinkedPackage internal constructor(
         vis: Visibility = Visibility.PRIVATE,
         fields: Set<NamedType> = emptySet()
     ): UnlinkedObject {
+        val trueVis = if (visibility == Visibility.PRIVATE) {
+            Visibility.PRIVATE
+        } else {
+            vis
+        }
         return UnlinkedObject(
             this,
             name,
-            vis,
+            trueVis,
             mutableSetOf(),
             fields.map { NamedType("${namespace}.$name.${it.name}", it.type) }
         ).apply {

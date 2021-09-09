@@ -5,7 +5,7 @@ import tech.poder.ir.util.MemorySegmentBuffer
 
 data class LinkedContainer(
     override val name: String,
-    val entryPoint: UInt = UInt.MAX_VALUE,
+    val entryPoint: UInt = 0u,
     val packages: List<LinkedPackage>
 ) : Container {
     override fun size(): Long {

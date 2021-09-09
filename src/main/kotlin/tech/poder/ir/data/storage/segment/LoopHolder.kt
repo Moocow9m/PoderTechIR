@@ -1,8 +1,8 @@
 package tech.poder.ir.data.storage.segment
 
 import tech.poder.ir.commands.Command
-import tech.poder.ir.data.Label
 import tech.poder.ir.data.Type
+import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
@@ -11,11 +11,11 @@ import java.util.*
 value class LoopHolder(val block: Segment) : Segment {
 
     override fun eval(
+        dependencies: Set<Container>,
+        self: Container,
         method: UnlinkedMethod,
         stack: Stack<Type>,
-        currentVars: MutableList<Type>,
-        currentIndex: Int,
-        labels: MutableMap<Int, Label>
+        currentIndex: Int
     ): Int {
 
         val loopStack = Stack<Type>()
@@ -25,7 +25,7 @@ value class LoopHolder(val block: Segment) : Segment {
             loopStack.push(it)
         }
 
-        val index = block.eval(method, stack, currentVars, currentIndex, labels)
+        val index = block.eval(dependencies, self, method, stack, currentIndex)
 
         check(loopStack.size == copy.size) {
             "Loop stack size does not match original!\n\tLoop:\n\t\t${loopStack.joinToString("\n\t\t")}\n\tOriginal:\n\t\t${
@@ -39,7 +39,7 @@ value class LoopHolder(val block: Segment) : Segment {
         return block.size()
     }
 
-    override fun toBulk(storage: List<Command>) {
+    override fun toBulk(storage: MutableList<Command>) {
         block.toBulk(storage)
     }
 
