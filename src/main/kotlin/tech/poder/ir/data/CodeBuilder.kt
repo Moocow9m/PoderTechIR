@@ -251,6 +251,10 @@ data class CodeBuilder internal constructor(
         instructions.add(DebugValue.LineNumber(line))
     }
 
+    fun writeLineSource(line: CharSequence) {
+        instructions.add(DebugValue.Line(line))
+    }
+
     fun finalize() {
         storage.instructions = MultiSegment.buildSegments(instructions)
     }
