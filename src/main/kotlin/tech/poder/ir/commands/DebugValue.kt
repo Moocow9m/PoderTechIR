@@ -4,8 +4,8 @@ import tech.poder.ir.util.MemorySegmentBuffer
 
 interface DebugValue : Command {
     companion object {
-        val debugLineNumber = SimpleValue.last + 1
-        val debugLine = debugLineNumber + 1
+        private val debugLineNumber = SimpleValue.last + 1
+        private val debugLine = debugLineNumber + 1
     }
 
     @JvmInline
