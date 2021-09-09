@@ -116,6 +116,46 @@ sealed interface Type {
                         buffer.write(4.toByte())
                     }
                 }
+
+                object UByte : Basic {
+                    override fun size(): kotlin.Int {
+                        return 1
+                    }
+
+                    override fun toBin(buffer: MemorySegmentBuffer) {
+                        buffer.write(12.toByte())
+                    }
+                }
+
+                object UShort : Basic {
+                    override fun size(): kotlin.Int {
+                        return 1
+                    }
+
+                    override fun toBin(buffer: MemorySegmentBuffer) {
+                        buffer.write(13.toByte())
+                    }
+                }
+
+                object UInt : Basic {
+                    override fun size(): kotlin.Int {
+                        return 1
+                    }
+
+                    override fun toBin(buffer: MemorySegmentBuffer) {
+                        buffer.write(14.toByte())
+                    }
+                }
+
+                object ULong : Basic {
+                    override fun size(): kotlin.Int {
+                        return 1
+                    }
+
+                    override fun toBin(buffer: MemorySegmentBuffer) {
+                        buffer.write(15.toByte())
+                    }
+                }
             }
 
             sealed interface FloatingPoint : Numeric {

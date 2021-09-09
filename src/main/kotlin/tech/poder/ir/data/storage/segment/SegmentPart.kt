@@ -178,6 +178,18 @@ value class SegmentPart(
                 is SimpleValue.PushLong -> {
                     stack.push(Type.Primitive.Numeric.Basic.Long)
                 }
+                is SimpleValue.PushUByte -> {
+                    stack.push(Type.Primitive.Numeric.Basic.UByte)
+                }
+                is SimpleValue.PushUShort -> {
+                    stack.push(Type.Primitive.Numeric.Basic.UShort)
+                }
+                is SimpleValue.PushUInt -> {
+                    stack.push(Type.Primitive.Numeric.Basic.UInt)
+                }
+                is SimpleValue.PushULong -> {
+                    stack.push(Type.Primitive.Numeric.Basic.ULong)
+                }
                 is SimpleValue.PushFloat -> {
                     stack.push(Type.Primitive.Numeric.FloatingPoint.Float)
                 }
