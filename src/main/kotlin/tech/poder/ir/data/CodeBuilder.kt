@@ -1,9 +1,6 @@
 package tech.poder.ir.data
 
-import tech.poder.ir.commands.Command
-import tech.poder.ir.commands.Simple
-import tech.poder.ir.commands.SimpleValue
-import tech.poder.ir.commands.SysCommand
+import tech.poder.ir.commands.*
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
 import tech.poder.ir.data.base.unlinked.UnlinkedObject
 import tech.poder.ir.data.storage.segment.MultiSegment
@@ -248,6 +245,10 @@ data class CodeBuilder internal constructor(
 
     fun sysCall(call: SysCommand) {
         instructions.add(SimpleValue.SystemCall(call))
+    }
+
+    fun markLineNumber(line: UInt) {
+        instructions.add(DebugValue.LineNumber(line))
     }
 
     fun finalize() {

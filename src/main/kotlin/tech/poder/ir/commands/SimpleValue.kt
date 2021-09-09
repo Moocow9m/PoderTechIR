@@ -26,6 +26,7 @@ sealed interface SimpleValue : Command {
         private val arrayCreate = newObject + 1
         private val unsafeGet = arrayCreate + 1
         private val unsafeSet = unsafeGet + 1
+        internal val last = unsafeSet
     }
 
     @JvmInline
