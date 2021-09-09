@@ -1,7 +1,12 @@
 package tech.poder.ir.std
 
-object Math {
-    /*val mathLib = Portable()
+import tech.poder.ir.data.Type
+import tech.poder.ir.data.base.unlinked.UnlinkedContainer
+import tech.poder.ir.data.storage.NamedType
+import tech.poder.ir.metadata.Visibility
+
+object Math { //todo containers will link against this lib, but a linked and optimized version will be made for runtime(exporting the std as modules)
+    val mathLib = UnlinkedContainer("std.math")
 
     val mathPackage = mathLib.newPackage("std", Visibility.PUBLIC)
 
@@ -9,10 +14,10 @@ object Math {
     val pow = mathPackage.newFloatingMethod(
         "pow",
         Visibility.PUBLIC,
-        Type.Primitive.Numeric.Basic::class,
+        Type.Primitive.Numeric.Basic.Long,
         setOf(
-            NamedType("input", Type.Primitive.Numeric.Basic::class),
-            NamedType("powerOf", Type.Primitive.Numeric.Basic::class)
+            NamedType("input", Type.Primitive.Numeric.Basic.Long),
+            NamedType("powerOf", Type.Primitive.Numeric.Basic.Long)
         )
     ) {
         val start = it.newLabel()
@@ -39,11 +44,11 @@ object Math {
         it.signedShiftRight()
         it.setVar("powerOf")
         it.getVar("pow")
-        it.dup()
+        it.duplicate()
         it.mul()
         it.setVar("pow")
         it.jmp(start)
         it.placeLabel(end)
         it.getVar("pow")
-    }*/
+    }
 }

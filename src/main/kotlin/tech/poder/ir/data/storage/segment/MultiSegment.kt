@@ -135,30 +135,6 @@ value class MultiSegment(
         }
     }
 
-    /*override fun eval(
-        method: Method,
-        stack: Stack<Type>,
-        currentVars: MutableList<KClass<out Type>?>,
-        currentIndex: Int,
-        labels: MutableMap<Int, Label>
-    ): Int {
-
-        var index = currentIndex
-
-        instructions.forEach {
-            index = it.eval(method, stack, currentVars, index, labels)
-        }
-
-        return index
-    }
-
-
-
-    override fun toBulk(storage: MutableList<Instruction>) {
-        instructions.forEach {
-            it.toBulk(storage)
-        }
-    }*/
     override fun eval(
         dependencies: Set<Container>,
         self: Container,
@@ -166,7 +142,13 @@ value class MultiSegment(
         stack: Stack<Type>,
         currentIndex: Int
     ): Int {
-        TODO("Not yet implemented")
+        var index = currentIndex
+
+        instructions.forEach {
+            index = it.eval(dependencies, self, method, stack, index)
+        }
+
+        return index
     }
 
     override fun size(): Int {
@@ -174,7 +156,9 @@ value class MultiSegment(
     }
 
     override fun toBulk(storage: MutableList<Command>) {
-        TODO("Not yet implemented")
+        instructions.forEach {
+            it.toBulk(storage)
+        }
     }
 
     override fun toBin(buffer: MemorySegmentBuffer) {
