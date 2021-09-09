@@ -27,7 +27,7 @@ internal class Packaging {
                 "Method did not use full segment!"
             }
         }
-        println("$meth -- Binary Size: ${container.size()}")
+        println("$meth -- Unlinked Binary Size: ${container.size()}")
     }
 
     @Test
@@ -58,7 +58,7 @@ internal class Packaging {
                 "Method did not use full segment!"
             }
         }
-        println("$meth -- Binary Size: ${container.size()}")
+        println("$meth -- Unlinked Binary Size: ${container.size()}")
     }
 
     @Test
@@ -91,7 +91,7 @@ internal class Packaging {
                 "Method did not use full segment!"
             }
         }
-        println("$meth -- Binary Size: ${container.size()}")
+        println("$meth -- Unlinked Binary Size: ${container.size()}")
     }
 
     @Test
@@ -127,7 +127,7 @@ internal class Packaging {
                 "Method did not use full segment!"
             }
         }
-        println("$meth -- Binary Size: ${container.size()}")
+        println("$meth -- Unlinked Binary Size: ${container.size()}")
     }
 
     @Test
@@ -163,7 +163,7 @@ internal class Packaging {
                 "Method did not use full segment!"
             }
         }
-        println("$meth -- Binary Size: ${container.size()}")
+        println("$meth -- Unlinked Binary Size: ${container.size()}")
     }
 
     @Test
@@ -201,6 +201,6 @@ internal class Packaging {
                 "Method did not use full segment!"
             }
         }
-        println("$meth -- Binary Size: ${container.size()}")
+        println("$meth -- Unlinked Binary Size: ${container.size()}")
     }
 }
