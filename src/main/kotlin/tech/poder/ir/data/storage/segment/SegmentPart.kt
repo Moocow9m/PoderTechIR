@@ -7,7 +7,12 @@ import tech.poder.ir.commands.SimpleValue
 import tech.poder.ir.data.LocationRef
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Container
+import tech.poder.ir.data.base.unlinked.UnlinkedContainer
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
+import tech.poder.ir.data.base.unlinked.UnlinkedObject
+import tech.poder.ir.metadata.CIdType
+import tech.poder.ir.metadata.IdMethod
+import tech.poder.ir.metadata.IdObject
 import tech.poder.ir.metadata.NameId
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
@@ -42,7 +47,7 @@ value class SegmentPart(
 
     override fun eval(
         dependencies: Set<Container>,
-        self: Container,
+        self: UnlinkedContainer,
         method: UnlinkedMethod,
         stack: Stack<Type>,
         currentIndex: Int,
@@ -227,6 +232,7 @@ value class SegmentPart(
                             replaceList[index - indexOffset] = SimpleValue.GetVar(LocationRef.LocationByID(id))
                             type[id]
                         }
+                        else -> error("SegFault") //should never happen
                     })
                 }
                 is SimpleValue.SetVar -> {
@@ -279,6 +285,181 @@ value class SegmentPart(
                 is SimpleValue.JumpShort -> {
                     //No stack change
                 }
+                is SimpleValue.GetField -> {
+                    val obj = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}GET_FIELD")
+                    check(obj is Type.ObjRef) {
+                        "${obj::class} is not an objRef! ${processDebug(lastDebugNumber, lastDebugLine)}"
+                    }
+                    val fieldId = if (command.data is LocationRef.LocationByName) {
+                        val id = resolveDepField(
+                            self, dependencies, depMap,
+                            "${obj.obj.fullName}${UnlinkedObject.fieldSeparator}${command.data.name}"
+                        )
+                        replaceList[index - indexOffset] =
+                            SimpleValue.GetField(LocationRef.LocationByCId(Pair(id.cId, id.id)))
+                        id
+                    } else {
+                        command.data as LocationRef.LocationByCId
+                        if (command.data.id.first == 0u) {
+                            CIdType(
+                                command.data.id.second,
+                                command.data.id.first,
+                                self.locateField(command.data.id.second)
+                            )
+                        } else {
+                            val name = depMap.first { it.id == command.data.id.first }.name
+                            CIdType(
+                                command.data.id.second,
+                                command.data.id.first,
+                                dependencies.first { it.name == name }.locateField(command.data.id.second)
+                            )
+                        }
+                    }
+                    stack.push(fieldId.type)
+                }
+                is SimpleValue.SetField -> {
+                    val data = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}SET_FIELD")
+                    val obj = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}SET_FIELD")
+                    check(obj is Type.ObjRef) {
+                        "${obj::class} is not an objRef! ${processDebug(lastDebugNumber, lastDebugLine)}"
+                    }
+                    val fieldId = if (command.data is LocationRef.LocationByName) {
+                        val id = resolveDepField(
+                            self, dependencies, depMap,
+                            "${obj.obj.fullName}${UnlinkedObject.fieldSeparator}${command.data.name}"
+                        )
+                        replaceList[index - indexOffset] =
+                            SimpleValue.GetField(LocationRef.LocationByCId(Pair(id.cId, id.id)))
+                        id
+                    } else {
+                        command.data as LocationRef.LocationByCId
+                        if (command.data.id.first == 0u) {
+                            CIdType(
+                                command.data.id.second,
+                                command.data.id.first,
+                                self.locateField(command.data.id.second)
+                            )
+                        } else {
+                            val name = depMap.first { it.id == command.data.id.first }.name
+                            CIdType(
+                                command.data.id.second,
+                                command.data.id.first,
+                                dependencies.first { it.name == name }.locateField(command.data.id.second)
+                            )
+                        }
+                    }
+                    check(data == fieldId.type) {
+                        "Field type mismatch! ${
+                            processDebug(
+                                lastDebugNumber,
+                                lastDebugLine
+                            )
+                        }Wanted: ${fieldId.type::class} Got: ${data::class}"
+                    }
+                }
+                is SimpleValue.NewObject -> {
+                    val objId = if (command.data is LocationRef.LocationByName) {
+                        val id = resolveDepObject(self, dependencies, depMap, command.data.name.toString())
+                        replaceList[index - indexOffset] =
+                            SimpleValue.NewObject(LocationRef.LocationByCId(Pair(id.cId, id.id)))
+                        id
+                    } else {
+                        command.data as LocationRef.LocationByCId
+                        if (command.data.id.first == 0u) {
+                            IdObject(
+                                command.data.id.second,
+                                command.data.id.first,
+                                self.locateObject(command.data.id.second)
+                            )
+                        } else {
+                            val name = depMap.first { it.id == command.data.id.first }.name
+                            IdObject(
+                                command.data.id.second,
+                                command.data.id.first,
+                                dependencies.first { it.name == name }.locateObject(command.data.id.second)
+                            )
+                        }
+                    }
+                    stack.push(Type.ObjRef(objId.obj as UnlinkedObject))
+                }
+                is SimpleValue.Launch -> {
+                    val methId = if (command.data is LocationRef.LocationByName) {
+                        val id = resolveDepMethod(self, dependencies, depMap, command.data.name.toString())
+                        replaceList[index - indexOffset] =
+                            SimpleValue.Launch(LocationRef.LocationByCId(Pair(id.cId, id.id)))
+                        id
+                    } else {
+                        command.data as LocationRef.LocationByCId
+                        if (command.data.id.first == 0u) {
+                            IdMethod(
+                                command.data.id.second,
+                                command.data.id.first,
+                                self.locateMethod(command.data.id.second)
+                            )
+                        } else {
+                            val name = depMap.first { it.id == command.data.id.first }.name
+                            IdMethod(
+                                command.data.id.second,
+                                command.data.id.first,
+                                dependencies.first { it.name == name }.locateMethod(command.data.id.second)
+                            )
+                        }
+                    }
+                    methId.method as UnlinkedMethod
+                    methId.method.args.forEach {
+                        val popped = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}INVOKE")
+                        check(popped == it.type) {
+                            "Type mismatch! ${
+                                processDebug(
+                                    lastDebugNumber,
+                                    lastDebugLine
+                                )
+                            }Wanted: ${it.type::class} Got: ${popped::class}"
+                        }
+                    }
+                    check(methId.method.returnType == Type.Unit) {
+                        "Launch on method with return type! ${processDebug(lastDebugNumber, lastDebugLine)}"
+                    }
+                }
+                is SimpleValue.Invoke -> {
+                    val methId = if (command.data is LocationRef.LocationByName) {
+                        val id = resolveDepMethod(self, dependencies, depMap, command.data.name.toString())
+                        replaceList[index - indexOffset] =
+                            SimpleValue.Invoke(LocationRef.LocationByCId(Pair(id.cId, id.id)))
+                        id
+                    } else {
+                        command.data as LocationRef.LocationByCId
+                        if (command.data.id.first == 0u) {
+                            IdMethod(
+                                command.data.id.second,
+                                command.data.id.first,
+                                self.locateMethod(command.data.id.second)
+                            )
+                        } else {
+                            val name = depMap.first { it.id == command.data.id.first }.name
+                            IdMethod(
+                                command.data.id.second,
+                                command.data.id.first,
+                                dependencies.first { it.name == name }.locateMethod(command.data.id.second)
+                            )
+                        }
+                    }
+                    methId.method as UnlinkedMethod
+                    methId.method.args.forEach {
+                        val popped = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}INVOKE")
+                        check(popped == it.type) {
+                            "Type mismatch! ${
+                                processDebug(
+                                    lastDebugNumber,
+                                    lastDebugLine
+                                )
+                            }Wanted: ${it.type::class} Got: ${popped::class}"
+                        }
+                    }
+                    if (methId.method.returnType != Type.Unit) {
+                        stack.push(methId.method.returnType)
+                    }
+                }
                 else -> error("Unrecognized command: ${command::class} ${processDebug(lastDebugNumber, lastDebugLine)}")
             }
             index++
@@ -291,16 +472,61 @@ value class SegmentPart(
         return index
     }
 
-    private fun resolveDepField() {
-        TODO()
+    private fun resolveDepField(
+        thisDep: UnlinkedContainer,
+        rest: Set<Container>,
+        mapping: List<NameId>,
+        target: String
+    ): CIdType {
+        val container = if (thisDep.getSelfMapping().containsKey(target)) {
+            thisDep
+        } else {
+            val res = rest.firstOrNull { it.locateField(target) != null }
+            check(res != null) {
+                "Could not find field: [$target]"
+            }
+            res
+        }
+        val id = container.locateField(target)!!
+        return CIdType(id, mapping.first { it.name == container.name }.id, container.locateField(id))
     }
 
-    private fun resolveDepMethod() {
-        TODO()
+    private fun resolveDepMethod(
+        thisDep: UnlinkedContainer,
+        rest: Set<Container>,
+        mapping: List<NameId>,
+        target: String
+    ): IdMethod {
+        val container = if (thisDep.getSelfMapping().containsKey(target)) {
+            thisDep
+        } else {
+            val res = rest.firstOrNull { it.locateMethod(target) != null }
+            check(res != null) {
+                "Could not find method: [$target]"
+            }
+            res
+        }
+        val id = container.locateMethod(target)!!
+        return IdMethod(id, mapping.first { it.name == container.name }.id, container.locateMethod(id))
     }
 
-    private fun resolveDepObject() {
-        TODO()
+    private fun resolveDepObject(
+        thisDep: UnlinkedContainer,
+        rest: Set<Container>,
+        mapping: List<NameId>,
+        target: String
+    ): IdObject {
+        val container = if (thisDep.getSelfMapping().containsKey(target)) {
+            thisDep
+        } else {
+            val res = rest.firstOrNull { it.locateObject(target) != null }
+            check(res != null) {
+                "Could not find object: [$target]"
+            }
+            res
+        }
+        val id = container.locateObject(target)!!
+        return IdObject(id, mapping.first { it.name == container.name }.id, container.locateObject(id))
     }
 
     private fun processDebug(debugLineNumber: UInt, debugLine: CharSequence): String {

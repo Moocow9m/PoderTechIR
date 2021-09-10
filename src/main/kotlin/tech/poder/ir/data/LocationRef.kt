@@ -30,4 +30,17 @@ sealed interface LocationRef {
             return 1 + MemorySegmentBuffer.varSize(id.toInt())
         }
     }
+
+    @JvmInline
+    value class LocationByCId(val id: Pair<UInt, UInt>) : LocationRef {
+        override fun toBin(buffer: MemorySegmentBuffer) {
+            buffer.write(2.toByte())
+            buffer.writeVar(id.first.toInt())
+            buffer.writeVar(id.second.toInt())
+        }
+
+        override fun size(): Int {
+            return 1 + MemorySegmentBuffer.varSize(id.first.toInt()) + MemorySegmentBuffer.varSize(id.second.toInt())
+        }
+    }
 }

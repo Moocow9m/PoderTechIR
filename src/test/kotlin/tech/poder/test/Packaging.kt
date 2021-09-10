@@ -17,6 +17,24 @@ internal class Packaging {
     }
 
     @Test
+    fun linearPow() {
+        val container = Container.newContainer("test")
+        val package_ = container.newPackage("Packaging")
+
+        val meth = package_.newFloatingMethod("linearPow") {
+            it.push(5L) //todo make method calls that need larger numbers cast up!
+            it.push(2L)
+            it.invokeMethod(Math.pow)
+            it.push("")
+            it.add()
+            it.sysCall(SysCommand.PRINT)
+            it.return_()
+        }
+
+        validate(container, meth, setOf(Math.mathLib))
+    }
+
+    @Test
     fun linear() {
         val container = Container.newContainer("test")
         val package_ = container.newPackage("Packaging")
@@ -176,14 +194,14 @@ internal class Packaging {
         validate(container, meth)
     }
 
-    private fun validate(container: UnlinkedContainer, method: Method) {
+    private fun validate(container: UnlinkedContainer, method: Method, deps: Set<Container> = emptySet()) {
         SegmentUtil.allocate(container.size()).use {
             container.save(it)
             check(it.remaining() == 0L) {
                 "Method did not use full segment!"
             }
         }
-        val linked = container.link()
+        val linked = container.link(deps)
         SegmentUtil.allocate(linked.size()).use {
             linked.save(it)
             check(it.remaining() == 0L) {

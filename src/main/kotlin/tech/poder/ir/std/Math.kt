@@ -2,7 +2,7 @@ package tech.poder.ir.std
 
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.unlinked.UnlinkedContainer
-import tech.poder.ir.data.storage.NamedType
+import tech.poder.ir.metadata.NamedType
 import tech.poder.ir.metadata.Visibility
 
 object Math { //todo containers will link against this lib, but a linked and optimized version will be made for runtime(exporting the std as modules)
@@ -14,7 +14,7 @@ object Math { //todo containers will link against this lib, but a linked and opt
     val pow = mathPackage.newFloatingMethod(
         "pow",
         Visibility.PUBLIC,
-        Type.Primitive.Numeric.Basic.Long,
+        Type.Primitive.Numeric.Basic.Long, //todo add method of allowing any numeric
         setOf(
             NamedType("input", Type.Primitive.Numeric.Basic.Long),
             NamedType("powerOf", Type.Primitive.Numeric.Basic.Long)

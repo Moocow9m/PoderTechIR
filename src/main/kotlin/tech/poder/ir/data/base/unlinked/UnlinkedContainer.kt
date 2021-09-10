@@ -7,7 +7,9 @@ import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.Object
 import tech.poder.ir.data.base.linked.*
+import tech.poder.ir.metadata.IdType
 import tech.poder.ir.metadata.NameId
+import tech.poder.ir.metadata.NamedIdType
 import tech.poder.ir.metadata.Visibility
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
@@ -17,6 +19,30 @@ class UnlinkedContainer(override val name: String) : Container {
     internal var entryPoint: String = ""
     private var mappingCache: Map<String, UInt>? = null
     private var internalMappingCache: Map<String, UInt>? = null
+    private var internalMappingCacheField: Map<UInt, Type>? = null
+    private var internalMappingCacheMethod: Map<UInt, UnlinkedMethod>? = null
+    private var internalMappingCacheObject: Map<UInt, UnlinkedObject>? = null
+
+    private fun getFieldMapping(): Map<UInt, Type> {
+        if (internalMappingCacheField == null) {
+            getSelfMapping()
+        }
+        return internalMappingCacheField!!
+    }
+
+    private fun getMethodMapping(): Map<UInt, UnlinkedMethod> {
+        if (internalMappingCacheMethod == null) {
+            getSelfMapping()
+        }
+        return internalMappingCacheMethod!!
+    }
+
+    private fun getObjectMapping(): Map<UInt, UnlinkedObject> {
+        if (internalMappingCacheObject == null) {
+            getSelfMapping()
+        }
+        return internalMappingCacheObject!!
+    }
 
     internal fun getSelfMapping(): Map<String, UInt> { //private items will have their name-dropped from binary on link!
         if (internalMappingCache != null) {
@@ -26,20 +52,34 @@ class UnlinkedContainer(override val name: String) : Container {
         var nextObjectId = 0u
         var nextFieldId = 0u
         val map = mutableMapOf<String, UInt>()
+        val map1 = mutableMapOf<UInt, Type>()
+        val map2 = mutableMapOf<UInt, UnlinkedMethod>()
+        val map3 = mutableMapOf<UInt, UnlinkedObject>()
         roots.forEach { pkg ->
             pkg.floating.forEach {
-                map[it.fullName] = nextMethodId++
+                val id = nextMethodId++
+                map[it.fullName] = id
+                map2[id] = it
             }
             pkg.objects.forEach { obj ->
-                map[obj.fullName] = nextObjectId++
+                val id = nextObjectId++
+                map[obj.fullName] = id
+                map3[id] = obj
                 obj.methods.forEach {
-                    map[it.fullName] = nextMethodId++
+                    val id2 = nextMethodId++
+                    map[it.fullName] = id2
+                    map2[id2] = it
                 }
                 obj.fields.forEach {
-                    map["${obj.fullName}${UnlinkedObject.fieldSeparator}${it.name}"] = nextFieldId++
+                    val id2 = nextFieldId++
+                    map["${obj.fullName}${UnlinkedObject.fieldSeparator}${it.name}"] = id2
+                    map1[id2] = it.type
                 }
             }
         }
+        internalMappingCacheField = map1
+        internalMappingCacheMethod = map2
+        internalMappingCacheObject = map3
         internalMappingCache = map
         return map
     }
@@ -69,9 +109,13 @@ class UnlinkedContainer(override val name: String) : Container {
         return map
     }
 
+    fun asAPI(): UnlinkedContainer {
+        TODO("Unlinked container with all code and private items deleted")
+    }
+
     fun link(dependencies: Set<Container> = emptySet(), optimizers: List<Optimizer> = emptyList()): Container {
-        var last = 0u
-        val depMap = dependencies.map { NameId(it.name, last++) }
+        var last = 1u
+        val depMap = listOf(NameId(name, 0u), *dependencies.map { NameId(it.name, last++) }.toTypedArray())
         val map = getSelfMapping()
         val packages = mutableSetOf<LinkedPackage>()
         val stack = Stack<Type>()
@@ -86,11 +130,12 @@ class UnlinkedContainer(override val name: String) : Container {
                 unlinkedObject.methods.forEach {
                     methods2.add(processMethod(stack, it, dependencies, map, optimizers, depMap))
                 }
+                val fieldNamePrefix = "${unlinkedObject.fullName}${UnlinkedObject.fieldSeparator}"
                 if (unlinkedObject.visibility == Visibility.PRIVATE) {
                     objects.add(
                         PrivateObject(
                             map[unlinkedObject.fullName]!!,
-                            unlinkedObject.fields.map { it.type },
+                            unlinkedObject.fields.map { IdType(map["$fieldNamePrefix${it.name}"]!!, it.type) },
                             methods2.map { it as PrivateMethod })
                     )
                 } else {
@@ -98,7 +143,13 @@ class UnlinkedContainer(override val name: String) : Container {
                         PublicObject(
                             map[unlinkedObject.fullName]!!,
                             unlinkedObject.name,
-                            unlinkedObject.fields,
+                            unlinkedObject.fields.map {
+                                NamedIdType(
+                                    name,
+                                    map["$fieldNamePrefix${it.name}"]!!,
+                                    it.type
+                                )
+                            },
                             methods2.toList()
                         )
                     )
@@ -126,23 +177,24 @@ class UnlinkedContainer(override val name: String) : Container {
         val vars = mutableMapOf<CharSequence, UInt>()
         val types = mutableMapOf<UInt, Type>()
         var id = 0u
-        method.args.forEach {
+        val meth = method.copy() //prevent changes to the original code in case of reuse!
+        meth.args.forEach {
             val i = id++
             vars[it.name] = i
             types[i] = it.type
         }
-        method.instructions.eval(dependencies, this, method, stack, 0, vars, types, depMap)
-        optimizers.forEach { it.visitSegment(method.instructions) }
+        meth.instructions.eval(dependencies, this, meth, stack, 0, vars, types, depMap)
+        optimizers.forEach { it.visitSegment(meth.instructions) }
         val bulk = mutableListOf<Command>()
-        method.instructions.toBulk(bulk)
-        return if (method.visibility == Visibility.PRIVATE) {
-            PrivateMethod(map[method.fullName]!!, method.args.size.toByte(), method.returnType != Type.Unit, bulk)
+        meth.instructions.toBulk(bulk)
+        return if (meth.visibility == Visibility.PRIVATE) {
+            PrivateMethod(map[meth.fullName]!!, meth.args.size.toByte(), meth.returnType != Type.Unit, bulk)
         } else {
             PublicMethod(
-                map[method.fullName]!!,
-                method.name,
-                method.args.size.toByte(),
-                method.returnType != Type.Unit,
+                map[meth.fullName]!!,
+                meth.name,
+                meth.args.size.toByte(),
+                meth.returnType != Type.Unit,
                 bulk
             )
         }
@@ -189,5 +241,29 @@ class UnlinkedContainer(override val name: String) : Container {
         roots.forEach {
             it.save(buffer)
         }
+    }
+
+    override fun locateField(name: String): UInt? {
+        return getMapping()[name]
+    }
+
+    override fun locateField(id: UInt): Type {
+        return getFieldMapping()[id]!!
+    }
+
+    override fun locateMethod(name: String): UInt? {
+        return getMapping()[name]
+    }
+
+    override fun locateMethod(id: UInt): Method {
+        return getMethodMapping()[id]!!
+    }
+
+    override fun locateObject(name: String): UInt? {
+        return getMapping()[name]
+    }
+
+    override fun locateObject(id: UInt): Object {
+        return getObjectMapping()[id]!!
     }
 }

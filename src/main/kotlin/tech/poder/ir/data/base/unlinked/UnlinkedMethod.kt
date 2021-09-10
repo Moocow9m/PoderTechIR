@@ -3,9 +3,10 @@ package tech.poder.ir.data.base.unlinked
 import tech.poder.ir.commands.Command
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Method
-import tech.poder.ir.data.storage.NamedType
 import tech.poder.ir.data.storage.segment.MultiSegment
 import tech.poder.ir.data.storage.segment.Segment
+import tech.poder.ir.data.storage.segment.SegmentPart
+import tech.poder.ir.metadata.NamedType
 import tech.poder.ir.metadata.Visibility
 import tech.poder.ir.util.MemorySegmentBuffer
 
@@ -41,6 +42,10 @@ data class UnlinkedMethod internal constructor(
 
     override fun size(): Long {
         return 2L + MemorySegmentBuffer.sequenceSize(name) + returnType.size() + MemorySegmentBuffer.varSize(args.size) + args.sumOf { it.size() } + instructions.sizeBytes()
+    }
+
+    fun asAPI(): UnlinkedMethod {
+        return UnlinkedMethod(package_, parent, name, returnType, args, Visibility.STUB, SegmentPart())
     }
 
     override fun save(buffer: MemorySegmentBuffer) {

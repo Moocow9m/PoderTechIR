@@ -1,10 +1,10 @@
 package tech.poder.ir.data.base.linked
 
-import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Object
+import tech.poder.ir.metadata.IdType
 import tech.poder.ir.util.MemorySegmentBuffer
 
-data class PrivateObject(val id: UInt, val fields: List<Type>, val methods: List<PrivateMethod>) : Object {
+data class PrivateObject(val id: UInt, val fields: List<IdType>, val methods: List<PrivateMethod>) : Object {
     override fun size(): Long {
         return 1L + MemorySegmentBuffer.varSize(id.toInt()) + MemorySegmentBuffer.varSize(fields.size) + fields.sumOf { it.size() } + MemorySegmentBuffer.varSize(
             methods.size

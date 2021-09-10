@@ -1,4 +1,4 @@
-package tech.poder.ir.data.storage
+package tech.poder.ir.metadata
 
 import tech.poder.ir.data.Type
 import tech.poder.ir.util.MemorySegmentBuffer

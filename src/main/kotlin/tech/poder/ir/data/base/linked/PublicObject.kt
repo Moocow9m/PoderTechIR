@@ -2,10 +2,10 @@ package tech.poder.ir.data.base.linked
 
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.Object
-import tech.poder.ir.data.storage.NamedType
+import tech.poder.ir.metadata.NamedIdType
 import tech.poder.ir.util.MemorySegmentBuffer
 
-data class PublicObject(val id: UInt, val name: String, val fields: List<NamedType>, val methods: List<Method>) :
+data class PublicObject(val id: UInt, val name: String, val fields: List<NamedIdType>, val methods: List<Method>) :
     Object {
     override fun size(): Long {
         return 1L + MemorySegmentBuffer.varSize(id.toInt()) + MemorySegmentBuffer.varSize(fields.size) + fields.sumOf { it.size() } + MemorySegmentBuffer.varSize(

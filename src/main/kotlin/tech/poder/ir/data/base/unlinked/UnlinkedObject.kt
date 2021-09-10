@@ -3,7 +3,7 @@ package tech.poder.ir.data.base.unlinked
 import tech.poder.ir.data.CodeBuilder
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Object
-import tech.poder.ir.data.storage.NamedType
+import tech.poder.ir.metadata.NamedType
 import tech.poder.ir.metadata.Visibility
 import tech.poder.ir.util.MemorySegmentBuffer
 

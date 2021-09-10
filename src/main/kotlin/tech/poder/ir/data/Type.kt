@@ -1,6 +1,7 @@
 package tech.poder.ir.data
 
-import tech.poder.ir.data.storage.NamedType
+import tech.poder.ir.data.base.unlinked.UnlinkedObject
+import tech.poder.ir.metadata.NamedType
 import tech.poder.ir.util.MemorySegmentBuffer
 
 sealed interface Type {
@@ -15,6 +16,17 @@ sealed interface Type {
 
         override fun toBin(buffer: MemorySegmentBuffer) {
             buffer.write(0.toByte())
+        }
+    }
+
+    @JvmInline
+    value class ObjRef(val obj: UnlinkedObject) : Type {
+        override fun size(): Int {
+            error("Not savable")
+        }
+
+        override fun toBin(buffer: MemorySegmentBuffer) {
+            error("Not savable")
         }
     }
 
