@@ -4,6 +4,7 @@ import tech.poder.ir.commands.Command
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
+import tech.poder.ir.metadata.NameId
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
 
@@ -19,7 +20,8 @@ data class BranchHolder(
         stack: Stack<Type>,
         currentIndex: Int,
         vars: MutableMap<CharSequence, UInt>,
-        type: MutableMap<UInt, Type>
+        type: MutableMap<UInt, Type>,
+        depMap: List<NameId>
     ): Int {
 
         val ifStack = Stack<Type>()
@@ -34,13 +36,13 @@ data class BranchHolder(
 
         val typeClone = type.map { it.key }
 
-        var index = ifBlock.eval(dependencies, self, method, ifStack, currentIndex, vars, type)
+        var index = ifBlock.eval(dependencies, self, method, ifStack, currentIndex, vars, type, depMap)
         var removed = vars.filter { !typeClone.contains(it.value) } //remove scoped vars
         removed.forEach {
             vars.remove(it.key)
             type.remove(it.value)
         }
-        index = elseBlock?.eval(dependencies, self, method, elseStack, index, vars, type) ?: index
+        index = elseBlock?.eval(dependencies, self, method, elseStack, index, vars, type, depMap) ?: index
         removed = vars.filter { !typeClone.contains(it.value) }
         removed.forEach {
             vars.remove(it.key)

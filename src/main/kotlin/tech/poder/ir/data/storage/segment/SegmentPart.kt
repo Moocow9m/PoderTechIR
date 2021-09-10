@@ -8,6 +8,7 @@ import tech.poder.ir.data.LocationRef
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
+import tech.poder.ir.metadata.NameId
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
 import kotlin.math.ceil
@@ -46,7 +47,8 @@ value class SegmentPart(
         stack: Stack<Type>,
         currentIndex: Int,
         vars: MutableMap<CharSequence, UInt>,
-        type: MutableMap<UInt, Type>
+        type: MutableMap<UInt, Type>,
+        depMap: List<NameId>
     ): Int {
         var index = currentIndex
         var lastDebugLine: CharSequence = ""
@@ -287,6 +289,18 @@ value class SegmentPart(
         }
 
         return index
+    }
+
+    private fun resolveDepField() {
+        TODO()
+    }
+
+    private fun resolveDepMethod() {
+        TODO()
+    }
+
+    private fun resolveDepObject() {
+        TODO()
     }
 
     private fun processDebug(debugLineNumber: UInt, debugLine: CharSequence): String {

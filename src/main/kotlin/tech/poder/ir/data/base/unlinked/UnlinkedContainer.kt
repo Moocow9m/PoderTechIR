@@ -7,6 +7,7 @@ import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.Object
 import tech.poder.ir.data.base.linked.*
+import tech.poder.ir.metadata.NameId
 import tech.poder.ir.metadata.Visibility
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
@@ -69,6 +70,8 @@ class UnlinkedContainer(override val name: String) : Container {
     }
 
     fun link(dependencies: Set<Container> = emptySet(), optimizers: List<Optimizer> = emptyList()): Container {
+        var last = 0u
+        val depMap = dependencies.map { NameId(it.name, last++) }
         val map = getSelfMapping()
         val packages = mutableSetOf<LinkedPackage>()
         val stack = Stack<Type>()
@@ -76,12 +79,12 @@ class UnlinkedContainer(override val name: String) : Container {
             val methods = mutableSetOf<Method>()
             val objects = mutableSetOf<Object>()
             unlinkedPackage.floating.forEach {
-                methods.add(processMethod(stack, it, dependencies, map, optimizers))
+                methods.add(processMethod(stack, it, dependencies, map, optimizers, depMap))
             }
             unlinkedPackage.objects.forEach { unlinkedObject ->
                 val methods2 = mutableSetOf<Method>()
                 unlinkedObject.methods.forEach {
-                    methods2.add(processMethod(stack, it, dependencies, map, optimizers))
+                    methods2.add(processMethod(stack, it, dependencies, map, optimizers, depMap))
                 }
                 if (unlinkedObject.visibility == Visibility.PRIVATE) {
                     objects.add(
@@ -108,7 +111,7 @@ class UnlinkedContainer(override val name: String) : Container {
         } else {
             map[entryPoint]!!
         }
-        return LinkedContainer(name, entrypoint, packages.toList())
+        return LinkedContainer(name, entrypoint, depMap, packages.toList())
     }
 
     private fun processMethod(
@@ -116,7 +119,8 @@ class UnlinkedContainer(override val name: String) : Container {
         method: UnlinkedMethod,
         dependencies: Set<Container>,
         map: Map<String, UInt>,
-        optimizers: List<Optimizer>
+        optimizers: List<Optimizer>,
+        depMap: List<NameId>
     ): Method {
         stack.clear()
         val vars = mutableMapOf<CharSequence, UInt>()
@@ -127,7 +131,7 @@ class UnlinkedContainer(override val name: String) : Container {
             vars[it.name] = i
             types[i] = it.type
         }
-        method.instructions.eval(dependencies, this, method, stack, 0, vars, types)
+        method.instructions.eval(dependencies, this, method, stack, 0, vars, types, depMap)
         optimizers.forEach { it.visitSegment(method.instructions) }
         val bulk = mutableListOf<Command>()
         method.instructions.toBulk(bulk)

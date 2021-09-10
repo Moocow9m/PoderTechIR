@@ -4,6 +4,7 @@ import tech.poder.ir.commands.Command
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
+import tech.poder.ir.metadata.NameId
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
 
@@ -17,13 +18,14 @@ value class LoopHolder(val block: Segment) : Segment {
         stack: Stack<Type>,
         currentIndex: Int,
         vars: MutableMap<CharSequence, UInt>,
-        type: MutableMap<UInt, Type>
+        type: MutableMap<UInt, Type>,
+        depMap: List<NameId>
     ): Int {
 
         val prevSize = stack.size
 
         val typeClone = type.map { it.key }
-        val index = block.eval(dependencies, self, method, stack, currentIndex, vars, type)
+        val index = block.eval(dependencies, self, method, stack, currentIndex, vars, type, depMap)
         val removed = vars.filter { !typeClone.contains(it.value) } //remove scoped vars
         removed.forEach {
             vars.remove(it.key)

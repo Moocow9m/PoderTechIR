@@ -1,15 +1,19 @@
 package tech.poder.ir.data.base.linked
 
 import tech.poder.ir.data.base.Container
+import tech.poder.ir.metadata.NameId
 import tech.poder.ir.util.MemorySegmentBuffer
 
 data class LinkedContainer(
     override val name: String,
     val entryPoint: UInt = 0u,
+    val depTable: List<NameId>,
     val packages: List<LinkedPackage>
 ) : Container {
     override fun size(): Long {
         return 1 + MemorySegmentBuffer.sequenceSize(name) + MemorySegmentBuffer.varSize(entryPoint.toInt()) + MemorySegmentBuffer.varSize(
+            depTable.size
+        ) + depTable.sumOf { MemorySegmentBuffer.sequenceSize(it.name) + MemorySegmentBuffer.varSize(it.id.toInt()) } + MemorySegmentBuffer.varSize(
             packages.size
         ) + packages.sumOf { it.size() }
     }
@@ -18,6 +22,11 @@ data class LinkedContainer(
         buffer.write(1.toByte())
         buffer.writeSequence(name)
         buffer.writeVar(entryPoint.toInt())
+        buffer.writeVar(depTable.size)
+        depTable.forEach {
+            buffer.writeSequence(it.name)
+            buffer.writeVar(it.id.toInt())
+        }
         buffer.writeVar(packages.size)
         packages.forEach {
             it.save(buffer)
