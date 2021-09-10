@@ -17,7 +17,9 @@ data class BranchHolder(
         self: Container,
         method: UnlinkedMethod,
         stack: Stack<Type>,
-        currentIndex: Int
+        currentIndex: Int,
+        vars: MutableMap<CharSequence, UInt>,
+        type: MutableMap<UInt, Type>
     ): Int {
 
         val ifStack = Stack<Type>()
@@ -29,9 +31,21 @@ data class BranchHolder(
         }
 
         stack.clear()
-        var index = ifBlock.eval(dependencies, self, method, ifStack, currentIndex)
-        index = elseBlock?.eval(dependencies, self, method, elseStack, index) ?: index
 
+        val typeClone = type.map { it.key }
+
+        var index = ifBlock.eval(dependencies, self, method, ifStack, currentIndex, vars, type)
+        var removed = vars.filter { !typeClone.contains(it.value) } //remove scoped vars
+        removed.forEach {
+            vars.remove(it.key)
+            type.remove(it.value)
+        }
+        index = elseBlock?.eval(dependencies, self, method, elseStack, index, vars, type) ?: index
+        removed = vars.filter { !typeClone.contains(it.value) }
+        removed.forEach {
+            vars.remove(it.key)
+            type.remove(it.value)
+        }
         check(ifStack.size == elseStack.size) {
             "Branch stacks do not match!\n\tIf:\n\t\t${ifStack.joinToString("\n\t\t")}\n\tElse:\n\t\t${
                 elseStack.joinToString("\n\t\t")

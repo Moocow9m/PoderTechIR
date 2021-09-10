@@ -4,6 +4,7 @@ import tech.poder.ir.commands.Command
 import tech.poder.ir.commands.DebugValue
 import tech.poder.ir.commands.Simple
 import tech.poder.ir.commands.SimpleValue
+import tech.poder.ir.data.LocationRef
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
@@ -43,11 +44,15 @@ value class SegmentPart(
         self: Container,
         method: UnlinkedMethod,
         stack: Stack<Type>,
-        currentIndex: Int
+        currentIndex: Int,
+        vars: MutableMap<CharSequence, UInt>,
+        type: MutableMap<UInt, Type>
     ): Int {
         var index = currentIndex
         var lastDebugLine: CharSequence = ""
         var lastDebugNumber = 0u
+        val indexOffset = currentIndex
+        val replaceList = mutableMapOf<Int, Command>()
         instructions.forEach { command ->
             when (command) {
                 Simple.RETURN -> {
@@ -72,7 +77,7 @@ value class SegmentPart(
                     }
                 }
                 Simple.POP -> safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}POP")
-                Simple.DUP -> stack.push(safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}DUP"))
+                Simple.DUP -> stack.push(stack.peek())
                 Simple.DEC, Simple.INC, Simple.NEG -> {
                     val a = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}${(command as Simple).name}")
                     check(a is Type.Primitive.Numeric) {
@@ -114,7 +119,7 @@ value class SegmentPart(
                     val value = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}ARRAY_SET")
                     val aIndex = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}ARRAY_SET")
                     val array = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}ARRAY_SET")
-                    check(array is Type.Array || array is Type.RuntimeArray) {
+                    check(array is Type.ArrayType) {
                         "${array::class} is not an array! ${processDebug(lastDebugNumber, lastDebugLine)}"
                     }
 
@@ -122,7 +127,7 @@ value class SegmentPart(
                         "${aIndex::class} is not a basic numeric! ${processDebug(lastDebugNumber, lastDebugLine)}"
                     }
 
-                    if (array is Type.RuntimeArray) {
+                    if (array is Type.ArrayType.RuntimeArray) {
                         check(value == array.type) {
                             "Array type error: ${value::class} != ${array.type::class} ${
                                 processDebug(
@@ -132,7 +137,7 @@ value class SegmentPart(
                             }"
                         }
                     } else {
-                        array as Type.Array
+                        array as Type.ArrayType.Array
                         check(value == array.type) {
                             "Array type error: ${value::class} != ${array.type::class} ${
                                 processDebug(
@@ -149,7 +154,7 @@ value class SegmentPart(
                 Simple.ARRAY_GET -> {
                     val aIndex = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}ARRAY_GET")
                     val array = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}ARRAY_GET")
-                    check(array is Type.Array || array is Type.RuntimeArray) {
+                    check(array is Type.ArrayType) {
                         "${array::class} is not an array! ${processDebug(lastDebugNumber, lastDebugLine)}"
                     }
 
@@ -157,10 +162,10 @@ value class SegmentPart(
                         "${aIndex::class} is not a basic numeric! ${processDebug(lastDebugNumber, lastDebugLine)}"
                     }
 
-                    if (array is Type.RuntimeArray) {
+                    if (array is Type.ArrayType.RuntimeArray) {
                         stack.push(array.type)
                     } else {
-                        array as Type.Array
+                        array as Type.ArrayType.Array
                         stack.push(array.type)
                     }
                 }
@@ -202,6 +207,49 @@ value class SegmentPart(
                 is SimpleValue.PushChars -> {
                     stack.push(Type.Primitive.CharBased.String)
                 }
+                is SimpleValue.GetVar -> {
+                    stack.push(when (command.data) {
+                        is LocationRef.LocationByID -> {
+                            type[command.data.id]
+                        }
+                        is LocationRef.LocationByName -> {
+                            val id = vars[command.data.name]
+                            check(id != null) {
+                                "Var: ${command.data.name} does not exist! ${
+                                    processDebug(
+                                        lastDebugNumber,
+                                        lastDebugLine
+                                    )
+                                }"
+                            }
+                            replaceList[index - indexOffset] = SimpleValue.GetVar(LocationRef.LocationByID(id))
+                            type[id]
+                        }
+                    })
+                }
+                is SimpleValue.SetVar -> {
+                    val t = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}SetVar")
+                    when (command.data) {
+                        is LocationRef.LocationByID -> {
+                            type[command.data.id] = t
+                        }
+                        is LocationRef.LocationByName -> {
+                            if (!vars.containsKey(command.data.name)) {
+                                vars[command.data.name] = vars.size.toUInt()
+                            }
+                            val id = vars[command.data.name]!!
+                            replaceList[index - indexOffset] = SimpleValue.SetVar(LocationRef.LocationByID(id))
+                            type[id] = t
+                        }
+                    }
+                }
+                is SimpleValue.ArrayCreate -> {
+                    val size = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}ArrayCreate")
+                    check(size is Type.Primitive.Numeric.Basic) {
+                        "${size::class} is not basic numeric! ${processDebug(lastDebugNumber, lastDebugLine)}"
+                    }
+                    stack.push(Type.ArrayType.RuntimeArray(command.data))
+                }
                 is SimpleValue.SystemCall -> {
                     val call = command.data
                     call.args.forEach {
@@ -216,7 +264,7 @@ value class SegmentPart(
                         }
                     }
                 }
-                is SimpleValue.IfType -> {
+                is SimpleValue.IfTypeShort -> {
                     val b = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}${command::class}")
                     val a = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}${command::class}")
                     check(a is Type.Primitive.Numeric) {
@@ -226,12 +274,16 @@ value class SegmentPart(
                         "${b::class} is not numeric! ${processDebug(lastDebugNumber, lastDebugLine)}"
                     }
                 }
-                is SimpleValue.Jump -> {
+                is SimpleValue.JumpShort -> {
                     //No stack change
                 }
                 else -> error("Unrecognized command: ${command::class} ${processDebug(lastDebugNumber, lastDebugLine)}")
             }
             index++
+        }
+
+        replaceList.forEach { (t, u) ->
+            instructions[t] = u
         }
 
         return index

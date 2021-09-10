@@ -1,6 +1,6 @@
 package tech.poder.ir.data
 
-data class Label internal constructor(val id: UShort, internal var offset: Int = -2) {
+data class Label internal constructor(val id: UShort, internal var location: Int = -2) {
 
     fun use(index: Int) {
 
@@ -8,10 +8,10 @@ data class Label internal constructor(val id: UShort, internal var offset: Int =
             "Label already in use!"
         }
 
-        offset = index
+        location = index
     }
 
     fun isUsed(): Boolean {
-        return offset > -2
+        return location > -2
     }
 }

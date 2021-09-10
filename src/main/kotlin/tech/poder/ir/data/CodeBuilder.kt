@@ -256,6 +256,39 @@ data class CodeBuilder internal constructor(
     }
 
     fun finalize() {
+        val replaceInstructions = mutableMapOf<Int, Command>()
+        instructions.forEachIndexed { index, command ->
+            when (command) {
+                is SimpleValue.Jump -> {
+                    replaceInstructions[index] = SimpleValue.JumpShort(command.data.location - index)
+                }
+                is SimpleValue.IfType -> {
+                    replaceInstructions[index] = when (command) {
+                        is SimpleValue.IfType.IfEquals -> {
+                            SimpleValue.IfTypeShort.IfEquals(command.data.location - index)
+                        }
+                        is SimpleValue.IfType.IfNotEquals -> {
+                            SimpleValue.IfTypeShort.IfNotEquals(command.data.location - index)
+                        }
+                        is SimpleValue.IfType.IfGreaterThan -> {
+                            SimpleValue.IfTypeShort.IfGreaterThan(command.data.location - index)
+                        }
+                        is SimpleValue.IfType.IfLessThan -> {
+                            SimpleValue.IfTypeShort.IfLessThan(command.data.location - index)
+                        }
+                        is SimpleValue.IfType.IfGreaterThanEquals -> {
+                            SimpleValue.IfTypeShort.IfGreaterThanEquals(command.data.location - index)
+                        }
+                        is SimpleValue.IfType.IfLessThanEquals -> {
+                            SimpleValue.IfTypeShort.IfLessThanEquals(command.data.location - index)
+                        }
+                    }
+                }
+            }
+        }
+        replaceInstructions.forEach { (t, u) ->
+            instructions[t] = u
+        }
         storage.instructions = MultiSegment.buildSegments(instructions)
     }
 }

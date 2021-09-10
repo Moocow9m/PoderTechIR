@@ -79,11 +79,11 @@ data class UnlinkedMethod internal constructor(
     }
 
     override fun toString(): String {
-        return "$visibility $fullName(${args.joinToString(", ")}): ${returnType::class} { Size: ${instructions.size()} }"
+        return "$visibility $fullName(${args.joinToString(", ") { it::class.simpleName!! }}): ${returnType::class.simpleName} { Size: ${instructions.size()} }"
     }
 
     fun toString(tabs: Int): String {
-        return "${"\t".repeat(tabs)}$visibility $fullName(${args.joinToString(", ")}): ${returnType::class} { Size: ${instructions.size()} }"
+        return "${"\t".repeat(tabs)}$visibility $fullName(${args.joinToString(", ") { it::class.simpleName!! }}): ${returnType::class.simpleName} { Size: ${instructions.size()} }"
     }
 
     internal fun toBulk(arrayList: MutableList<Command>) {

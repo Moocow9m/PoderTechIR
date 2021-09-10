@@ -4,11 +4,17 @@ import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.unlinked.UnlinkedContainer
+import tech.poder.ir.std.Math
 import tech.poder.ir.util.SegmentUtil
 import kotlin.test.Test
 
 
 internal class Packaging {
+
+    @Test
+    fun mathCheck() {
+        validate(Math.mathLib, Math.pow)
+    }
 
     @Test
     fun linear() {
@@ -159,7 +165,7 @@ internal class Packaging {
             it.sysCall(SysCommand.PRINT)
             it.jmp(afterLabel)
             it.placeLabel(elseLabel)
-            it.push("Hello Kat")
+            it.push("Hello Kat\n")
             it.sysCall(SysCommand.PRINT)
             it.placeLabel(afterLabel)
             it.push("}\n")

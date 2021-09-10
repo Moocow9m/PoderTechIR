@@ -268,28 +268,141 @@ sealed interface SimpleValue : Command {
     @JvmInline
     value class Jump(val data: Label) : Command {
         override fun id(): Int {
+            error("Should not be saved!")
+        }
+
+        override fun sizeBits(): Long {
+            error("Should not be saved!")
+        }
+
+        override fun toBin(output: MemorySegmentBuffer) {
+            error("Should not be saved!")
+        }
+    }
+
+    @JvmInline
+    value class JumpShort(val offset: Int) : Command {
+        override fun id(): Int {
             return jump
         }
 
         override fun sizeBits(): Long {
-            return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                data.offset
-            )) * 8L
+            return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(offset)) * 8L
         }
 
         override fun toBin(output: MemorySegmentBuffer) {
             output.writeVar(id())
-            output.writeVar(data.id.toShort())
-            output.writeVar(data.offset)
+            output.writeVar(offset)
         }
     }
 
     sealed interface IfType : Command {
-        fun label(): Label
 
         @JvmInline
         value class IfEquals(val data: Label) : IfType {
-            override fun label(): Label {
+
+            override fun id(): Int {
+                error("Should not be saved!")
+            }
+
+            override fun sizeBits(): Long {
+                error("Should not be saved!")
+            }
+
+            override fun toBin(output: MemorySegmentBuffer) {
+                error("Should not be saved!")
+            }
+        }
+
+        @JvmInline
+        value class IfNotEquals(val data: Label) : IfType {
+
+            override fun id(): Int {
+                error("Should not be saved!")
+            }
+
+            override fun sizeBits(): Long {
+                error("Should not be saved!")
+            }
+
+            override fun toBin(output: MemorySegmentBuffer) {
+                error("Should not be saved!")
+            }
+        }
+
+        @JvmInline
+        value class IfGreaterThan(val data: Label) : IfType {
+
+            override fun id(): Int {
+                error("Should not be saved!")
+            }
+
+            override fun sizeBits(): Long {
+                error("Should not be saved!")
+            }
+
+            override fun toBin(output: MemorySegmentBuffer) {
+                error("Should not be saved!")
+            }
+        }
+
+        @JvmInline
+        value class IfLessThan(val data: Label) : IfType {
+
+            override fun id(): Int {
+                error("Should not be saved!")
+            }
+
+            override fun sizeBits(): Long {
+                error("Should not be saved!")
+            }
+
+            override fun toBin(output: MemorySegmentBuffer) {
+                error("Should not be saved!")
+            }
+        }
+
+        @JvmInline
+        value class IfLessThanEquals(val data: Label) : IfType {
+
+            override fun id(): Int {
+                error("Should not be saved!")
+            }
+
+            override fun sizeBits(): Long {
+                error("Should not be saved!")
+            }
+
+            override fun toBin(output: MemorySegmentBuffer) {
+                error("Should not be saved!")
+            }
+        }
+
+        @JvmInline
+        value class IfGreaterThanEquals(val data: Label) : IfType {
+
+            override fun id(): Int {
+                error("Should not be saved!")
+            }
+
+            override fun sizeBits(): Long {
+                error("Should not be saved!")
+            }
+
+            override fun toBin(output: MemorySegmentBuffer) {
+                error("Should not be saved!")
+            }
+        }
+
+    }
+
+    sealed interface IfTypeShort : Command {
+        fun offset(): Int
+
+        @JvmInline
+        value class IfEquals(val data: Int) : IfTypeShort {
+
+            override fun offset(): Int {
                 return data
             }
 
@@ -298,21 +411,19 @@ sealed interface SimpleValue : Command {
             }
 
             override fun sizeBits(): Long {
-                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                    data.offset
-                )) * 8L
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data)) * 8L
             }
 
             override fun toBin(output: MemorySegmentBuffer) {
                 output.writeVar(id())
-                output.writeVar(data.id.toShort())
-                output.writeVar(data.offset)
+                output.writeVar(data)
             }
         }
 
         @JvmInline
-        value class IfNotEquals(val data: Label) : IfType {
-            override fun label(): Label {
+        value class IfNotEquals(val data: Int) : IfTypeShort {
+
+            override fun offset(): Int {
                 return data
             }
 
@@ -321,21 +432,19 @@ sealed interface SimpleValue : Command {
             }
 
             override fun sizeBits(): Long {
-                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                    data.offset
-                )) * 8L
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data)) * 8L
             }
 
             override fun toBin(output: MemorySegmentBuffer) {
                 output.writeVar(id())
-                output.writeVar(data.id.toShort())
-                output.writeVar(data.offset)
+                output.writeVar(data)
             }
         }
 
         @JvmInline
-        value class IfGreaterThan(val data: Label) : IfType {
-            override fun label(): Label {
+        value class IfGreaterThan(val data: Int) : IfTypeShort {
+
+            override fun offset(): Int {
                 return data
             }
 
@@ -344,21 +453,19 @@ sealed interface SimpleValue : Command {
             }
 
             override fun sizeBits(): Long {
-                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                    data.offset
-                )) * 8L
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data)) * 8L
             }
 
             override fun toBin(output: MemorySegmentBuffer) {
                 output.writeVar(id())
-                output.writeVar(data.id.toShort())
-                output.writeVar(data.offset)
+                output.writeVar(data)
             }
         }
 
         @JvmInline
-        value class IfLessThan(val data: Label) : IfType {
-            override fun label(): Label {
+        value class IfLessThan(val data: Int) : IfTypeShort {
+
+            override fun offset(): Int {
                 return data
             }
 
@@ -367,21 +474,19 @@ sealed interface SimpleValue : Command {
             }
 
             override fun sizeBits(): Long {
-                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                    data.offset
-                )) * 8L
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data)) * 8L
             }
 
             override fun toBin(output: MemorySegmentBuffer) {
                 output.writeVar(id())
-                output.writeVar(data.id.toShort())
-                output.writeVar(data.offset)
+                output.writeVar(data)
             }
         }
 
         @JvmInline
-        value class IfLessThanEquals(val data: Label) : IfType {
-            override fun label(): Label {
+        value class IfLessThanEquals(val data: Int) : IfTypeShort {
+
+            override fun offset(): Int {
                 return data
             }
 
@@ -390,21 +495,19 @@ sealed interface SimpleValue : Command {
             }
 
             override fun sizeBits(): Long {
-                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                    data.offset
-                )) * 8L
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data)) * 8L
             }
 
             override fun toBin(output: MemorySegmentBuffer) {
                 output.writeVar(id())
-                output.writeVar(data.id.toShort())
-                output.writeVar(data.offset)
+                output.writeVar(data)
             }
         }
 
         @JvmInline
-        value class IfGreaterThanEquals(val data: Label) : IfType {
-            override fun label(): Label {
+        value class IfGreaterThanEquals(val data: Int) : IfTypeShort {
+
+            override fun offset(): Int {
                 return data
             }
 
@@ -413,18 +516,14 @@ sealed interface SimpleValue : Command {
             }
 
             override fun sizeBits(): Long {
-                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data.id.toShort()) + MemorySegmentBuffer.varSize(
-                    data.offset
-                )) * 8L
+                return (MemorySegmentBuffer.varSize(id()) + MemorySegmentBuffer.varSize(data)) * 8L
             }
 
             override fun toBin(output: MemorySegmentBuffer) {
                 output.writeVar(id())
-                output.writeVar(data.id.toShort())
-                output.writeVar(data.offset)
+                output.writeVar(data)
             }
         }
-
     }
 
     @JvmInline

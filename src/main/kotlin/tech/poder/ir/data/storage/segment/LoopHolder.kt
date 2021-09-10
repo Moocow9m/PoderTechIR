@@ -15,13 +15,20 @@ value class LoopHolder(val block: Segment) : Segment {
         self: Container,
         method: UnlinkedMethod,
         stack: Stack<Type>,
-        currentIndex: Int
+        currentIndex: Int,
+        vars: MutableMap<CharSequence, UInt>,
+        type: MutableMap<UInt, Type>
     ): Int {
 
         val prevSize = stack.size
 
-        val index = block.eval(dependencies, self, method, stack, currentIndex)
-
+        val typeClone = type.map { it.key }
+        val index = block.eval(dependencies, self, method, stack, currentIndex, vars, type)
+        val removed = vars.filter { !typeClone.contains(it.value) } //remove scoped vars
+        removed.forEach {
+            vars.remove(it.key)
+            type.remove(it.value)
+        }
         check(stack.size == prevSize) {
             "Loop stack size does not match original! (leaky stack?) Original: $prevSize New: ${stack.size}"
         }

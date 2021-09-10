@@ -8,7 +8,7 @@ import tech.poder.ir.metadata.Visibility
 object Math { //todo containers will link against this lib, but a linked and optimized version will be made for runtime(exporting the std as modules)
     val mathLib = UnlinkedContainer("std.math")
 
-    val mathPackage = mathLib.newPackage("std", Visibility.PUBLIC)
+    val mathPackage = mathLib.newPackage("base", Visibility.PUBLIC)
 
     //Complexity is O(log(n))
     val pow = mathPackage.newFloatingMethod(
@@ -50,5 +50,6 @@ object Math { //todo containers will link against this lib, but a linked and opt
         it.jmp(start)
         it.placeLabel(end)
         it.getVar("pow")
+        it.return_()
     }
 }

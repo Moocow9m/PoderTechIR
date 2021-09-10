@@ -18,27 +18,29 @@ sealed interface Type {
         }
     }
 
-    @JvmInline
-    value class RuntimeArray(val type: Type) : Type { //Array with size determined on runtime
-        override fun size(): Int {
-            return 1 + type.size()
+    sealed interface ArrayType : Type {
+        @JvmInline
+        value class RuntimeArray(val type: Type) : ArrayType { //Array with size determined on runtime
+            override fun size(): Int {
+                return 1 + type.size()
+            }
+
+            override fun toBin(buffer: MemorySegmentBuffer) {
+                buffer.write(10.toByte())
+                type.toBin(buffer)
+            }
         }
 
-        override fun toBin(buffer: MemorySegmentBuffer) {
-            buffer.write(10.toByte())
-            type.toBin(buffer)
-        }
-    }
+        data class Array(val type: Type, val size: Int) : ArrayType { //Array with known size
+            override fun size(): Int {
+                return 1 + type.size() + MemorySegmentBuffer.varSize(size)
+            }
 
-    data class Array(val type: Type, val size: Int) : Type { //Array with known size
-        override fun size(): Int {
-            return 1 + type.size() + MemorySegmentBuffer.varSize(size)
-        }
-
-        override fun toBin(buffer: MemorySegmentBuffer) {
-            buffer.write(9.toByte())
-            type.toBin(buffer)
-            buffer.writeVar(size)
+            override fun toBin(buffer: MemorySegmentBuffer) {
+                buffer.write(9.toByte())
+                type.toBin(buffer)
+                buffer.writeVar(size)
+            }
         }
     }
 

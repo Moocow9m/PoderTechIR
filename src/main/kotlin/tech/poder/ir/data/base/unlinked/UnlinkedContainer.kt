@@ -119,7 +119,15 @@ class UnlinkedContainer(override val name: String) : Container {
         optimizers: List<Optimizer>
     ): Method {
         stack.clear()
-        method.instructions.eval(dependencies, this, method, stack, 0)
+        val vars = mutableMapOf<CharSequence, UInt>()
+        val types = mutableMapOf<UInt, Type>()
+        var id = 0u
+        method.args.forEach {
+            val i = id++
+            vars[it.name] = i
+            types[i] = it.type
+        }
+        method.instructions.eval(dependencies, this, method, stack, 0, vars, types)
         optimizers.forEach { it.visitSegment(method.instructions) }
         val bulk = mutableListOf<Command>()
         method.instructions.toBulk(bulk)

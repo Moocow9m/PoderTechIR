@@ -14,7 +14,9 @@ interface Segment {
         self: Container,
         method: UnlinkedMethod,
         stack: Stack<Type>,
-        currentIndex: Int
+        currentIndex: Int,
+        vars: MutableMap<CharSequence, UInt>,
+        type: MutableMap<UInt, Type>
     ): Int
 
     fun size(): Int

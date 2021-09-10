@@ -15,22 +15,27 @@ value class MultiSegment(
 
     companion object {
 
-        fun buildSegments(raw: List<Command>, startIndex: Int = 0): Segment {
+        fun buildSegments(raw: List<Command>, startIndex: Int = 0, isLoop: Boolean = false): Segment {
 
             val loopIndexes = mutableMapOf<Int, Int>()
 
             raw.forEachIndexed { index, instruction ->
 
-                if (instruction !is SimpleValue.Jump) {
+                if (instruction !is SimpleValue.JumpShort) {
                     return@forEachIndexed
                 }
 
-                val offset = instruction.data.offset
-                val instIndex = (offset - startIndex) + 1
-
-                if (instIndex >= 0 && offset < index + startIndex) {
-                    loopIndexes[index] = instIndex
+                val offset = (index + instruction.offset) + 1
+                if (isLoop) {
+                    if (offset > 0 && instruction.offset < 0) {
+                        loopIndexes[offset] = index
+                    }
+                } else {
+                    if (offset > -1 && instruction.offset < 0) {
+                        loopIndexes[offset] = index
+                    }
                 }
+
             }
 
             val head = MultiSegment()
@@ -41,33 +46,31 @@ value class MultiSegment(
             while (internalIndex < raw.size) {
 
                 when (val instruction = raw[internalIndex]) {
-
-                    is SimpleValue.IfType,
-                    -> {
-                        val potentialElse = instruction.label()
+                    is SimpleValue.IfTypeShort -> {
+                        val potentialElse = instruction.offset()
 
                         tmpStorage.instructions.add(raw[internalIndex])
                         head.instructions.add(tmpStorage)
 
                         val savedA = internalIndex
 
-                        val ifRaw = ((internalIndex + 1)..potentialElse.offset).map {
+                        val ifRaw = ((internalIndex + 1)..(internalIndex + potentialElse)).map {
                             raw[it]
                         }
 
-                        internalIndex = potentialElse.offset
+                        internalIndex += potentialElse
 
                         val savedB = internalIndex
                         val last = ifRaw.last()
                         var elseRaw: List<Command>? = null
 
-                        if (last is SimpleValue.Jump && last.data.offset > (startIndex + internalIndex)) {
+                        if (last is SimpleValue.JumpShort && last.offset > 0) {
 
-                            elseRaw = ((internalIndex + 1)..last.data.offset).map {
+                            elseRaw = ((internalIndex + 1)..(internalIndex + last.offset)).map {
                                 raw[it]
                             }
 
-                            internalIndex = last.data.offset
+                            internalIndex += last.offset
                         }
 
                         head.instructions.add(
@@ -87,33 +90,30 @@ value class MultiSegment(
                         tmpStorage = SegmentPart()
                     }
                     else -> {
+                        if (loopIndexes.containsKey(internalIndex)) {
 
-                        if (internalIndex in loopIndexes.values) {
-
-                            val jumpTo = loopIndexes.filter { it.value == internalIndex }.map { it.toPair() }
-
-                            check(jumpTo.size == 1) {
-                                "Loop detection failed! Jump point had multiple labels pointing to it: ${
-                                    jumpTo.joinToString(
-                                        ", "
-                                    ) { "Jump from ${it.first} to ${it.second}" }
-                                }"
-                            }
-
-                            val first = jumpTo.first()
+                            val jumpTo = loopIndexes[internalIndex]!!
 
                             if (tmpStorage.instructions.isNotEmpty()) {
                                 head.instructions.add(tmpStorage)
                             }
 
-                            val newRaw = (internalIndex..first.first).map { raw[it] }
-                            head.instructions.add(LoopHolder(buildSegments(newRaw, startIndex + internalIndex + 1)))
+                            val newRaw = (internalIndex..jumpTo).map { raw[it] }
+                            head.instructions.add(
+                                LoopHolder(
+                                    buildSegments(
+                                        newRaw,
+                                        startIndex + internalIndex + 1,
+                                        true
+                                    )
+                                )
+                            )
 
                             if (tmpStorage.instructions.isNotEmpty()) {
                                 tmpStorage = SegmentPart()
                             }
 
-                            internalIndex = first.first
+                            internalIndex = jumpTo
                         }
                         else {
                             tmpStorage.instructions.add(raw[internalIndex])
@@ -140,12 +140,14 @@ value class MultiSegment(
         self: Container,
         method: UnlinkedMethod,
         stack: Stack<Type>,
-        currentIndex: Int
+        currentIndex: Int,
+        vars: MutableMap<CharSequence, UInt>,
+        type: MutableMap<UInt, Type>
     ): Int {
         var index = currentIndex
 
         instructions.forEach {
-            index = it.eval(dependencies, self, method, stack, index)
+            index = it.eval(dependencies, self, method, stack, index, vars, type)
         }
 
         return index
