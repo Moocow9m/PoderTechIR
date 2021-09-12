@@ -5,7 +5,6 @@ import tech.poder.ir.data.base.Method
 import tech.poder.ir.util.MemorySegmentBuffer
 
 data class PublicMethod(
-    val id: UInt,
     val name: String,
     val args: List<Type>,
     val returns: Type

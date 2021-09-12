@@ -10,9 +10,7 @@ import tech.poder.ir.data.base.api.APIContainer
 import tech.poder.ir.data.base.api.PublicMethod
 import tech.poder.ir.data.base.api.PublicObject
 import tech.poder.ir.data.base.linked.*
-import tech.poder.ir.metadata.IdType
 import tech.poder.ir.metadata.NameId
-import tech.poder.ir.metadata.NamedIdType
 import tech.poder.ir.metadata.Visibility
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
@@ -120,45 +118,42 @@ class UnlinkedContainer(override val name: String) : Container {
         var last = 1u
         val depMap = listOf(NameId(name, 0u), *dependencies.map { NameId(it.name, last++) }.toTypedArray())
         val map = getSelfMapping()
-        val packages = mutableSetOf<LinkedPackage>()
+
         val stack = Stack<Type>()
-        roots.forEach { unlinkedPackage ->
-            val methods = mutableSetOf<Method>()
-            val objects = mutableSetOf<Object>()
-            unlinkedPackage.floating.forEach {
-                methods.add(processMethod(stack, it, dependencies, map, optimizers, depMap))
+
+        val methods = mutableSetOf<PublicMethod>()
+        val codes = mutableListOf<List<Command>>()
+        val objects = mutableSetOf<PublicObject>()
+        val structs = mutableListOf<List<Type>>()
+
+        roots.filter { it.visibility == Visibility.PUBLIC }.forEach { pkg ->
+            pkg.floating.filter { it.visibility == Visibility.PUBLIC }.forEach {
+                val methPair = processMethod(stack, it, dependencies, optimizers, depMap)
+                methods.add(methPair.first!!)
+                codes.add(methPair.second)
             }
-            unlinkedPackage.objects.forEach { unlinkedObject ->
-                val methods2 = mutableSetOf<Method>()
-                unlinkedObject.methods.forEach {
-                    methods2.add(processMethod(stack, it, dependencies, map, optimizers, depMap))
-                }
-                val fieldNamePrefix = "${unlinkedObject.fullName}${UnlinkedObject.fieldSeparator}"
-                if (unlinkedObject.visibility == Visibility.PRIVATE) {
-                    objects.add(
-                        PrivateObject(
-                            map[unlinkedObject.fullName]!!,
-                            unlinkedObject.fields.map { IdType(map["$fieldNamePrefix${it.name}"]!!, it.type) },
-                            methods2.map { it as PrivateMethod })
-                    )
-                } else {
-                    objects.add(
-                        PublicObject(
-                            map[unlinkedObject.fullName]!!,
-                            unlinkedObject.name,
-                            unlinkedObject.fields.map {
-                                NamedIdType(
-                                    name,
-                                    map["$fieldNamePrefix${it.name}"]!!,
-                                    it.type
-                                )
-                            },
-                            methods2.toList()
-                        )
-                    )
+            pkg.objects.filter { it.visibility == Visibility.PUBLIC }.forEach { obj ->
+                objects.add(PublicObject(obj.fullName, obj.fields))
+                structs.add(obj.fields.map { it.type })
+                obj.methods.filter { it.visibility == Visibility.PUBLIC }.forEach {
+                    val methPair = processMethod(stack, it, dependencies, optimizers, depMap)
+                    methods.add(methPair.first!!)
+                    codes.add(methPair.second)
                 }
             }
-            packages.add(LinkedPackage(methods.toList(), objects.toList()))
+        }
+        roots.filter { it.visibility == Visibility.PRIVATE }.forEach { pkg ->
+            pkg.floating.filter { it.visibility == Visibility.PRIVATE }.forEach {
+                val methPair = processMethod(stack, it, dependencies, optimizers, depMap)
+                codes.add(methPair.second)
+            }
+            pkg.objects.filter { it.visibility == Visibility.PRIVATE }.forEach { obj ->
+                structs.add(obj.fields.map { it.type })
+                obj.methods.filter { it.visibility == Visibility.PRIVATE }.forEach {
+                    val methPair = processMethod(stack, it, dependencies, optimizers, depMap)
+                    codes.add(methPair.second)
+                }
+            }
         }
         val entrypoint = if (entryPoint.isBlank()) {
             0u
@@ -172,10 +167,9 @@ class UnlinkedContainer(override val name: String) : Container {
         stack: Stack<Type>,
         method: UnlinkedMethod,
         dependencies: Set<Container>,
-        map: Map<String, UInt>,
         optimizers: List<Optimizer>,
         depMap: List<NameId>
-    ): Method {
+    ): Pair<PublicMethod?, List<Command>> {
         stack.clear()
         val vars = mutableMapOf<CharSequence, UInt>()
         val types = mutableMapOf<UInt, Type>()
@@ -190,17 +184,17 @@ class UnlinkedContainer(override val name: String) : Container {
         optimizers.forEach { it.visitSegment(meth.instructions) }
         val bulk = mutableListOf<Command>()
         meth.instructions.toBulk(bulk)
-        return if (meth.visibility == Visibility.PRIVATE) {
-            PrivateMethod(map[meth.fullName]!!, meth.args.size.toByte(), meth.returnType != Type.Unit, bulk)
-        } else {
-            PublicMethod(
-                map[meth.fullName]!!,
-                meth.name,
-                meth.args.size.toByte(),
-                meth.returnType != Type.Unit,
-                bulk
-            )
-        }
+        return Pair(
+            if (meth.visibility == Visibility.PRIVATE) {
+                null
+            } else {
+                PublicMethod(
+                    meth.fullName,
+                    meth.args.map { it.type },
+                    meth.returnType
+                )
+            }, bulk
+        )
     }
 
     fun newPackage(namespace: String, visibility: Visibility = Visibility.PRIVATE): UnlinkedPackage {
@@ -251,7 +245,7 @@ class UnlinkedContainer(override val name: String) : Container {
     }
 
     override fun locateField(obj: UInt, id: UInt): Type {
-        return getFieldMapping()[id]!!
+        return getObjectMapping()[obj]!!.fields[id.toInt()].type
     }
 
     override fun locateMethod(name: String): UInt? {
