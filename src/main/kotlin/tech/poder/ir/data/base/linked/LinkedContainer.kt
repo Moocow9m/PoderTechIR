@@ -1,18 +1,25 @@
 package tech.poder.ir.data.base.linked
 
+import tech.poder.ir.commands.Command
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.Object
+import tech.poder.ir.data.base.api.PublicMethod
+import tech.poder.ir.data.base.api.PublicObject
 import tech.poder.ir.data.base.unlinked.UnlinkedObject
 import tech.poder.ir.metadata.NameId
+import tech.poder.ir.metadata.NamedType
 import tech.poder.ir.util.MemorySegmentBuffer
 
 data class LinkedContainer(
     override val name: String,
     val entryPoint: UInt = 0u,
     val depTable: List<NameId>,
-    val packages: List<LinkedPackage>
+    val packages: List<LinkedPackage>,
+    val methods: List<List<Command>>,
+    val objects: List<List<Type>>, //todo perhaps make an object to store offset at item X
+    val fields: List<Type>
 ) : Container {
     private var internalMappingCache: Map<String, UInt>? = null
 

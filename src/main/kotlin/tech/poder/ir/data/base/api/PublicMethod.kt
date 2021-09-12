@@ -1,4 +1,4 @@
-package tech.poder.ir.data.base.linked
+package tech.poder.ir.data.base.api
 
 import tech.poder.ir.commands.Command
 import tech.poder.ir.data.base.Method

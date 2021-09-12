@@ -6,6 +6,8 @@ import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.Object
+import tech.poder.ir.data.base.api.PublicMethod
+import tech.poder.ir.data.base.api.PublicObject
 import tech.poder.ir.data.base.linked.*
 import tech.poder.ir.metadata.IdType
 import tech.poder.ir.metadata.NameId
@@ -15,8 +17,8 @@ import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
 
 class UnlinkedContainer(override val name: String) : Container {
-    internal val roots: MutableSet<UnlinkedPackage> = mutableSetOf()
-    internal var entryPoint: String = ""
+    private val roots: MutableSet<UnlinkedPackage> = mutableSetOf()
+    private var entryPoint: String = ""
     private var mappingCache: Map<String, UInt>? = null
     private var internalMappingCache: Map<String, UInt>? = null
     private var internalMappingCacheField: Map<UInt, Type>? = null
@@ -55,17 +57,39 @@ class UnlinkedContainer(override val name: String) : Container {
         val map1 = mutableMapOf<UInt, Type>()
         val map2 = mutableMapOf<UInt, UnlinkedMethod>()
         val map3 = mutableMapOf<UInt, UnlinkedObject>()
-        roots.forEach { pkg ->
-            pkg.floating.forEach {
+        roots.filter { it.visibility == Visibility.PUBLIC }.forEach { pkg ->
+            pkg.floating.filter { it.visibility == Visibility.PUBLIC }.forEach {
                 val id = nextMethodId++
                 map[it.fullName] = id
                 map2[id] = it
             }
-            pkg.objects.forEach { obj ->
+            pkg.objects.filter { it.visibility == Visibility.PUBLIC }.forEach { obj ->
                 val id = nextObjectId++
                 map[obj.fullName] = id
                 map3[id] = obj
-                obj.methods.forEach {
+                obj.methods.filter { it.visibility == Visibility.PUBLIC }.forEach {
+                    val id2 = nextMethodId++
+                    map[it.fullName] = id2
+                    map2[id2] = it
+                }
+                obj.fields.forEach {
+                    val id2 = nextFieldId++
+                    map["${obj.fullName}${UnlinkedObject.fieldSeparator}${it.name}"] = id2
+                    map1[id2] = it.type
+                }
+            }
+        }
+        roots.filter { it.visibility == Visibility.PRIVATE }.forEach { pkg ->
+            pkg.floating.filter { it.visibility == Visibility.PRIVATE }.forEach {
+                val id = nextMethodId++
+                map[it.fullName] = id
+                map2[id] = it
+            }
+            pkg.objects.filter { it.visibility == Visibility.PRIVATE }.forEach { obj ->
+                val id = nextObjectId++
+                map[obj.fullName] = id
+                map3[id] = obj
+                obj.methods.filter { it.visibility == Visibility.PRIVATE }.forEach {
                     val id2 = nextMethodId++
                     map[it.fullName] = id2
                     map2[id2] = it
@@ -162,7 +186,7 @@ class UnlinkedContainer(override val name: String) : Container {
         } else {
             map[entryPoint]!!
         }
-        return LinkedContainer(name, entrypoint, depMap, packages.toList())
+        return LinkedContainer(name, entrypoint, depMap, packages.toList(), TODO(), TODO(), TODO())
     }
 
     private fun processMethod(
