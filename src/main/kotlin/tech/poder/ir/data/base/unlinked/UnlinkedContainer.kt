@@ -9,7 +9,7 @@ import tech.poder.ir.data.base.Object
 import tech.poder.ir.data.base.api.APIContainer
 import tech.poder.ir.data.base.api.PublicMethod
 import tech.poder.ir.data.base.api.PublicObject
-import tech.poder.ir.data.base.linked.*
+import tech.poder.ir.data.base.linked.LinkedContainer
 import tech.poder.ir.metadata.NameId
 import tech.poder.ir.metadata.Visibility
 import tech.poder.ir.util.MemorySegmentBuffer
@@ -160,7 +160,9 @@ class UnlinkedContainer(override val name: String) : Container {
         } else {
             map[entryPoint]!!
         }
-        return LinkedContainer(name, entrypoint, depMap, packages.toList(), TODO(), TODO(), TODO())
+        val api = APIContainer(name, entrypoint, methods.toList(), objects.toList())
+        val bin = LinkedContainer(name, entrypoint, depMap.sortedBy { it.id }.map { it.name }, codes, structs)
+        return Pair(api, bin)
     }
 
     private fun processMethod(
