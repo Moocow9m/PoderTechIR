@@ -3,29 +3,44 @@ package tech.poder.ir.data.base.api
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
-import tech.poder.ir.data.base.Object
-import tech.poder.ir.metadata.NamedType
 import tech.poder.ir.util.MemorySegmentBuffer
 
-data class APIContainer(override val name: String, val entryPoint: UInt = 0u, val methods: List<PublicMethod>, val objects: List<PublicObject>, val fields: List<NamedType>): Container {
+data class APIContainer(
+    override val name: String,
+    val entryPoint: UInt = 0u,
+    val methods: List<PublicMethod>,
+    val objects: List<PublicObject>
+) : Container {
     override fun size(): Long {
-        TODO("Not yet implemented")
+        return 1L + MemorySegmentBuffer.sequenceSize(name) + MemorySegmentBuffer.varSize(entryPoint.toInt()) + MemorySegmentBuffer.varSize(
+            methods.size
+        ) + methods.sumOf { it.size() } + MemorySegmentBuffer.varSize(objects.size) + objects.sumOf { it.size() }
     }
 
     override fun save(buffer: MemorySegmentBuffer) {
-        TODO("Not yet implemented")
+        buffer.write(1.toByte())
+        buffer.writeSequence(name)
+        buffer.writeVar(entryPoint.toInt())
+        buffer.writeVar(methods.size)
+        methods.forEach {
+            it.save(buffer)
+        }
+        buffer.writeVar(objects.size)
+        objects.forEach {
+            it.save(buffer)
+        }
     }
 
-    override fun locateField(name: String): UInt? {
-        val loc = fields.indexOfFirst { it.name == name }
+    override fun locateField(obj: UInt, name: String): UInt? {
+        val loc = locateObject(obj).fields.indexOfFirst { it.name == name }
         if (loc == -1) {
             return null
         }
         return loc.toUInt()
     }
 
-    override fun locateField(id: UInt): Type {
-        return fields[id.toInt()].type
+    override fun locateField(obj: UInt, id: UInt): Type {
+        return locateObject(obj).fields[id.toInt()].type
     }
 
     override fun locateMethod(name: String): UInt? {
@@ -48,7 +63,7 @@ data class APIContainer(override val name: String, val entryPoint: UInt = 0u, va
         return loc.toUInt()
     }
 
-    override fun locateObject(id: UInt): Object {
+    override fun locateObject(id: UInt): PublicObject {
         return objects[id.toInt()]
     }
 

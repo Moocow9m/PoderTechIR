@@ -304,14 +304,14 @@ value class SegmentPart(
                             CIdType(
                                 command.data.id.second,
                                 command.data.id.first,
-                                self.locateField(command.data.id.second)
+                                self.locateField(, command.data.id.second)
                             )
                         } else {
                             val name = depMap.first { it.id == command.data.id.first }.name
                             CIdType(
                                 command.data.id.second,
                                 command.data.id.first,
-                                dependencies.first { it.name == name }.locateField(command.data.id.second)
+                                dependencies.first { it.name == name }.locateField(, command.data.id.second)
                             )
                         }
                     }
@@ -337,14 +337,14 @@ value class SegmentPart(
                             CIdType(
                                 command.data.id.second,
                                 command.data.id.first,
-                                self.locateField(command.data.id.second)
+                                self.locateField(, command.data.id.second)
                             )
                         } else {
                             val name = depMap.first { it.id == command.data.id.first }.name
                             CIdType(
                                 command.data.id.second,
                                 command.data.id.first,
-                                dependencies.first { it.name == name }.locateField(command.data.id.second)
+                                dependencies.first { it.name == name }.locateField(, command.data.id.second)
                             )
                         }
                     }
@@ -476,19 +476,20 @@ value class SegmentPart(
         thisDep: UnlinkedContainer,
         rest: Set<Container>,
         mapping: List<NameId>,
+        obj: UInt,
         target: String
     ): CIdType {
         val container = if (thisDep.getSelfMapping().containsKey(target)) {
             thisDep
         } else {
-            val res = rest.firstOrNull { it.locateField(target) != null }
+            val res = rest.firstOrNull { it.locateField(obj, target) != null }
             check(res != null) {
                 "Could not find field: [$target]"
             }
             res
         }
-        val id = container.locateField(target)!!
-        return CIdType(id, mapping.first { it.name == container.name }.id, container.locateField(id))
+        val id = container.locateField(obj, target)!!
+        return CIdType(id, mapping.first { it.name == container.name }.id, container.locateField(obj, id))
     }
 
     private fun resolveDepMethod(

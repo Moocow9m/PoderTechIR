@@ -17,11 +17,11 @@ interface Container {
 
     fun save(buffer: MemorySegmentBuffer)
 
-    fun locateField(name: String): UInt?
+    fun locateField(obj: UInt, name: String): UInt?
     fun locateMethod(name: String): UInt?
     fun locateObject(name: String): UInt?
 
-    fun locateField(id: UInt): Type
+    fun locateField(obj: UInt, id: UInt): Type
     fun locateMethod(id: UInt): Method
     fun locateObject(id: UInt): Object
 }

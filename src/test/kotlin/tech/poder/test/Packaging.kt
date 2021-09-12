@@ -201,7 +201,7 @@ internal class Packaging {
                 "Method did not use full segment!"
             }
         }
-        val linked = container.link(deps)
+        val linked = container.linkAndOptimize(deps)
         SegmentUtil.allocate(linked.size()).use {
             linked.save(it)
             check(it.remaining() == 0L) {

@@ -6,6 +6,7 @@ import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.Object
+import tech.poder.ir.data.base.api.APIContainer
 import tech.poder.ir.data.base.api.PublicMethod
 import tech.poder.ir.data.base.api.PublicObject
 import tech.poder.ir.data.base.linked.*
@@ -21,16 +22,8 @@ class UnlinkedContainer(override val name: String) : Container {
     private var entryPoint: String = ""
     private var mappingCache: Map<String, UInt>? = null
     private var internalMappingCache: Map<String, UInt>? = null
-    private var internalMappingCacheField: Map<UInt, Type>? = null
     private var internalMappingCacheMethod: Map<UInt, UnlinkedMethod>? = null
     private var internalMappingCacheObject: Map<UInt, UnlinkedObject>? = null
-
-    private fun getFieldMapping(): Map<UInt, Type> {
-        if (internalMappingCacheField == null) {
-            getSelfMapping()
-        }
-        return internalMappingCacheField!!
-    }
 
     private fun getMethodMapping(): Map<UInt, UnlinkedMethod> {
         if (internalMappingCacheMethod == null) {
@@ -52,9 +45,7 @@ class UnlinkedContainer(override val name: String) : Container {
         }
         var nextMethodId = 1u //start at 1 so 0 can be null for entryPoint
         var nextObjectId = 0u
-        var nextFieldId = 0u
         val map = mutableMapOf<String, UInt>()
-        val map1 = mutableMapOf<UInt, Type>()
         val map2 = mutableMapOf<UInt, UnlinkedMethod>()
         val map3 = mutableMapOf<UInt, UnlinkedObject>()
         roots.filter { it.visibility == Visibility.PUBLIC }.forEach { pkg ->
@@ -71,11 +62,6 @@ class UnlinkedContainer(override val name: String) : Container {
                     val id2 = nextMethodId++
                     map[it.fullName] = id2
                     map2[id2] = it
-                }
-                obj.fields.forEach {
-                    val id2 = nextFieldId++
-                    map["${obj.fullName}${UnlinkedObject.fieldSeparator}${it.name}"] = id2
-                    map1[id2] = it.type
                 }
             }
         }
@@ -94,14 +80,8 @@ class UnlinkedContainer(override val name: String) : Container {
                     map[it.fullName] = id2
                     map2[id2] = it
                 }
-                obj.fields.forEach {
-                    val id2 = nextFieldId++
-                    map["${obj.fullName}${UnlinkedObject.fieldSeparator}${it.name}"] = id2
-                    map1[id2] = it.type
-                }
             }
         }
-        internalMappingCacheField = map1
         internalMappingCacheMethod = map2
         internalMappingCacheObject = map3
         internalMappingCache = map
@@ -133,11 +113,10 @@ class UnlinkedContainer(override val name: String) : Container {
         return map
     }
 
-    fun asAPI(): UnlinkedContainer {
-        TODO("Unlinked container with all code and private items deleted")
-    }
-
-    fun link(dependencies: Set<Container> = emptySet(), optimizers: List<Optimizer> = emptyList()): Container {
+    fun linkAndOptimize(
+        dependencies: Set<Container> = emptySet(),
+        optimizers: List<Optimizer> = emptyList()
+    ): Pair<APIContainer, LinkedContainer> {
         var last = 1u
         val depMap = listOf(NameId(name, 0u), *dependencies.map { NameId(it.name, last++) }.toTypedArray())
         val map = getSelfMapping()
@@ -267,11 +246,11 @@ class UnlinkedContainer(override val name: String) : Container {
         }
     }
 
-    override fun locateField(name: String): UInt? {
+    override fun locateField(obj: UInt, name: String): UInt? {
         return getMapping()[name]
     }
 
-    override fun locateField(id: UInt): Type {
+    override fun locateField(obj: UInt, id: UInt): Type {
         return getFieldMapping()[id]!!
     }
 
