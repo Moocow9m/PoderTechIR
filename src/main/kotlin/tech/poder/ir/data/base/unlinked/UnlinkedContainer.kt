@@ -41,7 +41,7 @@ class UnlinkedContainer(override val name: String) : Container {
         if (internalMappingCache != null) {
             return internalMappingCache!!
         }
-        var nextMethodId = 1u //start at 1 so 0 can be null for entryPoint
+        var nextMethodId = 0u
         var nextObjectId = 0u
         val map = mutableMapOf<String, UInt>()
         val map2 = mutableMapOf<UInt, UnlinkedMethod>()
@@ -156,9 +156,9 @@ class UnlinkedContainer(override val name: String) : Container {
             }
         }
         val entrypoint = if (entryPoint.isBlank()) {
-            0u
+            -1
         } else {
-            map[entryPoint]!!
+            map[entryPoint]!!.toInt()
         }
         val api = APIContainer(name, entrypoint, methods.toList(), objects.toList())
         val bin = LinkedContainer(name, entrypoint, depMap.sortedBy { it.id }.map { it.name }, codes, structs)

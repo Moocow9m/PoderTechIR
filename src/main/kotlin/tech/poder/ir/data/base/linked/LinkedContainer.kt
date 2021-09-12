@@ -10,7 +10,7 @@ import kotlin.math.ceil
 
 data class LinkedContainer(
     override val name: String,
-    val entryPoint: UInt,
+    val entryPoint: Int,
     val depTable: List<CharSequence>,
     val methods: List<List<Command>>,
     val objects: List<List<Type>>,

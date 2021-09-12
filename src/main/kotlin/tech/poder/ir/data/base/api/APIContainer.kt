@@ -7,7 +7,7 @@ import tech.poder.ir.util.MemorySegmentBuffer
 
 data class APIContainer(
     override val name: String,
-    val entryPoint: UInt = 0u,
+    val entryPoint: Int,
     val methods: List<PublicMethod>,
     val objects: List<PublicObject>
 ) : Container {
