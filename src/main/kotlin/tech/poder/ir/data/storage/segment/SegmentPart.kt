@@ -6,14 +6,12 @@ import tech.poder.ir.commands.Simple
 import tech.poder.ir.commands.SimpleValue
 import tech.poder.ir.data.LocationRef
 import tech.poder.ir.data.Type
-import tech.poder.ir.data.base.Container
+import tech.poder.ir.data.base.api.APIContainer
+import tech.poder.ir.data.base.api.PublicObject
 import tech.poder.ir.data.base.unlinked.UnlinkedContainer
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
 import tech.poder.ir.data.base.unlinked.UnlinkedObject
-import tech.poder.ir.metadata.CIdType
-import tech.poder.ir.metadata.IdMethod
-import tech.poder.ir.metadata.IdObject
-import tech.poder.ir.metadata.NameId
+import tech.poder.ir.metadata.*
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
 import kotlin.math.ceil
@@ -46,7 +44,7 @@ value class SegmentPart(
     }
 
     override fun eval(
-        dependencies: Set<Container>,
+        dependencies: Set<APIContainer>,
         self: UnlinkedContainer,
         method: UnlinkedMethod,
         stack: Stack<Type>,
@@ -296,19 +294,18 @@ value class SegmentPart(
                             "${obj.obj.fullName}${UnlinkedObject.fieldSeparator}${command.data.name}"
                         )
                         replaceList[index - indexOffset] =
-                            SimpleValue.GetField(LocationRef.LocationByCId(Pair(id.cId, id.id)))
+                            SimpleValue.GetField(LocationRef.LocationByID(id.id))
                         id
                     } else {
-                        command.data as LocationRef.LocationByCId
-                        if (command.data.id.first == 0u) {
-                            CIdType(
-                                command.data.id.second,
-                                command.data.id.first,
+                        command.data as LocationRef.LocationByID
+                        if (command.data.id == 0u) {
+                            IdType(
+                                command.data.id,
                                 self.locateField(, command.data.id.second)
                             )
                         } else {
                             val name = depMap.first { it.id == command.data.id.first }.name
-                            CIdType(
+                            IdType(
                                 command.data.id.second,
                                 command.data.id.first,
                                 dependencies.first { it.name == name }.locateField(, command.data.id.second)
@@ -380,7 +377,12 @@ value class SegmentPart(
                             )
                         }
                     }
-                    stack.push(Type.ObjRef(objId.obj as UnlinkedObject))
+                    if (objId.obj is PublicObject) {
+                        stack.push(Type.ObjRef(objId.obj.fields.map { it.type }, objId.id))
+                    } else {
+                        objId.obj as UnlinkedObject
+                        stack.push(Type.ObjRef(objId.obj.fields.map { it.type }, objId.id))
+                    }
                 }
                 is SimpleValue.Launch -> {
                     val methId = if (command.data is LocationRef.LocationByName) {
@@ -474,27 +476,24 @@ value class SegmentPart(
 
     private fun resolveDepField(
         thisDep: UnlinkedContainer,
-        rest: Set<Container>,
+        rest: Set<APIContainer>,
         mapping: List<NameId>,
-        obj: UInt,
+        obj: LocationRef.LocationByCId,
         target: String
-    ): CIdType {
+    ): IdType {
         val container = if (thisDep.getSelfMapping().containsKey(target)) {
             thisDep
         } else {
-            val res = rest.firstOrNull { it.locateField(obj, target) != null }
-            check(res != null) {
-                "Could not find field: [$target]"
-            }
-            res
+            val resName = mapping.first { it.id == obj.id.first }
+            rest.first { it.name == resName.name }
         }
-        val id = container.locateField(obj, target)!!
-        return CIdType(id, mapping.first { it.name == container.name }.id, container.locateField(obj, id))
+        val id = container.locateField(obj.id.second, target)!!
+        return IdType(id, container.locateField(obj.id.second, id))
     }
 
     private fun resolveDepMethod(
         thisDep: UnlinkedContainer,
-        rest: Set<Container>,
+        rest: Set<APIContainer>,
         mapping: List<NameId>,
         target: String
     ): IdMethod {
@@ -513,7 +512,7 @@ value class SegmentPart(
 
     private fun resolveDepObject(
         thisDep: UnlinkedContainer,
-        rest: Set<Container>,
+        rest: Set<APIContainer>,
         mapping: List<NameId>,
         target: String
     ): IdObject {

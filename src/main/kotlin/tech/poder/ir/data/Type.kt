@@ -1,6 +1,5 @@
 package tech.poder.ir.data
 
-import tech.poder.ir.data.base.unlinked.UnlinkedObject
 import tech.poder.ir.metadata.NamedType
 import tech.poder.ir.util.MemorySegmentBuffer
 
@@ -19,14 +18,24 @@ sealed interface Type {
         }
     }
 
-    @JvmInline
-    value class ObjRef(val obj: UnlinkedObject) : Type {
+    data class ObjRef(val obj: List<Type>, val id: LocationRef.LocationByCId) : Type {
         override fun size(): Int {
             error("Not savable")
         }
 
         override fun toBin(buffer: MemorySegmentBuffer) {
             error("Not savable")
+        }
+    }
+
+    @JvmInline
+    value class StructType(val obj: List<Type>) : Type {
+        override fun size(): Int {
+            TODO()
+        }
+
+        override fun toBin(buffer: MemorySegmentBuffer) {
+            TODO()
         }
     }
 

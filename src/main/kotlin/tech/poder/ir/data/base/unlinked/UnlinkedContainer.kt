@@ -112,7 +112,7 @@ class UnlinkedContainer(override val name: String) : Container {
     }
 
     fun linkAndOptimize(
-        dependencies: Set<Container> = emptySet(),
+        dependencies: Set<APIContainer> = emptySet(),
         optimizers: List<Optimizer> = emptyList()
     ): Pair<APIContainer, LinkedContainer> {
         var last = 1u
@@ -168,7 +168,7 @@ class UnlinkedContainer(override val name: String) : Container {
     private fun processMethod(
         stack: Stack<Type>,
         method: UnlinkedMethod,
-        dependencies: Set<Container>,
+        dependencies: Set<APIContainer>,
         optimizers: List<Optimizer>,
         depMap: List<NameId>
     ): Pair<PublicMethod?, List<Command>> {
