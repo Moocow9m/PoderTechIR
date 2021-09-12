@@ -7,6 +7,7 @@ import tech.poder.ir.metadata.Visibility
 
 object Math { //todo containers will link against this lib, but a linked and optimized version will be made for runtime(exporting the std as modules)
     val mathLib = UnlinkedContainer("std.math")
+    val api by lazy { mathLib.linkAndOptimize().first }
 
     val mathPackage = mathLib.newPackage("base", Visibility.PUBLIC)
 

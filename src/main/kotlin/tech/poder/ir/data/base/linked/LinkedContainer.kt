@@ -6,6 +6,7 @@ import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.Object
 import tech.poder.ir.util.MemorySegmentBuffer
+import kotlin.math.ceil
 
 data class LinkedContainer(
     override val name: String,
@@ -26,7 +27,7 @@ data class LinkedContainer(
             }
         } + MemorySegmentBuffer.varSize(methods.size) + methods.sumOf { list ->
             MemorySegmentBuffer.varSize(list.size) +
-                    list.sumOf { it.sizeBits() * 8L }
+                    list.sumOf { ceil(it.sizeBits() / 8.0).toLong() }
         }
     }
 
@@ -45,6 +46,7 @@ data class LinkedContainer(
                 it.toBin(buffer)
             }
         }
+        buffer.writeVar(methods.size)
         methods.forEach { list ->
             buffer.writeVar(list.size)
             list.forEach {

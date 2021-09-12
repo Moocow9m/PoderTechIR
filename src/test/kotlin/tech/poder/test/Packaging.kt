@@ -3,6 +3,7 @@ package tech.poder.test
 import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
+import tech.poder.ir.data.base.api.APIContainer
 import tech.poder.ir.data.base.unlinked.UnlinkedContainer
 import tech.poder.ir.std.Math
 import tech.poder.ir.util.SegmentUtil
@@ -31,7 +32,7 @@ internal class Packaging {
             it.return_()
         }
 
-        validate(container, meth, setOf(Math.mathLib))
+        validate(container, meth, setOf(Math.api))
     }
 
     @Test
@@ -194,7 +195,7 @@ internal class Packaging {
         validate(container, meth)
     }
 
-    private fun validate(container: UnlinkedContainer, method: Method, deps: Set<Container> = emptySet()) {
+    private fun validate(container: UnlinkedContainer, method: Method, deps: Set<APIContainer> = emptySet()) {
         SegmentUtil.allocate(container.size()).use {
             container.save(it)
             check(it.remaining() == 0L) {
@@ -202,12 +203,18 @@ internal class Packaging {
             }
         }
         val linked = container.linkAndOptimize(deps)
-        SegmentUtil.allocate(linked.size()).use {
-            linked.save(it)
+        SegmentUtil.allocate(linked.first.size()).use {
+            linked.first.save(it)
             check(it.remaining() == 0L) {
-                "Packed Method did not use full segment!"
+                "API Method did not use full segment!"
             }
         }
-        println("$method -- Unlinked Binary Size: ${container.size()} -- Linked Binary Size: ${linked.size()}")
+        SegmentUtil.allocate(linked.second.size()).use {
+            linked.second.save(it)
+            check(it.remaining() == 0L) {
+                "Bin Method did not use full segment!"
+            }
+        }
+        println("$method--Unlinked Binary Size: ${container.size()}--Linked Binary Size: ${linked.second.size()}--Linked API Size: ${linked.first.size()}")
     }
 }

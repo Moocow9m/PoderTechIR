@@ -7,11 +7,15 @@ import tech.poder.ir.commands.SimpleValue
 import tech.poder.ir.data.LocationRef
 import tech.poder.ir.data.Type
 import tech.poder.ir.data.base.api.APIContainer
+import tech.poder.ir.data.base.api.PublicMethod
 import tech.poder.ir.data.base.api.PublicObject
 import tech.poder.ir.data.base.unlinked.UnlinkedContainer
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
 import tech.poder.ir.data.base.unlinked.UnlinkedObject
-import tech.poder.ir.metadata.*
+import tech.poder.ir.metadata.IdMethod
+import tech.poder.ir.metadata.IdObject
+import tech.poder.ir.metadata.IdType
+import tech.poder.ir.metadata.NameId
 import tech.poder.ir.util.MemorySegmentBuffer
 import java.util.*
 import kotlin.math.ceil
@@ -291,7 +295,8 @@ value class SegmentPart(
                     val fieldId = if (command.data is LocationRef.LocationByName) {
                         val id = resolveDepField(
                             self, dependencies, depMap,
-                            "${obj.obj.fullName}${UnlinkedObject.fieldSeparator}${command.data.name}"
+                            obj.id,
+                            command.data.name.toString()
                         )
                         replaceList[index - indexOffset] =
                             SimpleValue.GetField(LocationRef.LocationByID(id.id))
@@ -301,14 +306,13 @@ value class SegmentPart(
                         if (command.data.id == 0u) {
                             IdType(
                                 command.data.id,
-                                self.locateField(, command.data.id.second)
+                                self.locateField(obj.id.id.second, command.data.id)
                             )
                         } else {
-                            val name = depMap.first { it.id == command.data.id.first }.name
+                            val name = depMap.first { it.id == obj.id.id.first }.name
                             IdType(
-                                command.data.id.second,
-                                command.data.id.first,
-                                dependencies.first { it.name == name }.locateField(, command.data.id.second)
+                                command.data.id,
+                                dependencies.first { it.name == name }.locateField(obj.id.id.second, command.data.id)
                             )
                         }
                     }
@@ -323,25 +327,24 @@ value class SegmentPart(
                     val fieldId = if (command.data is LocationRef.LocationByName) {
                         val id = resolveDepField(
                             self, dependencies, depMap,
-                            "${obj.obj.fullName}${UnlinkedObject.fieldSeparator}${command.data.name}"
+                            obj.id,
+                            command.data.name.toString()
                         )
                         replaceList[index - indexOffset] =
-                            SimpleValue.GetField(LocationRef.LocationByCId(Pair(id.cId, id.id)))
+                            SimpleValue.GetField(LocationRef.LocationByID(id.id))
                         id
                     } else {
-                        command.data as LocationRef.LocationByCId
-                        if (command.data.id.first == 0u) {
-                            CIdType(
-                                command.data.id.second,
-                                command.data.id.first,
-                                self.locateField(, command.data.id.second)
+                        command.data as LocationRef.LocationByID
+                        if (command.data.id == 0u) {
+                            IdType(
+                                command.data.id,
+                                self.locateField(obj.id.id.second, command.data.id)
                             )
                         } else {
-                            val name = depMap.first { it.id == command.data.id.first }.name
-                            CIdType(
-                                command.data.id.second,
-                                command.data.id.first,
-                                dependencies.first { it.name == name }.locateField(, command.data.id.second)
+                            val name = depMap.first { it.id == obj.id.id.first }.name
+                            IdType(
+                                command.data.id,
+                                dependencies.first { it.name == name }.locateField(obj.id.id.second, command.data.id)
                             )
                         }
                     }
@@ -355,8 +358,10 @@ value class SegmentPart(
                     }
                 }
                 is SimpleValue.NewObject -> {
+                    var cId = 0u
                     val objId = if (command.data is LocationRef.LocationByName) {
                         val id = resolveDepObject(self, dependencies, depMap, command.data.name.toString())
+                        cId = id.cId
                         replaceList[index - indexOffset] =
                             SimpleValue.NewObject(LocationRef.LocationByCId(Pair(id.cId, id.id)))
                         id
@@ -370,18 +375,31 @@ value class SegmentPart(
                             )
                         } else {
                             val name = depMap.first { it.id == command.data.id.first }.name
-                            IdObject(
+                            val obj = IdObject(
                                 command.data.id.second,
                                 command.data.id.first,
                                 dependencies.first { it.name == name }.locateObject(command.data.id.second)
                             )
+                            cId = obj.cId
+                            obj
                         }
                     }
+
                     if (objId.obj is PublicObject) {
-                        stack.push(Type.ObjRef(objId.obj.fields.map { it.type }, objId.id))
+                        stack.push(
+                            Type.ObjRef(
+                                objId.obj.fields.map { it.type },
+                                LocationRef.LocationByCId(Pair(cId, objId.id))
+                            )
+                        )
                     } else {
                         objId.obj as UnlinkedObject
-                        stack.push(Type.ObjRef(objId.obj.fields.map { it.type }, objId.id))
+                        stack.push(
+                            Type.ObjRef(
+                                objId.obj.fields.map { it.type },
+                                LocationRef.LocationByCId(Pair(cId, objId.id))
+                            )
+                        )
                     }
                 }
                 is SimpleValue.Launch -> {
@@ -446,20 +464,37 @@ value class SegmentPart(
                             )
                         }
                     }
-                    methId.method as UnlinkedMethod
-                    methId.method.args.forEach {
-                        val popped = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}INVOKE")
-                        check(popped == it.type) {
-                            "Type mismatch! ${
-                                processDebug(
-                                    lastDebugNumber,
-                                    lastDebugLine
-                                )
-                            }Wanted: ${it.type::class} Got: ${popped::class}"
+                    if (methId.method is UnlinkedMethod) {
+                        methId.method.args.forEach {
+                            val popped = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}INVOKE")
+                            check(popped == it.type) {
+                                "Type mismatch! ${
+                                    processDebug(
+                                        lastDebugNumber,
+                                        lastDebugLine
+                                    )
+                                }Wanted: ${it.type::class} Got: ${popped::class}"
+                            }
                         }
-                    }
-                    if (methId.method.returnType != Type.Unit) {
-                        stack.push(methId.method.returnType)
+                        if (methId.method.returnType != Type.Unit) {
+                            stack.push(methId.method.returnType)
+                        }
+                    } else {
+                        methId.method as PublicMethod
+                        methId.method.args.forEach {
+                            val popped = safePop(stack, "${processDebug(lastDebugNumber, lastDebugLine)}INVOKE")
+                            check(popped == it) {
+                                "Type mismatch! ${
+                                    processDebug(
+                                        lastDebugNumber,
+                                        lastDebugLine
+                                    )
+                                }Wanted: ${it::class} Got: ${popped::class}"
+                            }
+                        }
+                        if (methId.method.returns != Type.Unit) {
+                            stack.push(methId.method.returns)
+                        }
                     }
                 }
                 else -> error("Unrecognized command: ${command::class} ${processDebug(lastDebugNumber, lastDebugLine)}")

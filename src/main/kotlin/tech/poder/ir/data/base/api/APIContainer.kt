@@ -52,7 +52,7 @@ data class APIContainer(
     }
 
     override fun locateMethod(id: UInt): Method {
-        return methods[id.toInt() - 1] //0 is reserved as null for methods
+        return methods[id.toInt()]
     }
 
     override fun locateObject(name: String): UInt? {
