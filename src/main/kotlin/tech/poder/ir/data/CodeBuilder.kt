@@ -3,7 +3,7 @@ package tech.poder.ir.data
 import tech.poder.ir.commands.*
 import tech.poder.ir.data.base.unlinked.UnlinkedMethod
 import tech.poder.ir.data.base.unlinked.UnlinkedObject
-import tech.poder.ir.data.storage.segment.MultiSegment
+import tech.poder.ir.data.storage.segment.MetaSegment
 
 data class CodeBuilder internal constructor(
     private val storage: UnlinkedMethod,
@@ -184,7 +184,7 @@ data class CodeBuilder internal constructor(
     }
 
     fun newObject(fullName: String) {
-        instructions.add(SimpleValue.NewObject(LocationRef.LocationByName(fullName)))
+        instructions.add(SimpleValue.NewObject(LocationRef.LocationByName(fullName))) //todo on resolution make this a struct. merge duplicate type structs even if name differs
     }
 
     fun duplicate() {
@@ -289,6 +289,6 @@ data class CodeBuilder internal constructor(
         replaceInstructions.forEach { (t, u) ->
             instructions[t] = u
         }
-        storage.instructions = MultiSegment.buildSegments(instructions)
+        storage.instructions = MetaSegment.buildControlGraph(instructions)//MultiSegment.buildSegments(instructions)
     }
 }

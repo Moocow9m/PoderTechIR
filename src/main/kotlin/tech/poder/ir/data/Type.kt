@@ -31,7 +31,7 @@ sealed interface Type {
     @JvmInline
     value class StructType(val obj: List<Type>) : Type {
         override fun size(): Int {
-            TODO()
+            return 1 + MemorySegmentBuffer.varSize(obj.size) + obj.sumOf { it.size() }
         }
 
         override fun toBin(buffer: MemorySegmentBuffer) {
