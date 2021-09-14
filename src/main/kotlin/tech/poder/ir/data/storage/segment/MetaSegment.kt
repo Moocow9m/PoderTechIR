@@ -32,7 +32,6 @@ data class MetaSegment(
                     if (command.offset() < 0) { //if loop... fun....
                         loops.add((index + command.offset() + 1)..index)
                     } else {
-                        //todo validate ranges
                         val ifBlock = index..(index + command.offset())
                         val last = instructions[ifBlock.last]
                         val elseBlock = if (last is SimpleValue.JumpShort && last.offset > 0) {
