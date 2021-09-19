@@ -1,6 +1,6 @@
 package tech.poder.ir.vm
 
-enum class CPUTemplate(val bits: Bits, val registers: List<RegisterType>) {
+enum class CPUTemplate(val bits: Bits, val registers: List<RegisterType>, val threads: Int = 1) {
     STACK32(Bits.BIT_32, emptyList()), //don't do register optimization! But do fun long math XD
     STACK(Bits.BIT_64, emptyList()), //don't do register optimization!
     AMD64(Bits.BIT_64, listOf(RegisterType(64, 16..16, RegisterData.BASIC))),
