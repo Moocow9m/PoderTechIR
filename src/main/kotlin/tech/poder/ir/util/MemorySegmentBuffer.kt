@@ -113,6 +113,12 @@ data class MemorySegmentBuffer internal constructor(
         }
     }
 
+    fun write(long: Long) {
+        return MemoryAccess.setLongAtOffset(memorySegment, position, long).apply {
+            position += Long.SIZE_BYTES
+        }
+    }
+
     /*fun writeVar(number: Number) {
         when (number) {
             is Int -> {
@@ -143,7 +149,7 @@ data class MemorySegmentBuffer internal constructor(
         charSequence.forEach {
             writeVar(it.code)
         }
-        write(0) //null terminator
+        write(0.toByte()) //null terminator
     }
 
     fun readByte(): Byte {
