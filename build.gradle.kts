@@ -13,10 +13,20 @@ dependencies {
     implementation(platform(kotlin("bom")))
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    testImplementation(kotlin("test-junit"))
+    testImplementation("org.junit.platform:junit-platform-commons:1.7.0")
+    testImplementation(kotlin("test"))
 }
 
 tasks {
+
+    val javaDestination = compileJava.get().destinationDirectory.get()
+    val javaTestDestination = compileTestJava.get().destinationDirectory.get()
+    compileKotlin {
+        destinationDirectory.set(javaDestination)
+    }
+    compileTestKotlin {
+        destinationDirectory.set(javaTestDestination)
+    }
 
     val javaVersionCompat = JavaVersion.VERSION_16.toString()
     val javaVersion = JavaVersion.VERSION_17.toString()
@@ -37,7 +47,8 @@ tasks {
     }
 
     withType<Test> {
-        jvmArgs("--add-modules=jdk.incubator.foreign")
+        useJUnitPlatform()
+        jvmArgs("--add-modules=jdk.incubator.foreign", "--enable-native-access=PoderTechIR.main")
     }
 
     val sourcesJar by creating(Jar::class) {

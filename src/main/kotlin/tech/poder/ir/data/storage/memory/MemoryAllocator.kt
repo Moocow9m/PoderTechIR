@@ -9,7 +9,7 @@ import kotlin.math.floor
 
 //based off SLUB
 class MemoryAllocator(
-    memorySize: Long = 1_024 * 1024 * 1024,
+    memorySize: Long = 1_024L * 1024 * 1024,
     private val pageSize: Long = 4_096
 ) { //todo per process tracking
 
