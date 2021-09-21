@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.5.30"
+    kotlin("jvm") version "1.5.31"
 }
 
 group = "tech.poder.ir"
@@ -18,12 +18,13 @@ dependencies {
 
 tasks {
 
-    val javaVersion = JavaVersion.VERSION_16.toString()
+    val javaVersionCompat = JavaVersion.VERSION_16.toString()
+    val javaVersion = JavaVersion.VERSION_17.toString()
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
-        kotlinOptions.jvmTarget = javaVersion
+        kotlinOptions.jvmTarget = javaVersionCompat
         kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
         //kotlinOptions.languageVersion = "1.6"
         //kotlinOptions.apiVersion = "1.6"
@@ -36,7 +37,7 @@ tasks {
     }
 
     withType<Test> {
-        jvmArgs("-Xmx3G", "--add-modules=jdk.incubator.foreign")
+        jvmArgs("--add-modules=jdk.incubator.foreign")
     }
 
     val sourcesJar by creating(Jar::class) {

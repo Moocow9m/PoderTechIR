@@ -2,10 +2,12 @@ package tech.poder.ir.util
 
 import jdk.incubator.foreign.MemoryAccess
 import jdk.incubator.foreign.MemorySegment
+import jdk.incubator.foreign.ResourceScope
 import java.nio.ByteOrder
 
 data class MemorySegmentBuffer internal constructor(
     val memorySegment: MemorySegment,
+    val scope: ResourceScope,
     val byteOrder: ByteOrder = ByteOrder.nativeOrder(),
 ) : AutoCloseable {
 
@@ -66,7 +68,7 @@ data class MemorySegmentBuffer internal constructor(
 
 
     override fun close() {
-        memorySegment.close()
+        scope.close()
     }
 
     fun writeVar(short: Short) {

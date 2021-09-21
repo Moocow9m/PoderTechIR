@@ -1,6 +1,7 @@
 package tech.poder.ir.util
 
 import jdk.incubator.foreign.MemorySegment
+import jdk.incubator.foreign.ResourceScope
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
@@ -35,15 +36,19 @@ object SegmentUtil {
         order: ByteOrder = ByteOrder.nativeOrder(),
         mode: FileChannel.MapMode = FileChannel.MapMode.READ_WRITE
     ): MemorySegmentBuffer {
+        val scope = ResourceScope.newConfinedScope()
         return MemorySegmentBuffer(
-            MemorySegment.mapFile(location, 0, location.fileSize(), mode),
+            MemorySegment.mapFile(location, 0, location.fileSize(), mode, scope),
+            scope,
             order
         )
     }
 
     fun allocate(size: Long, order: ByteOrder = ByteOrder.nativeOrder()): MemorySegmentBuffer {
+        val scope = ResourceScope.newConfinedScope()
         return MemorySegmentBuffer(
-            MemorySegment.allocateNative(size),
+            MemorySegment.allocateNative(size, scope),
+            scope,
             order
         )
     }

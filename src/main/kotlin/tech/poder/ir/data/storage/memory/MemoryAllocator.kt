@@ -2,6 +2,7 @@ package tech.poder.ir.data.storage.memory
 
 import jdk.incubator.foreign.MemoryAccess
 import jdk.incubator.foreign.MemorySegment
+import jdk.incubator.foreign.ResourceScope
 import java.util.concurrent.ConcurrentSkipListSet
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -14,7 +15,8 @@ class MemoryAllocator(
 
     private val fragments = ConcurrentSkipListSet<Fragment>() //todo per_cpu maintain, mass delete on process death
     private var lastFrag = 0
-    private val memory = MemorySegment.allocateNative(memorySize)
+    private val scope = ResourceScope.newConfinedScope()
+    private val memory = MemorySegment.allocateNative(memorySize, scope)
     private val objSize = floor(pageSize / 8.0).toInt()
 
     fun offsetPerCpu(coreCount: Int): Long {
