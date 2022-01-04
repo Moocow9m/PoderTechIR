@@ -37,6 +37,10 @@ object PTIR {
 		}
 	}
 	enum class Op {
+		RETURN,
+		THROW,
+		LOOP,
+		BREAK,
 		GET_ARRAY_VAR,
 		SET_ARRAY_VAR,
 		SET_VAR,
@@ -45,10 +49,6 @@ object PTIR {
 		SET_STRUCT_VAR,
 		NEW_ARRAY,
 		NEW_STRUCT,
-		RETURN,
-		THROW,
-		JUMP,
-		COMPARE,
 		NOT,
 		IF_EQUALS,
 		IF_LESS_THAN,
@@ -64,7 +64,7 @@ object PTIR {
 		;
 		companion object {
 			val values = values()
-			val DEFAULT = GET_ARRAY_VAR
+			val DEFAULT = RETURN
 		}
 	}
 	data class Debug(val methodLinesIndexes: List<UInt> = emptyList(), val methodLinesText: String = "", val breakPoints: Boolean = false): Packet {

@@ -91,6 +91,77 @@ data class MethodBuilder(
 		addOp(PTIR.Op.INVOKE, store, stdCall, *args)
 	}
 
+	fun return_(value: Any? = null) {
+		if (value == null) {
+			addOp(PTIR.Op.RETURN)
+		} else {
+			addOp(PTIR.Op.RETURN, null, value)
+		}
+	}
+
+	fun throw_(value: String) {
+		addOp(PTIR.Op.THROW, null, value)
+	}
+
+	fun nextLineNumber(): UInt {
+		return (bytecode.size).toUInt()
+	}
+
+	fun loop(condition: Variable, builder: MethodBuilder.() -> Unit) {
+		val start = nextLineNumber()
+		builder.invoke(this)
+		val end = nextLineNumber() - 1u
+		addOp(PTIR.Op.LOOP, condition, start, end)
+	}
+
+	fun break_() {
+		addOp(PTIR.Op.BREAK)
+	}
+
+	fun add(store: Variable, a: Any, b: Any) {
+		addOp(PTIR.Op.ADD, store, a, b)
+	}
+
+	fun subtract(store: Variable, a: Any, b: Any) {
+		addOp(PTIR.Op.SUBTRACT, store, a, b)
+	}
+
+	fun multiply(store: Variable, a: Any, b: Any) {
+		addOp(PTIR.Op.MULTIPLY, store, a, b)
+	}
+
+	fun divide(store: Variable, a: Any, b: Any) {
+		addOp(PTIR.Op.DIVIDE, store, a, b)
+	}
+
+	fun modulo(store: Variable, a: Any, b: Any) {
+		addOp(PTIR.Op.REMAINDER, store, a, b)
+	}
+
+	fun setNull(store: Variable) {
+		addOp(PTIR.Op.NULL, store)
+	}
+
+	fun ifNull(store: Variable, check: Variable) {
+		addOp(PTIR.Op.IF_NULL, store, check)
+	}
+
+	fun ifEquals(store: Variable, a: Variable, b: Variable) {
+		addOp(PTIR.Op.IF_EQUALS, store, a, b)
+	}
+
+	fun ifLessThan(store: Variable, a: Variable, b: Variable) {
+		addOp(PTIR.Op.IF_LESS_THAN, store, a, b)
+	}
+
+	fun ifGreaterThan(store: Variable, a: Variable, b: Variable) {
+		addOp(PTIR.Op.IF_GREATER_THAN, store, a, b)
+	}
+
+	fun ifNot(store: Variable, check: Variable) {
+		addOp(PTIR.Op.NOT, store, check)
+	}
+
 	override fun toString(): String {
 		return "Method(id=$id, method=$method)"
 	}
