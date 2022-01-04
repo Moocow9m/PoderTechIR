@@ -11,22 +11,22 @@ import java.util.*
 
 interface Segment {
 
-    fun eval(
-        dependencies: Set<APIContainer>,
-        self: UnlinkedContainer,
-        method: UnlinkedMethod,
-        stack: Stack<Type>,
-        currentIndex: Int,
-        vars: MutableMap<CharSequence, UInt>,
-        type: MutableMap<UInt, Type>,
-        depMap: List<NameId>
-    ): Int
+	fun eval(
+		dependencies: Set<APIContainer>,
+		self: UnlinkedContainer,
+		method: UnlinkedMethod,
+		stack: Stack<Type>,
+		currentIndex: Int,
+		vars: MutableMap<CharSequence, UInt>,
+		type: MutableMap<UInt, Type>,
+		depMap: List<NameId>
+	): Int
 
-    fun size(): Int
+	fun size(): Int
 
-    fun toBulk(storage: MutableList<Command>)
+	fun toBulk(storage: MutableList<Command>)
 
-    fun toBin(buffer: MemorySegmentBuffer)
+	fun toBin(buffer: MemorySegmentBuffer)
 
-    fun sizeBytes(): Long
+	fun sizeBytes(): Long
 }

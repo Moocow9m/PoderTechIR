@@ -5,21 +5,21 @@ import tech.poder.ir.util.MemorySegmentBuffer
 
 data class NamedType(val name: String, val type: Type) {
 
-    override fun toString(): String {
-        return "$name = ${type::class}"
-    }
+	override fun toString(): String {
+		return "$name = ${type::class}"
+	}
 
-    fun toString(tabCount: Int): String {
-        return "${"\t".repeat(tabCount)}${toString()}"
-    }
+	fun toString(tabCount: Int): String {
+		return "${"\t".repeat(tabCount)}${toString()}"
+	}
 
-    fun size(): Int {
-        return MemorySegmentBuffer.sequenceSize(name) + type.size()
-    }
+	fun size(): Int {
+		return MemorySegmentBuffer.sequenceSize(name) + type.size()
+	}
 
-    fun toBin(buffer: MemorySegmentBuffer) {
-        buffer.writeSequence(name)
-        type.toBin(buffer)
-    }
+	fun toBin(buffer: MemorySegmentBuffer) {
+		buffer.writeSequence(name)
+		type.toBin(buffer)
+	}
 
 }

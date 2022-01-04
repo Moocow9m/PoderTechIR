@@ -26,9 +26,14 @@ class Bench {
 
 	class Benchmark(val name: String) {
 
-		inline fun bench(subName: String, warmUpCycles: Int = DEFAULT_CYCLES, benchCycles: Int = DEFAULT_CYCLES, block: () -> Unit) {
+		inline fun bench(
+			subName: String,
+			warmUpCycles: Int = DEFAULT_CYCLES,
+			benchCycles: Int = DEFAULT_CYCLES,
+			block: () -> Unit
+		) {
 			println(measureNS(subName, State.WARMUP, warmUpCycles, block))
-			println(measureNS(subName, State.BENCH,  benchCycles,  block))
+			println(measureNS(subName, State.BENCH, benchCycles, block))
 		}
 
 		inline fun measureNS(subName: String, state: State, cycles: Int, block: () -> Unit): Result {
