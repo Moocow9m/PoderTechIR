@@ -16,8 +16,12 @@ data class CodeFile(val name: String) {
 		return methods.indexOf(builder).toUInt()
 	}
 
+	fun asCode(): PTIR.Code {
+		return PTIR.Code(name, methods.map { it.method }, methods.map { it.id }, structs.map { it.types.toList() })
+	}
+
 	fun write(out: OutputStream) {
-		PTIR.Code(name, methods.map { it.method }, methods.map { it.id }, structs.map { it.types.toList() }).toBytes(out)
+		asCode().toBytes(out)
 	}
 
 	internal fun registerOrAddStruct(struct: Struct): UInt {

@@ -20,12 +20,7 @@ internal class VMTest {
 			invoke(Math.mathLib, Math.powInt, powered, 2, 3)
 		}
 
-		val bytesOut = ByteArrayOutputStream()
-
-		codeFile.write(bytesOut)
-		val meow = PTIR.Code.fromBytes(bytesOut.toByteArray().inputStream())
-
-		println(meow)
+		println(codeFile.asCode())
 	}
 
 	/*@Test
