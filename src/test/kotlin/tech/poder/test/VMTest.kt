@@ -1,6 +1,24 @@
 package tech.poder.test
 
+import org.junit.jupiter.api.Test
+import tech.poder.ir.api.CodeFile
+import tech.poder.ir.vm.VirtualMachine
+import tech.poder.ptir.PTIR
+
 internal class VMTest {
+
+	@Test
+	fun helloWorld() {
+		val codeFile = CodeFile("Meow")
+
+		val main = codeFile.addMethod {
+			invoke(PTIR.STDCall.PRINT, args = arrayOf("Hello, World!\n"))
+		}
+		val code = codeFile.asCode()
+		println(code)
+		//VirtualMachine.loadFile(code) //Not needed as exec also loads the target file
+		VirtualMachine.exec(code, main)
+	}
 
 	/*@Test
 	fun helloWorld() {

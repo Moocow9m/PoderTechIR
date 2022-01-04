@@ -4,7 +4,8 @@ module PoderTechIR.main {
 	requires kotlin.stdlib.jdk7;
 
 	exports tech.poder.ir.api;
-	exports tech.poder.ir.vm.std;
 	exports tech.poder.ir.util;
+	exports tech.poder.ir.vm;
+	exports tech.poder.ir.vm.std;
 	exports tech.poder.ptir;
 }

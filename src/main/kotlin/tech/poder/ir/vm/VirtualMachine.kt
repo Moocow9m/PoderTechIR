@@ -23,14 +23,15 @@ object VirtualMachine {
 	}
 
 	private fun getDataType(arg: Any, local: Map<UInt, Any>): Any? {
-		when (arg) {
+		return when (arg) {
 			is PTIR.Variable -> {
-				return if (arg.local) {
+				if (arg.local) {
 					local[arg.index]
 				} else {
 					global[arg.index]
 				}
 			}
+			is String -> arg
 			else -> TODO(arg::class.java.name)
 		}
 	}
@@ -575,9 +576,9 @@ object VirtualMachine {
 					}
 					PTIR.Op.THROW -> throw IllegalStateException("[FATAL][IR]" + op.args[0].toString()) //TODO caching
 					PTIR.Op.LOOP -> {
-						val condition = args[0] as PTIR.Variable
-						val start = args[1] as UInt
-						val end = args[2] as UInt
+						val condition = op.args[0] as PTIR.Variable
+						val start = op.args[1] as UInt
+						val end = op.args[2] as UInt
 						if (readBool(condition)) {
 							loop.condition = condition
 							loop.start = start.toInt()
@@ -671,15 +672,15 @@ object VirtualMachine {
 					}
 					PTIR.Op.INVOKE -> {
 						val a = op.args[0] as PTIR.Variable
-						if (args[1] is String) {
-							var b = args[1] as String
+						if (op.args[1] is String) {
+							var b = op.args[1] as String
 							if (b.isBlank()) {
 								b = name
 							}
-							val c = args[2] as UInt
+							val c = op.args[2] as UInt
 							val file = enviornment[b]!!
 							val newMethod = file.methods[file.methodIndex[c.toInt()].toInt()]
-							if (args.size > 3) {
+							if (op.args.size > 3) {
 								setDataType(
 									a, invoke(b, newMethod, op.args.subList(3, op.args.size).toTypedArray()), local
 								)
@@ -689,9 +690,9 @@ object VirtualMachine {
 								)
 							}
 						} else {
-							when (PTIR.STDCall.values[(args[1] as UInt).toInt()]) {
-								PTIR.STDCall.PRINT -> print(safeGetDataType(args[2], local))
-								else -> error("[FATAL][VM] Unknown STDCALL: ${PTIR.STDCall.values[(args[1] as UInt).toInt()]}!")
+							when (PTIR.STDCall.values[(op.args[1] as UInt).toInt()]) {
+								PTIR.STDCall.PRINT -> print(safeGetDataType(op.args[2], local))
+								else -> error("[FATAL][VM] Unknown STDCALL: ${PTIR.STDCall.values[(op.args[1] as UInt).toInt()]}!")
 							}
 						}
 					}
