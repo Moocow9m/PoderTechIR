@@ -5,9 +5,6 @@ import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.api.APIContainer
 import tech.poder.ir.data.base.unlinked.UnlinkedContainer*/
-import tech.poder.ir.vm.std.Math
-import tech.poder.ir.util.SegmentUtil
-import kotlin.test.Test
 
 
 internal class Packaging {

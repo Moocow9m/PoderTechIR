@@ -2,10 +2,8 @@ package tech.poder.test
 
 import org.junit.jupiter.api.Test
 import tech.poder.ir.api.CodeFile
-import tech.poder.ir.api.Variable
 import tech.poder.ir.vm.std.Math
 import tech.poder.ptir.PTIR
-import java.io.ByteArrayOutputStream
 
 internal class VMTest {
 
@@ -16,7 +14,7 @@ internal class VMTest {
 
 		codeFile.addMethod {
 			invoke(PTIR.STDCall.PRINT, args = arrayOf("Meow"))
-			val powered = Variable()
+			val powered = newLocal()
 			invoke(Math.mathLib, Math.powInt, powered, 2, 3)
 		}
 

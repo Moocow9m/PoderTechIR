@@ -8,15 +8,15 @@ object Math {
 
 	//Complexity is O(log(n))
 	val powInt = mathLib.addMethod {
-		val pow = Variable()
+		val pow = newLocal()
 		setVar(pow, 1)
-		val powerOf = Variable()
-		val input = Variable()
-		val result = Variable()
+		val powerOf = newLocal()
+		val input = newLocal()
+		val result = newLocal()
 		setVar(result, 1)
 		getArrayVar(Variable.ARGS, 0, input)
 		getArrayVar(Variable.ARGS, 1, powerOf)
-		val condition = Variable()
+		val condition = newLocal()
 		ifEquals(powerOf, 0) {
 			setVar(condition, false)
 		}
@@ -24,7 +24,7 @@ object Math {
 			setVar(condition, true)
 		}
 		loop(condition) {
-			val rem = Variable()
+			val rem = newLocal()
 			modulo(rem, powerOf, 2)
 			ifNotEquals(rem, 0) {
 				subtract(powerOf, powerOf, 1)

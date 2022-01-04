@@ -10,6 +10,15 @@ data class MethodBuilder(
 	private val extraInfo: MutableList<PTIR.Info> = mutableListOf()
 	private val debugInfo: MutableList<PTIR.Debug> = mutableListOf()
 	val method: PTIR.Method = PTIR.Method(bytecode, extraInfo, debugInfo)
+	internal var varId = 1u
+
+	fun newLocal(): Variable {
+		return Variable.newLocal(this)
+	}
+
+	fun newGlobal(): Variable {
+		return Variable.newGlobal()
+	}
 
 	fun provideDebugInfo(debug: PTIR.Debug) {
 		debugInfo.add(debug)
