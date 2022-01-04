@@ -15,8 +15,8 @@ data class MethodBuilder(
 		debugInfo.add(debug)
 	}
 
-	fun provideDebugLines(range: UIntRange, text: String) {
-		debugInfo.add(PTIR.Debug(listOf(range.first, range.last), text))
+	fun provideDebugLines(startLine: UInt, endLine: UInt = startLine, text: String) {
+		debugInfo.add(PTIR.Debug(listOf(startLine, endLine), text))
 	}
 
 	fun addBreakPoint(line: Int, msg: String) {
