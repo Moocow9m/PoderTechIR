@@ -44,7 +44,9 @@ internal class Packaging {
 			val powered = newLocal()
 			invoke(Math.mathLib, Math.powInt, powered, 2, 3)
 		}
-		val tmp = Paths.get("tmp.bin").toAbsolutePath()
+		val tmp = Files.createTempFile(Paths.get("").toAbsolutePath(), "tmp", ".bin")
+
+		Files.deleteIfExists(tmp)
 
 		var nos: OutputStream
 		listOf(codeFile, Math.mathLib).forEach {
