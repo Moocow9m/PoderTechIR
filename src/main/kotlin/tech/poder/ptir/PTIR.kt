@@ -10,6 +10,14 @@ import tech.poder.proto.Packet
 import tech.poder.proto.WriteStd
 
 object PTIR {
+	enum class STDCall {
+		PRINT,
+		;
+		companion object {
+			val values = values()
+			val DEFAULT = PRINT
+		}
+	}
 	enum class Type {
 		INT,
 		FLOAT,

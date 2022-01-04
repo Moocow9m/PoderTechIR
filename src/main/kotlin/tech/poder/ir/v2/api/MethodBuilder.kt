@@ -5,6 +5,9 @@ import tech.poder.ptir.PTIR
 data class MethodBuilder(
 	val parent: CodeFile,
 ) {
+	companion object {
+		val STD_FILE = CodeFile("")
+	}
 	internal val id: UInt = parent.id++
 	private val bytecode: MutableList<PTIR.Expression> = mutableListOf()
 	private val extraInfo: MutableList<PTIR.Info> = mutableListOf()
