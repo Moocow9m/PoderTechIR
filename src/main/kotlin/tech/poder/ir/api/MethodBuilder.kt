@@ -36,7 +36,7 @@ data class MethodBuilder(
 		val argsNoVars = args.map {
 			when (it) {
 				is Variable -> {
-					it.id
+					it.toPTIR()
 				}
 				is Enum<*> -> {
 					it.ordinal.toUInt()
@@ -49,7 +49,7 @@ data class MethodBuilder(
 		if (store == null) {
 			bytecode.add(PTIR.Expression(op, argsNoVars))
 		} else {
-			bytecode.add(PTIR.Expression(op, listOf(store.id) + argsNoVars))
+			bytecode.add(PTIR.Expression(op, listOf(store.toPTIR()) + argsNoVars))
 		}
 	}
 
