@@ -4,12 +4,12 @@ import tech.poder.ptir.PTIR
 
 data class MethodBuilder(
 	val parent: CodeFile,
-	internal val id: UInt = parent.id++,
-	private val bytecode: MutableList<PTIR.Expression> = mutableListOf(),
-	private val extraInfo: MutableList<PTIR.Info> = mutableListOf(),
-	private val debugInfo: MutableList<PTIR.Debug> = mutableListOf(),
-	val method: PTIR.Method = PTIR.Method(bytecode, extraInfo, debugInfo)
 ) {
+	internal val id: UInt = parent.id++
+	private val bytecode: MutableList<PTIR.Expression> = mutableListOf()
+	private val extraInfo: MutableList<PTIR.Info> = mutableListOf()
+	private val debugInfo: MutableList<PTIR.Debug> = mutableListOf()
+	val method: PTIR.Method = PTIR.Method(bytecode, extraInfo, debugInfo)
 
 	fun provideDebugInfo(debug: PTIR.Debug) {
 		debugInfo.add(debug)
