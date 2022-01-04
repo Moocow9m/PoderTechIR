@@ -1,27 +1,6 @@
 package tech.poder.test
 
-import org.junit.jupiter.api.Test
-import tech.poder.ir.api.CodeFile
-import tech.poder.ir.vm.std.Math
-import tech.poder.ptir.PTIR
-
 internal class VMTest {
-
-	@Test
-	fun meow() {
-
-		val codeFile = CodeFile("Meow")
-
-		codeFile.addMethod {
-			invoke(PTIR.STDCall.PRINT, args = arrayOf("Meow"))
-			val powered = newLocal()
-			invoke(Math.mathLib, Math.powInt, powered, 2, 3)
-		}
-
-		println("Math.Std.Pow: " + Math.mathLib.asCode())
-
-		println("Main: " + codeFile.asCode())
-	}
 
 	/*@Test
 	fun helloWorld() {
