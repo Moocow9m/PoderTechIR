@@ -20,7 +20,9 @@ internal class VMTest {
 			invoke(Math.mathLib, Math.powInt, powered, 2, 3)
 		}
 
-		println(codeFile.asCode())
+		println("Math.Std.Pow: " + Math.mathLib.asCode())
+
+		println("Main: " + codeFile.asCode())
 	}
 
 	/*@Test
