@@ -13,4 +13,5 @@ module PoderTechIR.main {
 	exports tech.poder.ir.std;
 	exports tech.poder.ir.util;
 	exports tech.poder.ir.v2.api;
+	exports tech.poder.ptir;
 }
