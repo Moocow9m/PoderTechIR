@@ -47,7 +47,7 @@ data class MethodBuilder(
 			}
 		}
 		if (store == null) {
-			bytecode.add(PTIR.Expression(op, argsNoVars))
+			bytecode.add(PTIR.Expression(op, listOf(Variable.VOID) + argsNoVars))
 		} else {
 			bytecode.add(PTIR.Expression(op, listOf(store.toPTIR()) + argsNoVars))
 		}

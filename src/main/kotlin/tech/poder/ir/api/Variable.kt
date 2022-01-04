@@ -5,7 +5,8 @@ import tech.poder.ptir.PTIR
 @JvmInline
 value class Variable private constructor(internal val id: List<Any>) {
 	companion object {
-		var last = 0u
+		var last = 1u
+		internal val VOID = Variable(listOf(false, 0u)).toPTIR()
 		val ARGS = Variable(listOf(true, 0u))
 
 		fun newLocal(builder: MethodBuilder): Variable {

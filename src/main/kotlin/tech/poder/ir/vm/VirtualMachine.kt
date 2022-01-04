@@ -516,10 +516,10 @@ object VirtualMachine {
 					PTIR.Op.IF_EQUALS -> TODO()
 					PTIR.Op.IF_LESS_THAN -> TODO()
 					PTIR.Op.IF_GREATER_THAN -> TODO()
+					PTIR.Op.IF_NULL -> TODO()
 					PTIR.Op.ELSE -> {
 						/*no op*/
 					}
-					PTIR.Op.IF_NULL -> TODO()
 					PTIR.Op.REMAINDER -> {
 						val a = safeGetDataType(op.args[0], local)
 						val b = safeGetDataType(op.args[1], local)
@@ -568,7 +568,31 @@ object VirtualMachine {
 						val b = safeGetDataType(op.args[1], local)
 						setDataType(op.args[0] as PTIR.Variable, xor(a, b), local)
 					}
-					PTIR.Op.INVOKE -> TODO()
+					PTIR.Op.INVOKE -> {
+						val a = op.args[0] as PTIR.Variable
+						if (args[1] is String) {
+							var b = args[1] as String
+							if (b.isBlank()) {
+								b = name
+							}
+							val c = args[2] as UInt
+							val file = enviornment[b]!!
+							val newMethod = file.methods[file.methodIndex[c.toInt()].toInt()]
+							if (args.size > 3) {
+								setDataType(
+									a, invoke(b, newMethod, op.args.subList(3, op.args.size).toTypedArray()), local
+								)
+							} else {
+								setDataType(
+									a, invoke(b, newMethod, emptyArray()), local
+								)
+							}
+						} else {
+							when (PTIR.STDCall.values[(args[1] as UInt).toInt()]) {
+								PTIR.STDCall.PRINT -> print(safeGetDataType(args[2], local))
+							}
+						}
+					}
 					PTIR.Op.NULL -> {
 						setDataType(op.args[0] as PTIR.Variable, null, local)
 					}
