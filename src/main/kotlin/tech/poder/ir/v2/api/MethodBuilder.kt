@@ -73,11 +73,11 @@ data class MethodBuilder(
 		addOp(PTIR.Op.NEW_STRUCT, target, id)
 	}
 
-	fun invoke(codeFile: CodeFile, method: UInt, storeResult: Variable? = null, vararg args: Any) {
+	fun invoke(codeFile: CodeFile, method: UInt, store: Variable? = null, vararg args: Any) {
 		if (codeFile.name == parent.name) {
-			addOp(PTIR.Op.INVOKE, storeResult, "", method, *args)
+			addOp(PTIR.Op.INVOKE, store, "", method, *args)
 		} else {
-			addOp(PTIR.Op.INVOKE, storeResult, codeFile.name, method, *args)
+			addOp(PTIR.Op.INVOKE, store, codeFile.name, method, *args)
 		}
 	}
 
