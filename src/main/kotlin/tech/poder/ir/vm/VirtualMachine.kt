@@ -50,12 +50,241 @@ object VirtualMachine {
 		}
 	}
 
+	private fun typeSize(target: Any): Int {
+		return when (target) {
+			is Byte -> 0
+			is Short -> 5
+			is Int -> 10
+			is Long -> 15
+			is Float -> 20
+			is Double -> 25
+			is UByte -> 1
+			is UShort -> 6
+			is UInt -> 11
+			is ULong -> 16
+			is String -> 100
+			is List<*> -> 200
+			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${target::class.java.name}")
+		}
+	}
+
+	private fun add(a: Number, b: Number): Number {
+		return when (a) {
+			is Byte -> a + b.toByte()
+			is Short -> a + b.toShort()
+			is Int -> a + b.toInt()
+			is Long -> a + b.toLong()
+			is Float -> a + b.toFloat()
+			is Double -> a + b.toDouble()
+			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
+		}
+	}
+
+	private fun sub(a: Number, b: Number): Number {
+		return when (a) {
+			is Byte -> a - b.toByte()
+			is Short -> a - b.toShort()
+			is Int -> a - b.toInt()
+			is Long -> a - b.toLong()
+			is Float -> a - b.toFloat()
+			is Double -> a - b.toDouble()
+			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
+		}
+	}
+
+	private fun mul(a: Number, b: Number): Number {
+		return when (a) {
+			is Byte -> a * b.toByte()
+			is Short -> a * b.toShort()
+			is Int -> a * b.toInt()
+			is Long -> a * b.toLong()
+			is Float -> a * b.toFloat()
+			is Double -> a * b.toDouble()
+			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
+		}
+	}
+
+	private fun div(a: Number, b: Number): Number {
+		return when (a) {
+			is Byte -> a / b.toByte()
+			is Short -> a / b.toShort()
+			is Int -> a / b.toInt()
+			is Long -> a / b.toLong()
+			is Float -> a / b.toFloat()
+			is Double -> a / b.toDouble()
+			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
+		}
+	}
+
+	private fun mod(a: Number, b: Number): Number {
+		return when (a) {
+			is Byte -> a % b.toByte()
+			is Short -> a % b.toShort()
+			is Int -> a % b.toInt()
+			is Long -> a % b.toLong()
+			is Float -> a % b.toFloat()
+			is Double -> a % b.toDouble()
+			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
+		}
+	}
+
+	private fun toUnsigned(a: Any): ULong { //Unfortunately, this is the only way to do this as Unsigned numbers do not share an Interface like Number does
+		return when (a) {
+			is Number -> a.toLong().toULong()
+			is ULong -> a
+			is UInt -> a.toULong()
+			is UShort -> a.toULong()
+			is UByte -> a.toULong()
+			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
+		}
+	}
+
 	private fun add(a: Any, b: Any): Any {
-		return when {
-			a is String || b is String -> a.toString() + b.toString()
-			a is Float || b is Float -> a as Float + b as Float
-			a is Int || b is Int -> a as Int + b as Int
-			else -> throw IllegalStateException("[FATAL][VM] Invalid type for addition!")
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		val second = if (first === a) {
+			b
+		} else {
+			a
+		}
+		return when(first) {
+			is String -> first + second.toString()
+			is ULong -> {
+				first + toUnsigned(second)
+			}
+			is UInt -> {
+				first + toUnsigned(second).toUInt()
+			}
+			is UShort -> {
+				first + toUnsigned(second).toUShort()
+			}
+			is UByte -> {
+				first + toUnsigned(second).toUByte()
+			}
+			is Number -> add(first, second as Number)
+			is List<*> -> TODO("LIST ADD")
+			else -> throw IllegalStateException("[FATAL][VM] Invalid types for addition! (${a::class.java.name} + ${b::class.java.name})")
+		}
+	}
+
+	private fun sub(a: Any, b: Any): Any {
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		val second = if (first === a) {
+			b
+		} else {
+			a
+		}
+		return when(first) {
+			is String -> TODO("STRING SUB")
+			is ULong -> {
+				first - toUnsigned(second)
+			}
+			is UInt -> {
+				first - toUnsigned(second).toUInt()
+			}
+			is UShort -> {
+				first - toUnsigned(second).toUShort()
+			}
+			is UByte -> {
+				first - toUnsigned(second).toUByte()
+			}
+			is Number -> sub(first, second as Number)
+			is List<*> -> TODO("LIST ADD")
+			else -> throw IllegalStateException("[FATAL][VM] Invalid types for subtraction! (${a::class.java.name} + ${b::class.java.name})")
+		}
+	}
+
+	private fun mul(a: Any, b: Any): Any {
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		val second = if (first === a) {
+			b
+		} else {
+			a
+		}
+		return when(first) {
+			is ULong -> {
+				first * toUnsigned(second)
+			}
+			is UInt -> {
+				first * toUnsigned(second).toUInt()
+			}
+			is UShort -> {
+				first * toUnsigned(second).toUShort()
+			}
+			is UByte -> {
+				first * toUnsigned(second).toUByte()
+			}
+			is Number -> mul(first, second as Number)
+			else -> throw IllegalStateException("[FATAL][VM] Invalid types for multiplication! (${a::class.java.name} + ${b::class.java.name})")
+		}
+	}
+
+	private fun div(a: Any, b: Any): Any {
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		val second = if (first === a) {
+			b
+		} else {
+			a
+		}
+		return when(first) {
+			is ULong -> {
+				first / toUnsigned(second)
+			}
+			is UInt -> {
+				first / toUnsigned(second).toUInt()
+			}
+			is UShort -> {
+				first / toUnsigned(second).toUShort()
+			}
+			is UByte -> {
+				first / toUnsigned(second).toUByte()
+			}
+			is Number -> div(first, second as Number)
+			else -> throw IllegalStateException("[FATAL][VM] Invalid types for division! (${a::class.java.name} + ${b::class.java.name})")
+		}
+	}
+
+	private fun mod(a: Any, b: Any): Any {
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		val second = if (first === a) {
+			b
+		} else {
+			a
+		}
+		return when(first) {
+			is ULong -> {
+				first % toUnsigned(second)
+			}
+			is UInt -> {
+				first % toUnsigned(second).toUInt()
+			}
+			is UShort -> {
+				first % toUnsigned(second).toUShort()
+			}
+			is UByte -> {
+				first % toUnsigned(second).toUByte()
+			}
+			is Number -> mod(first, second as Number)
+			else -> throw IllegalStateException("[FATAL][VM] Invalid types for division! (${a::class.java.name} + ${b::class.java.name})")
 		}
 	}
 
@@ -91,15 +320,31 @@ object VirtualMachine {
 					PTIR.Op.IF_LESS_THAN -> TODO()
 					PTIR.Op.IF_GREATER_THAN -> TODO()
 					PTIR.Op.ELSE -> TODO()
-					PTIR.Op.REMAINDER -> TODO()
-					PTIR.Op.DIVIDE -> TODO()
-					PTIR.Op.MULTIPLY -> TODO()
+					PTIR.Op.REMAINDER -> {
+						val a = safeGetDataType(op.args[0], local)
+						val b = safeGetDataType(op.args[1], local)
+						setDataType(op.args[0] as PTIR.Variable, mod(a, b), local)
+					}
+					PTIR.Op.DIVIDE -> {
+						val a = safeGetDataType(op.args[0], local)
+						val b = safeGetDataType(op.args[1], local)
+						setDataType(op.args[0] as PTIR.Variable, div(a, b), local)
+					}
+					PTIR.Op.MULTIPLY -> {
+						val a = safeGetDataType(op.args[0], local)
+						val b = safeGetDataType(op.args[1], local)
+						setDataType(op.args[0] as PTIR.Variable, mul(a, b), local)
+					}
 					PTIR.Op.ADD -> {
 						val a = safeGetDataType(op.args[0], local)
 						val b = safeGetDataType(op.args[1], local)
 						setDataType(op.args[0] as PTIR.Variable, add(a, b), local)
 					}
-					PTIR.Op.SUBTRACT -> TODO()
+					PTIR.Op.SUBTRACT -> {
+						val a = safeGetDataType(op.args[0], local)
+						val b = safeGetDataType(op.args[1], local)
+						setDataType(op.args[0] as PTIR.Variable, sub(a, b), local)
+					}
 					PTIR.Op.AND -> TODO()
 					PTIR.Op.OR -> TODO()
 					PTIR.Op.SHL -> TODO()
