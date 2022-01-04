@@ -7,15 +7,13 @@ data class CodeFile(val name: String) {
 	private val methods: MutableList<MethodBuilder> = mutableListOf()
 	private val structs: MutableSet<Struct> = mutableSetOf()
 	internal var id = 0u
-	fun addMethod(method: MethodBuilder): UInt {
-		if (!methods.contains(method)) {
-			methods.add(method)
+	fun addMethod(method: MethodBuilder.() -> Unit): UInt {
+		val builder = MethodBuilder(this)
+		method.invoke(builder)
+		if (!methods.contains(builder)) {
+			methods.add(builder)
 		}
-		return methods.indexOf(method).toUInt()
-	}
-
-	fun newBuilder(): MethodBuilder {
-		return MethodBuilder(this)
+		return methods.indexOf(builder).toUInt()
 	}
 
 	fun write(out: OutputStream) {

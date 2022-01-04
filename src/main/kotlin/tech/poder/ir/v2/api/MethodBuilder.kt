@@ -58,6 +58,22 @@ data class MethodBuilder(
 		addOp(PTIR.Op.NEW_STRUCT, target, id)
 	}
 
+	fun invoke(codeFile: CodeFile, method: UInt, target: Varible? = null) {
+		if (codeFile.name == parent.name) {
+			if (target != null) {
+				addOp(PTIR.Op.INVOKE, "", method, target)
+			} else {
+				addOp(PTIR.Op.INVOKE, "", method)
+			}
+		} else {
+			if (target != null) {
+				addOp(PTIR.Op.INVOKE, codeFile.name, method, target)
+			} else {
+				addOp(PTIR.Op.INVOKE, codeFile.name, method)
+			}
+		}
+	}
+
 	override fun toString(): String {
 		return "Method(id=$id, method=$method)"
 	}
