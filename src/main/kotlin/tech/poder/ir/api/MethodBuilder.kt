@@ -53,6 +53,10 @@ data class MethodBuilder(
 		}
 	}
 
+	fun compare(op: PTIR.Op, store: Variable, left: Any, right: Any) {
+		addOp(op, store, left, right)
+	}
+
 	fun getArrayVar(array: Variable, index: Int, to: Variable) {
 		addOp(PTIR.Op.GET_ARRAY_VAR, to, index, array)
 	}
@@ -76,7 +80,8 @@ data class MethodBuilder(
 	}
 
 	fun getVar(from: Variable, to: Variable) {
-		addOp(PTIR.Op.GET_VAR, to, from)
+		setVar(to, from)
+		//addOp(PTIR.Op.GET_VAR, to, from)
 	}
 
 	fun newArray(store: Variable, size: UInt = 0u) {
@@ -129,6 +134,30 @@ data class MethodBuilder(
 
 	fun and(left: Variable, right: Variable, store: Variable) {
 		addOp(PTIR.Op.AND, store, left, right)
+	}
+
+	fun or(left: Variable, right: Variable, store: Variable) {
+		addOp(PTIR.Op.OR, store, left, right)
+	}
+
+	fun xor(left: Variable, right: Variable, store: Variable) {
+		addOp(PTIR.Op.XOR, store, left, right)
+	}
+
+	fun shl(left: Variable, right: Variable, store: Variable) {
+		addOp(PTIR.Op.SHL, store, left, right)
+	}
+
+	fun shr(left: Variable, right: Variable, store: Variable) {
+		addOp(PTIR.Op.SHR, store, left, right)
+	}
+
+	fun sar(left: Variable, right: Variable, store: Variable) {
+		addOp(PTIR.Op.SAR, store, left, right)
+	}
+
+	fun sal(left: Variable, right: Variable, store: Variable) {
+		addOp(PTIR.Op.SAL, store, left, right)
 	}
 
 	fun add(store: Variable, a: Any, b: Any) {

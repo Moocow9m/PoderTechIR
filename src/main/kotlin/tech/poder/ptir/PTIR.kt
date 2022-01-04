@@ -66,6 +66,7 @@ object PTIR {
 		SHR,
 		SAR,
 		SAL,
+		XOR,
 		INVOKE,
 		NULL,
 		IF_NULL,
