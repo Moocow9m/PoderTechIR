@@ -48,6 +48,10 @@ object ReadStd {
 			.invoke(objectInstance, stream) as T
 	}
 
+	fun readBoolean(stream: InputStream): Boolean {
+		return stream.read() != 0
+	}
+
 	fun readAnyList(stream: InputStream): List<Any> {
 		return List(readVUInt(stream).toInt()) {
 			readAny(stream)
@@ -67,6 +71,7 @@ object ReadStd {
 				readPacket(stream, objectInstance)
 			}
 			Packet.Types.LIST -> readAnyList(stream)
+			Packet.Types.BOOL -> readBoolean(stream)
 			else -> throw Exception("Unknown type code: $code")
 		}
 	}

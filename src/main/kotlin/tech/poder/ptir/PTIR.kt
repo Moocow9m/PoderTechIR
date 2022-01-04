@@ -5,14 +5,16 @@ Poder Tech Intermediate Representative
 By Moocow9m: 2022
  */
 
-import tech.poder.proto.Packet
 import tech.poder.proto.ReadStd
+import tech.poder.proto.Packet
 import tech.poder.proto.WriteStd
 
 object PTIR {
 	enum class Op {
-		GET_VAR,
+		GET_ARRAY_VAR,
+		SET_ARRAY_VAR,
 		SET_VAR,
+		NEW_ARRAY,
 		RETURN,
 		THROW,
 		JUMP,
@@ -30,18 +32,12 @@ object PTIR {
 		NULL,
 		IF_NULL,
 		;
-
 		companion object {
 			val values = values()
-			val DEFAULT = GET_VAR
+			val DEFAULT = GET_ARRAY_VAR
 		}
 	}
-
-	data class Debug(
-		val methodLinesIndexes: List<UInt> = emptyList(),
-		val methodLinesText: String = "",
-		val breakPoints: Boolean = false
-	) : Packet {
+	data class Debug(val methodLinesIndexes: List<UInt> = emptyList(), val methodLinesText: String = "", val breakPoints: Boolean = false): Packet {
 		companion object {
 			val DEFAULT = Debug()
 			fun fromBytes(stream: java.io.InputStream): Debug {
@@ -50,26 +46,20 @@ object PTIR {
 					it0
 				}
 				val methodLinesText = ReadStd.readString(stream)
-				val breakPoints = stream.read() != 0
+				val breakPoints = ReadStd.readBoolean(stream)
 				return Debug(methodLinesIndexes, methodLinesText, breakPoints)
 			}
 		}
-
 		override fun toBytes(stream: java.io.OutputStream) {
 			WriteStd.writeVUInt(stream, methodLinesIndexes.size.toUInt())
 			methodLinesIndexes.forEach { it0 ->
 				WriteStd.writeVUInt(stream, it0)
 			}
 			WriteStd.writeString(stream, methodLinesText)
-			if (breakPoints) {
-				WriteStd.writeVUInt(stream, 1u)
-			} else {
-				WriteStd.writeVUInt(stream, 0u)
-			}
+			WriteStd.writeBoolean(stream, breakPoints)
 		}
 	}
-
-	data class Info(val index: List<UInt> = emptyList()) : Packet {
+	data class Info(val index: List<UInt> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Info()
 			fun fromBytes(stream: java.io.InputStream): Info {
@@ -80,7 +70,6 @@ object PTIR {
 				return Info(index)
 			}
 		}
-
 		override fun toBytes(stream: java.io.OutputStream) {
 			WriteStd.writeVUInt(stream, index.size.toUInt())
 			index.forEach { it0 ->
@@ -88,8 +77,7 @@ object PTIR {
 			}
 		}
 	}
-
-	data class Expression(val type: Op = Op.DEFAULT, val args: List<Any> = emptyList()) : Packet {
+	data class Expression(val type: Op = Op.DEFAULT, val args: List<Any> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Expression()
 			fun fromBytes(stream: java.io.InputStream): Expression {
@@ -100,7 +88,6 @@ object PTIR {
 				}
 				return Expression(type, args)
 			}
-
 			private fun mapRead0(stream: java.io.InputStream, id: Int): Any {
 				return when (id) {
 					0 -> {
@@ -127,7 +114,6 @@ object PTIR {
 				}
 			}
 		}
-
 		override fun toBytes(stream: java.io.OutputStream) {
 			WriteStd.writeVUInt(stream, type.ordinal.toUInt())
 			WriteStd.writeVUInt(stream, args.size.toUInt())
@@ -135,7 +121,6 @@ object PTIR {
 				mapWrite0(stream, it0)
 			}
 		}
-
 		private fun mapWrite0(stream: java.io.OutputStream, value: Any) {
 			return when (value) {
 				is Int -> {
@@ -168,12 +153,7 @@ object PTIR {
 			}
 		}
 	}
-
-	data class Method(
-		val bytecode: List<Expression> = emptyList(),
-		val extraInfo: List<Info> = emptyList(),
-		val debugInfo: List<Debug> = emptyList()
-	) : Packet {
+	data class Method(val bytecode: List<Expression> = emptyList(), val extraInfo: List<Info> = emptyList(), val debugInfo: List<Debug> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Method()
 			fun fromBytes(stream: java.io.InputStream): Method {
@@ -192,7 +172,6 @@ object PTIR {
 				return Method(bytecode, extraInfo, debugInfo)
 			}
 		}
-
 		override fun toBytes(stream: java.io.OutputStream) {
 			WriteStd.writeVUInt(stream, bytecode.size.toUInt())
 			bytecode.forEach { it0 ->
@@ -208,8 +187,7 @@ object PTIR {
 			}
 		}
 	}
-
-	data class Code(val id: String = "", val methods: List<Method> = emptyList()) : Packet {
+	data class Code(val id: String = "", val methods: List<Method> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Code()
 			fun fromBytes(stream: java.io.InputStream): Code {
@@ -221,7 +199,6 @@ object PTIR {
 				return Code(id, methods)
 			}
 		}
-
 		override fun toBytes(stream: java.io.OutputStream) {
 			WriteStd.writeString(stream, id)
 			WriteStd.writeVUInt(stream, methods.size.toUInt())

@@ -45,6 +45,10 @@ object WriteStd {
 		}
 	}
 
+	fun writeBoolean(stream: OutputStream, bool: Boolean) {
+		stream.write(if (bool) 1 else 0)
+	}
+
 	fun writeList(stream: OutputStream, list: List<*>) {//write shortcut(on read, type is known)
 		writeVUInt(stream, list.size.toUInt())
 		list.forEach {
@@ -58,6 +62,7 @@ object WriteStd {
 			is Packet -> writePacket(stream, any)
 			is String -> writeString(stream, any)
 			is List<*> -> writeList(stream, any)
+			is Boolean -> writeBoolean(stream, any)
 			else -> error("Unsupported type: ${any::class.simpleName}")
 		}
 	}
@@ -88,6 +93,10 @@ object WriteStd {
 			is List<*> -> {
 				writeVUInt(stream, Packet.Types.LIST.ordinal.toUInt())
 				writeAnyList(stream, any)
+			}
+			is Boolean -> {
+				writeVUInt(stream, Packet.Types.BOOL.ordinal.toUInt())
+				writeBoolean(stream, any)
 			}
 			else -> error("Unsupported type: ${any::class.simpleName}")
 		}
