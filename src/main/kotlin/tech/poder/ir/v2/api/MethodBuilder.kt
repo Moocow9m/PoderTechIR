@@ -5,9 +5,6 @@ import tech.poder.ptir.PTIR
 data class MethodBuilder(
 	val parent: CodeFile,
 ) {
-	companion object {
-		val STD_FILE = CodeFile("")
-	}
 	internal val id: UInt = parent.id++
 	private val bytecode: MutableList<PTIR.Expression> = mutableListOf()
 	private val extraInfo: MutableList<PTIR.Info> = mutableListOf()
@@ -26,55 +23,66 @@ data class MethodBuilder(
 		debugInfo.add(PTIR.Debug(listOf(line.toUInt()), msg, true))
 	}
 
-	fun addOp(op: PTIR.Op, vararg args: Any) {
-		bytecode.add(PTIR.Expression(op, args.toList()))
+	fun addOp(op: PTIR.Op, store: Variable? = null, vararg args: Any) {
+		val argsNoVars = args.map {
+			if (it is Variable) {
+				it.id
+			} else {
+				it
+			}
+		}
+		if (store == null) {
+			bytecode.add(PTIR.Expression(op, argsNoVars))
+		} else {
+			bytecode.add(PTIR.Expression(op, listOf(store.id) + argsNoVars))
+		}
 	}
 
-	fun getArrayVar(target: Varible, index: Int) {
-		addOp(PTIR.Op.GET_ARRAY_VAR, target, index)
+	fun getArrayVar(array: Variable, index: Int, to: Variable) {
+		addOp(PTIR.Op.GET_ARRAY_VAR, to, index, array)
 	}
 
-	fun setArrayVar(target: Varible, index: Int) {
-		addOp(PTIR.Op.SET_ARRAY_VAR, target, index)
+	fun setArrayVar(array: Variable, index: Int, from: Variable) {
+		addOp(PTIR.Op.SET_ARRAY_VAR, array, index, from)
 	}
 
-	fun getStructVar(target: Varible, struct: Struct, field: UInt) {
+	fun getStructVar(structVar: Variable, struct: Struct, field: UInt, to: Variable) {
 		val id = parent.registerOrAddStruct(struct)
-		addOp(PTIR.Op.SET_STRUCT_VAR, target, id, field)
+		addOp(PTIR.Op.GET_STRUCT_VAR, to, id, field, structVar)
 	}
 
-	fun setStructVar(target: Varible, struct: Struct, field: UInt) {
+	fun setStructVar(structVar: Variable, struct: Struct, field: UInt, from: Variable) {
 		val id = parent.registerOrAddStruct(struct)
-		addOp(PTIR.Op.SET_STRUCT_VAR, target, id, field)
+		addOp(PTIR.Op.SET_STRUCT_VAR, structVar, id, field, from)
 	}
 
-	fun setVar(target: Varible, value: Any) {
-		addOp(PTIR.Op.SET_VAR, target, value)
+	fun setVar(to: Variable, value: Any) {
+		addOp(PTIR.Op.SET_VAR, to, value)
 	}
 
-	fun newArray(target: Varible, size: Int = -1) {
-		addOp(PTIR.Op.NEW_ARRAY, target, size)
+	fun getVar(from: Variable, to: Variable) {
+		addOp(PTIR.Op.GET_VAR, to, from)
 	}
 
-	fun newStruct(target: Varible, struct: Struct) {
+	fun newArray(store: Variable, size: UInt = 0u) {
+		addOp(PTIR.Op.NEW_ARRAY, store, size)
+	}
+
+	fun newStruct(target: Variable, struct: Struct) {
 		val id = parent.registerOrAddStruct(struct)
 		addOp(PTIR.Op.NEW_STRUCT, target, id)
 	}
 
-	fun invoke(codeFile: CodeFile, method: UInt, target: Varible? = null) {
+	fun invoke(codeFile: CodeFile, method: UInt, storeResult: Variable? = null, vararg args: Any) {
 		if (codeFile.name == parent.name) {
-			if (target != null) {
-				addOp(PTIR.Op.INVOKE, "", method, target)
-			} else {
-				addOp(PTIR.Op.INVOKE, "", method)
-			}
+			addOp(PTIR.Op.INVOKE, storeResult, "", method, *args)
 		} else {
-			if (target != null) {
-				addOp(PTIR.Op.INVOKE, codeFile.name, method, target)
-			} else {
-				addOp(PTIR.Op.INVOKE, codeFile.name, method)
-			}
+			addOp(PTIR.Op.INVOKE, storeResult, codeFile.name, method, *args)
 		}
+	}
+
+	fun invoke(stdCall: PTIR.STDCall, store: Variable? = null, vararg args: Any) {
+		addOp(PTIR.Op.INVOKE, store, stdCall, method, *args)
 	}
 
 	override fun toString(): String {
