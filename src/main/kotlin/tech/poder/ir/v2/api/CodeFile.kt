@@ -3,7 +3,9 @@ package tech.poder.ir.v2.api
 import tech.poder.ptir.PTIR
 import java.io.OutputStream
 
-data class CodeFile(val name: String, internal val methods: MutableList<MethodBuilder> = mutableListOf(), private val structs: MutableSet<Struct> = mutableSetOf()) {
+data class CodeFile(val name: String) {
+	private val methods: MutableList<MethodBuilder> = mutableListOf()
+	private val structs: MutableSet<Struct> = mutableSetOf()
 	internal var id = 0u
 	fun addMethod(method: MethodBuilder): UInt {
 		if (!methods.contains(method)) {
