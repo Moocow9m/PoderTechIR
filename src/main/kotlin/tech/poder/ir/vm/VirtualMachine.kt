@@ -1,6 +1,8 @@
 package tech.poder.ir.vm
 
 import tech.poder.ptir.PTIR
+import kotlin.experimental.and
+import kotlin.experimental.or
 import kotlin.experimental.xor
 
 object VirtualMachine {
@@ -174,6 +176,28 @@ object VirtualMachine {
 			is Short -> a xor b.toShort()
 			is Int -> a xor b.toInt()
 			is Long -> a xor b.toLong()
+			is Float, is Double -> throw IllegalStateException("[FATAL][VM] ILLEGAL Shift Type! ${a::class.java.name}")
+			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
+		}
+	}
+
+	private fun and(a: Number, b: Number): Number {
+		return when (a) {
+			is Byte -> a and b.toByte()
+			is Short -> a and b.toShort()
+			is Int -> a and b.toInt()
+			is Long -> a and b.toLong()
+			is Float, is Double -> throw IllegalStateException("[FATAL][VM] ILLEGAL Shift Type! ${a::class.java.name}")
+			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
+		}
+	}
+
+	private fun or(a: Number, b: Number): Number {
+		return when (a) {
+			is Byte -> a or b.toByte()
+			is Short -> a or b.toShort()
+			is Int -> a or b.toInt()
+			is Long -> a or b.toLong()
 			is Float, is Double -> throw IllegalStateException("[FATAL][VM] ILLEGAL Shift Type! ${a::class.java.name}")
 			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
 		}
@@ -463,6 +487,64 @@ object VirtualMachine {
 		}
 	}
 
+	private fun and(a: Any, b: Any): Any {
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		val second = if (first === a) {
+			b
+		} else {
+			a
+		}
+		return when (first) {
+			is ULong -> {
+				first and toUnsigned(second)
+			}
+			is UInt -> {
+				first and toUnsigned(second).toUInt()
+			}
+			is UShort -> {
+				first and toUnsigned(second).toUShort()
+			}
+			is UByte -> {
+				first and toUnsigned(second).toUByte()
+			}
+			is Number -> and(first, second as Number)
+			else -> throw IllegalStateException("[FATAL][VM] Invalid types for SAL! (${a::class.java.name} + ${b::class.java.name})")
+		}
+	}
+
+	private fun or(a: Any, b: Any): Any {
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		val second = if (first === a) {
+			b
+		} else {
+			a
+		}
+		return when (first) {
+			is ULong -> {
+				first or toUnsigned(second)
+			}
+			is UInt -> {
+				first or toUnsigned(second).toUInt()
+			}
+			is UShort -> {
+				first or toUnsigned(second).toUShort()
+			}
+			is UByte -> {
+				first or toUnsigned(second).toUByte()
+			}
+			is Number -> or(first, second as Number)
+			else -> throw IllegalStateException("[FATAL][VM] Invalid types for SAL! (${a::class.java.name} + ${b::class.java.name})")
+		}
+	}
+
 	private fun readBool(data: Any): Boolean {
 		return when (data) {
 			is Number -> data != 0
@@ -545,8 +627,16 @@ object VirtualMachine {
 						val b = safeGetDataType(op.args[1], local)
 						setDataType(op.args[0] as PTIR.Variable, sub(a, b), local)
 					}
-					PTIR.Op.AND -> TODO()
-					PTIR.Op.OR -> TODO()
+					PTIR.Op.AND -> {
+						val a = safeGetDataType(op.args[0], local)
+						val b = safeGetDataType(op.args[1], local)
+						setDataType(op.args[0] as PTIR.Variable, and(a, b), local)
+					}
+					PTIR.Op.OR -> {
+						val a = safeGetDataType(op.args[0], local)
+						val b = safeGetDataType(op.args[1], local)
+						setDataType(op.args[0] as PTIR.Variable, or(a, b), local)
+					}
 					PTIR.Op.SHL -> error("[FATAL][VM] SHL not supported on JVM Interpreter!")
 					PTIR.Op.SHR -> {
 						val a = safeGetDataType(op.args[0], local)
@@ -590,6 +680,7 @@ object VirtualMachine {
 						} else {
 							when (PTIR.STDCall.values[(args[1] as UInt).toInt()]) {
 								PTIR.STDCall.PRINT -> print(safeGetDataType(args[2], local))
+								else -> error("[FATAL][VM] Unknown STDCALL: ${PTIR.STDCall.values[(args[1] as UInt).toInt()]}!")
 							}
 						}
 					}
