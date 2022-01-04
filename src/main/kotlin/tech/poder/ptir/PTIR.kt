@@ -179,7 +179,7 @@ object PTIR {
 						mapWrite0(stream, it1!!)
 					}
 				}
-				else -> throw java.lang.IllegalArgumentException("Unknown type: ${value::class.simpleName}")
+				else -> throw java.lang.IllegalArgumentException("Unknown type: ${value::class.java.name}")
 			}
 		}
 	}
