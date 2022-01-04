@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.6.10"
 }
 
 group = "tech.poder.ir"
@@ -28,14 +28,14 @@ tasks {
         destinationDirectory.set(javaTestDestination)
     }
 
-    val javaVersionCompat = JavaVersion.VERSION_16.toString()
+    //val javaVersionCompat = JavaVersion.VERSION_16.toString()
     val javaVersion = JavaVersion.VERSION_17.toString()
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
-        kotlinOptions.jvmTarget = javaVersionCompat
-        kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+        kotlinOptions.jvmTarget = javaVersion
+        //kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
         //kotlinOptions.languageVersion = "1.6"
         //kotlinOptions.apiVersion = "1.6"
         //kotlinOptions.useFir = true
