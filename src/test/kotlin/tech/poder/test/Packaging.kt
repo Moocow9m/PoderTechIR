@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test
 import tech.poder.ir.api.CodeFile
 import tech.poder.ir.vm.std.Math
 import tech.poder.ptir.PTIR
-import java.io.InputStream
 import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -60,6 +59,8 @@ internal class Packaging {
 				"Read and write are not equal for: ${it.name}"
 			}
 		}
+
+		Files.deleteIfExists(tmp)
 
 	}
 

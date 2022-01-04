@@ -125,7 +125,8 @@ data class MethodBuilder(
 		val start = nextLineNumber()
 		builder.invoke(this)
 		val end = nextLineNumber()
-		addOp(PTIR.Op.LOOP, condition, start, end)
+		addOp(PTIR.Op.LOOP, condition, start + 1u, end + 1u)
+		swapLine(start, end)
 	}
 
 	fun break_() {

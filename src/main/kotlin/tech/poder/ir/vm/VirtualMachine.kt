@@ -574,7 +574,18 @@ object VirtualMachine {
 						}
 					}
 					PTIR.Op.THROW -> throw IllegalStateException("[FATAL][IR]" + op.args[0].toString()) //TODO caching
-					PTIR.Op.LOOP -> TODO()
+					PTIR.Op.LOOP -> {
+						val condition = args[0] as PTIR.Variable
+						val start = args[1] as UInt
+						val end = args[2] as UInt
+						if (readBool(condition)) {
+							loop.condition = condition
+							loop.start = start.toInt()
+							loop.end = end.toInt()
+						} else {
+							line = end.toInt() - 1
+						}
+					}
 					PTIR.Op.BREAK -> {
 						line = loop.end
 						loop.condition = null
@@ -690,6 +701,9 @@ object VirtualMachine {
 					else -> error("[FATAL][VM] Unknown Op: ${op.type}!")
 				}
 				line++
+				if (loop.condition != null && readBool(loop.condition!!)) {
+					line = loop.start
+				}
 			}
 		} catch (ex: Exception) {
 			val debugMessages = if (method.debugInfo.isNotEmpty()) {
