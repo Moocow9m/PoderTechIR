@@ -4,7 +4,7 @@ import kotlin.experimental.and
 import kotlin.experimental.xor
 
 object BitManipulator {
-    val indexes: List<Long> = listOf(1, 2, 4, 8, 16, 32, 64, 128, 256)
+    val indexes = listOf<Long>(1, 2, 4, 8, 16, 32, 64, 128, 256)
 
     fun Byte.isBitOn(index: Int): Boolean {
         return !isBitOff(index)
