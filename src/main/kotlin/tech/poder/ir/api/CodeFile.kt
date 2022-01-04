@@ -1,4 +1,4 @@
-package tech.poder.ir.v2.api
+package tech.poder.ir.api
 
 import tech.poder.ptir.PTIR
 import java.io.OutputStream

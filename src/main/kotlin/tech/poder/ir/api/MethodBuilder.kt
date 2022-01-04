@@ -1,4 +1,4 @@
-package tech.poder.ir.v2.api
+package tech.poder.ir.api
 
 import tech.poder.ptir.PTIR
 
@@ -110,12 +110,16 @@ data class MethodBuilder(
 	fun loop(condition: Variable, builder: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
 		builder.invoke(this)
-		val end = nextLineNumber() - 1u
+		val end = nextLineNumber()
 		addOp(PTIR.Op.LOOP, condition, start, end)
 	}
 
 	fun break_() {
 		addOp(PTIR.Op.BREAK)
+	}
+
+	fun and(left: Variable, right: Variable, store: Variable) {
+		addOp(PTIR.Op.AND, store, left, right)
 	}
 
 	fun add(store: Variable, a: Any, b: Any) {
@@ -142,24 +146,71 @@ data class MethodBuilder(
 		addOp(PTIR.Op.NULL, store)
 	}
 
-	fun ifNull(store: Variable, check: Variable) {
-		addOp(PTIR.Op.IF_NULL, store, check)
+	private fun updateIf(startOfElse: UInt, endOfElse: UInt) {
+		val index = bytecode.indexOfFirst { it.type.name.startsWith("IF") && it.args.last() == startOfElse }
+
+		check(index > -1) {
+			"Could not find matching IF statement for ELSE(${startOfElse}, ${endOfElse})!"
+		}
+		val target = bytecode.removeAt(index)
+		val correctedArgs = target.args.toMutableList()
+		correctedArgs.removeLast()
+		correctedArgs.add(endOfElse + 1u)
+		bytecode.add(index, PTIR.Expression(target.type, correctedArgs))
 	}
 
-	fun ifEquals(store: Variable, a: Variable, b: Variable) {
-		addOp(PTIR.Op.IF_EQUALS, store, a, b)
+	private fun swapLine(target: UInt, from: UInt) {
+		bytecode.add(target.toInt(), bytecode[from.toInt()])
+		bytecode.removeAt((from + 1u).toInt())
 	}
 
-	fun ifLessThan(store: Variable, a: Variable, b: Variable) {
-		addOp(PTIR.Op.IF_LESS_THAN, store, a, b)
+	fun ifNull(check: Variable, if_: MethodBuilder.() -> Unit) {
+		val start = nextLineNumber()
+		if_.invoke(this)
+		val end = nextLineNumber()
+		addOp(PTIR.Op.IF_NULL, check, end, end + 1u) //last two args are: end Of IF location and after ELSE location
+		swapLine(start, end)
 	}
 
-	fun ifGreaterThan(store: Variable, a: Variable, b: Variable) {
-		addOp(PTIR.Op.IF_GREATER_THAN, store, a, b)
+	fun else_(block: MethodBuilder.() -> Unit) {
+		val start = nextLineNumber()
+		block.invoke(this)
+		val end = nextLineNumber()
+		addOp(PTIR.Op.ELSE, null, start, end)
+		swapLine(start, end)
+		updateIf(start, end)
 	}
 
-	fun ifNot(store: Variable, check: Variable) {
-		addOp(PTIR.Op.NOT, store, check)
+	fun ifEquals(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
+		val start = nextLineNumber()
+		if_.invoke(this)
+		val end = nextLineNumber()
+		addOp(PTIR.Op.IF_EQUALS, a, b, end, end + 1u)
+		swapLine(start, end)
+	}
+
+	fun ifLessThan(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
+		val start = nextLineNumber()
+		if_.invoke(this)
+		val end = nextLineNumber()
+		addOp(PTIR.Op.IF_LESS_THAN, a, b, end, end + 1u)
+		swapLine(start, end)
+	}
+
+	fun ifGreaterThan(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
+		val start = nextLineNumber()
+		if_.invoke(this)
+		val end = nextLineNumber()
+		addOp(PTIR.Op.IF_GREATER_THAN, a, b, end, end + 1u)
+		swapLine(start, end)
+	}
+
+	fun ifNotEquals(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
+		val start = nextLineNumber()
+		if_.invoke(this)
+		val end = nextLineNumber()
+		addOp(PTIR.Op.IF_NOT_EQUALS, a, b, end, end + 1u)
+		swapLine(start, end)
 	}
 
 	override fun toString(): String {

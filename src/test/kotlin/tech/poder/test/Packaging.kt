@@ -1,18 +1,18 @@
 package tech.poder.test
 
-import tech.poder.ir.commands.SysCommand
+/*import tech.poder.ir.commands.SysCommand
 import tech.poder.ir.data.base.Container
 import tech.poder.ir.data.base.Method
 import tech.poder.ir.data.base.api.APIContainer
-import tech.poder.ir.data.base.unlinked.UnlinkedContainer
-import tech.poder.ir.std.Math
+import tech.poder.ir.data.base.unlinked.UnlinkedContainer*/
+import tech.poder.ir.vm.std.Math
 import tech.poder.ir.util.SegmentUtil
 import kotlin.test.Test
 
 
 internal class Packaging {
 
-	@Test
+	/*@Test
 	fun mathCheck() {
 		validate(Math.mathLib, Math.pow)
 
@@ -217,5 +217,5 @@ internal class Packaging {
 			}
 		}
 		println("$method--Unlinked Binary Size: ${container.size()}--Linked Binary Size: ${linked.second.size()}--Linked API Size: ${linked.first.size()}")
-	}
+	}*/
 }
