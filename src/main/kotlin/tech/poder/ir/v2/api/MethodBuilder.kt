@@ -88,7 +88,7 @@ data class MethodBuilder(
 	}
 
 	fun invoke(stdCall: PTIR.STDCall, store: Variable? = null, vararg args: Any) {
-		addOp(PTIR.Op.INVOKE, store, stdCall, method, *args)
+		addOp(PTIR.Op.INVOKE, store, stdCall, *args)
 	}
 
 	override fun toString(): String {

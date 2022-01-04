@@ -1,6 +1,28 @@
 package tech.poder.test
 
+import org.junit.jupiter.api.Test
+import tech.poder.ir.v2.api.CodeFile
+import tech.poder.ptir.PTIR
+import java.io.ByteArrayOutputStream
+
 internal class VMTest {
+
+	@Test
+	fun meow() {
+
+		val codeFile = CodeFile("Meow")
+
+		codeFile.addMethod {
+			invoke(PTIR.STDCall.PRINT, args = arrayOf("Meow"))
+		}
+
+		val bytesOut = ByteArrayOutputStream()
+
+		codeFile.write(bytesOut)
+		val meow = PTIR.Code.fromBytes(bytesOut.toByteArray().inputStream())
+
+		println(meow)
+	}
 
 	/*@Test
 	fun helloWorld() {
