@@ -25,10 +25,16 @@ data class MethodBuilder(
 
 	fun addOp(op: PTIR.Op, store: Variable? = null, vararg args: Any) {
 		val argsNoVars = args.map {
-			if (it is Variable) {
-				it.id
-			} else {
-				it
+			when (it) {
+				is Variable -> {
+					it.id
+				}
+				is Enum<*> -> {
+					it.ordinal.toUInt()
+				}
+				else -> {
+					it
+				}
 			}
 		}
 		if (store == null) {
