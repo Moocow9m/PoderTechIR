@@ -10,11 +10,32 @@ import tech.poder.proto.Packet
 import tech.poder.proto.WriteStd
 
 object PTIR {
+	enum class Type {
+		INT,
+		FLOAT,
+		ARRAY,
+		LIST,
+		STRUCT,
+		INT8,
+		INT16,
+		INT32,
+		INT64,
+		FLOAT32,
+		FLOAT64,
+		;
+		companion object {
+			val values = values()
+			val DEFAULT = INT
+		}
+	}
 	enum class Op {
 		GET_ARRAY_VAR,
 		SET_ARRAY_VAR,
 		SET_VAR,
+		GET_STRUCT_VAR,
+		SET_STRUCT_VAR,
 		NEW_ARRAY,
+		NEW_STRUCT,
 		RETURN,
 		THROW,
 		JUMP,
@@ -187,7 +208,7 @@ object PTIR {
 			}
 		}
 	}
-	data class Code(val id: String = "", val methods: List<Method> = emptyList()): Packet {
+	data class Code(val id: String = "", val methods: List<Method> = emptyList(), val structs: List<List<Type>> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Code()
 			fun fromBytes(stream: java.io.InputStream): Code {
@@ -196,7 +217,14 @@ object PTIR {
 					val it0: Method = ReadStd.readPacket(stream, Method.Companion)
 					it0
 				}
-				return Code(id, methods)
+				val structs = List(ReadStd.readVUInt(stream).toInt()) {
+					val it0 = List(ReadStd.readVUInt(stream).toInt()) {
+						val it1 = Type.values[ReadStd.readVUInt(stream).toInt()]
+						it1
+					}
+					it0
+				}
+				return Code(id, methods, structs)
 			}
 		}
 		override fun toBytes(stream: java.io.OutputStream) {
@@ -204,6 +232,13 @@ object PTIR {
 			WriteStd.writeVUInt(stream, methods.size.toUInt())
 			methods.forEach { it0 ->
 				WriteStd.writePacket(stream, it0)
+			}
+			WriteStd.writeVUInt(stream, structs.size.toUInt())
+			structs.forEach { it0 ->
+				WriteStd.writeVUInt(stream, it0.size.toUInt())
+				it0.forEach { it1 ->
+					WriteStd.writeVUInt(stream, it1.ordinal.toUInt())
+				}
 			}
 		}
 	}
