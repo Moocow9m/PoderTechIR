@@ -32,6 +32,12 @@ object VirtualMachine {
 				}
 			}
 			is String -> arg
+			is Number -> arg
+			is UByte -> arg
+			is UInt -> arg
+			is ULong -> arg
+			is UShort -> arg
+			is Boolean -> arg
 			else -> TODO(arg::class.java.name)
 		}
 	}
@@ -91,13 +97,18 @@ object VirtualMachine {
 	}
 
 	private fun sub(a: Number, b: Number): Number {
-		return when (a) {
-			is Byte -> a - b.toByte()
-			is Short -> a - b.toShort()
-			is Int -> a - b.toInt()
-			is Long -> a - b.toLong()
-			is Float -> a - b.toFloat()
-			is Double -> a - b.toDouble()
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		return when (first) {
+			is Byte -> a.toByte() - b.toByte()
+			is Short -> a.toShort() - b.toShort()
+			is Int -> a.toInt() - b.toInt()
+			is Long -> a.toLong() - b.toLong()
+			is Float -> a.toFloat() - b.toFloat()
+			is Double -> a.toDouble() - b.toDouble()
 			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
 		}
 	}
@@ -115,25 +126,35 @@ object VirtualMachine {
 	}
 
 	private fun div(a: Number, b: Number): Number {
-		return when (a) {
-			is Byte -> a / b.toByte()
-			is Short -> a / b.toShort()
-			is Int -> a / b.toInt()
-			is Long -> a / b.toLong()
-			is Float -> a / b.toFloat()
-			is Double -> a / b.toDouble()
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		return when (first) {
+			is Byte -> a.toByte() / b.toByte()
+			is Short -> a.toShort() / b.toShort()
+			is Int -> a.toInt() / b.toInt()
+			is Long -> a.toLong() / b.toLong()
+			is Float -> a.toFloat() / b.toFloat()
+			is Double -> a.toDouble() / b.toDouble()
 			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
 		}
 	}
 
 	private fun mod(a: Number, b: Number): Number {
-		return when (a) {
-			is Byte -> a % b.toByte()
-			is Short -> a % b.toShort()
-			is Int -> a % b.toInt()
-			is Long -> a % b.toLong()
-			is Float -> a % b.toFloat()
-			is Double -> a % b.toDouble()
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		return when (first) {
+			is Byte -> a.toByte() % b.toByte()
+			is Short -> a.toShort() % b.toShort()
+			is Int -> a.toInt() % b.toInt()
+			is Long -> a.toLong() % b.toLong()
+			is Float -> a.toFloat() % b.toFloat()
+			is Double -> a.toDouble() % b.toDouble()
 			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
 		}
 	}
@@ -204,6 +225,23 @@ object VirtualMachine {
 		}
 	}
 
+	private fun cmp(a: Number, b: Number): Int {
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		return when (first) {
+			is Byte -> a.toByte().compareTo(b.toByte())
+			is Short -> a.toShort().compareTo(b.toShort())
+			is Int -> a.toInt().compareTo(b.toInt())
+			is Long -> a.toLong().compareTo(b.toLong())
+			is Float -> a.toFloat().compareTo(b.toFloat())
+			is Double -> a.toDouble().compareTo(b.toDouble())
+			else -> throw IllegalStateException("[FATAL][VM] Unknown type! ${a::class.java.name}")
+		}
+	}
+
 	private fun toUnsigned(a: Any): ULong { //Unfortunately, this is the only way to do this as Unsigned numbers do not share an Interface like Number does
 		return when (a) {
 			is Number -> a.toLong().toULong()
@@ -238,7 +276,7 @@ object VirtualMachine {
 			a
 		}
 		return when (first) {
-			is String -> first + second.toString()
+			is String -> a.toString() + b.toString()
 			is ULong -> {
 				first + toUnsigned(second)
 			}
@@ -263,26 +301,21 @@ object VirtualMachine {
 		} else {
 			b
 		}
-		val second = if (first === a) {
-			b
-		} else {
-			a
-		}
 		return when (first) {
 			is String -> TODO("STRING SUB")
 			is ULong -> {
-				first - toUnsigned(second)
+				toUnsigned(a) - toUnsigned(b)
 			}
 			is UInt -> {
-				first - toUnsigned(second).toUInt()
+				(toUnsigned(a) - toUnsigned(b)).toUInt()
 			}
 			is UShort -> {
-				first - toUnsigned(second).toUShort()
+				(toUnsigned(a) - toUnsigned(b)).toUShort()
 			}
 			is UByte -> {
-				first - toUnsigned(second).toUByte()
+				(toUnsigned(a) - toUnsigned(b)).toUByte()
 			}
-			is Number -> sub(first, second as Number)
+			is Number -> sub(a as Number, b as Number)
 			is List<*> -> TODO("LIST ADD")
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for subtraction! (${a::class.java.name} + ${b::class.java.name})")
 		}
@@ -323,25 +356,20 @@ object VirtualMachine {
 		} else {
 			b
 		}
-		val second = if (first === a) {
-			b
-		} else {
-			a
-		}
 		return when (first) {
 			is ULong -> {
-				first / toUnsigned(second)
+				toUnsigned(a) / toUnsigned(b)
 			}
 			is UInt -> {
-				first / toUnsigned(second).toUInt()
+				(toUnsigned(a) / toUnsigned(b)).toUInt()
 			}
 			is UShort -> {
-				first / toUnsigned(second).toUShort()
+				(toUnsigned(a) / toUnsigned(b)).toUShort()
 			}
 			is UByte -> {
-				first / toUnsigned(second).toUByte()
+				(toUnsigned(a) / toUnsigned(b)).toUByte()
 			}
-			is Number -> div(first, second as Number)
+			is Number -> div(first, b as Number)
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for division! (${a::class.java.name} + ${b::class.java.name})")
 		}
 	}
@@ -352,25 +380,20 @@ object VirtualMachine {
 		} else {
 			b
 		}
-		val second = if (first === a) {
-			b
-		} else {
-			a
-		}
 		return when (first) {
 			is ULong -> {
-				first % toUnsigned(second)
+				toUnsigned(a) % toUnsigned(b)
 			}
 			is UInt -> {
-				first % toUnsigned(second).toUInt()
+				(toUnsigned(a) % toUnsigned(b)).toUInt()
 			}
 			is UShort -> {
-				first % toUnsigned(second).toUShort()
+				(toUnsigned(a) % toUnsigned(b)).toUShort()
 			}
 			is UByte -> {
-				first % toUnsigned(second).toUByte()
+				(toUnsigned(a) % toUnsigned(b)).toUByte()
 			}
-			is Number -> mod(first, second as Number)
+			is Number -> mod(a as Number, b as Number)
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for division! (${a::class.java.name} + ${b::class.java.name})")
 		}
 	}
@@ -381,80 +404,46 @@ object VirtualMachine {
 		} else {
 			b
 		}
-		val second = if (first === a) {
-			b
-		} else {
-			a
-		}
 		return when (first) {
-			is UInt -> { //Unknown effect....
-				(first.toInt() ushr toSigned(second).toInt()).toUInt()
-			}
-			is UShort -> {
-				(first.toInt() ushr toSigned(second).toInt()).toUShort()
-			}
-			is UByte -> {
-				(first.toInt() ushr toSigned(second).toInt()).toUByte()
-			}
-			is Number -> shr(first, second as Number)
+			is Number -> shr(a as Number, b as Number)
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for SHR! (${a::class.java.name} + ${b::class.java.name})")
 		}
 	}
 
 	private fun sar(a: Any, b: Any): Any {
-		val first = if (typeSize(a) >= typeSize(b)) {
-			a
-		} else {
-			b
-		}
-		val second = if (first === a) {
-			b
-		} else {
-			a
-		}
-		return when (first) {
+		return when (a) {
 			is ULong -> {
-				first shr toSigned(second).toInt()
+				a shr toSigned(b).toInt()
 			}
 			is UInt -> {
-				first shr toSigned(second).toInt()
+				a shr toSigned(b).toInt()
 			}
 			is UShort -> {
-				(first.toUInt() shr toSigned(second).toInt()).toUShort()
+				(a.toUInt() shr toSigned(b).toInt()).toUShort()
 			}
 			is UByte -> {
-				(first.toUInt() shr toSigned(second).toInt()).toUByte()
+				(a.toUInt() shr toSigned(b).toInt()).toUByte()
 			}
-			is Number -> sar(first, second as Number)
+			is Number -> sar(a, b as Number)
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for SAR! (${a::class.java.name} + ${b::class.java.name})")
 		}
 	}
 
 	private fun sal(a: Any, b: Any): Any {
-		val first = if (typeSize(a) >= typeSize(b)) {
-			a
-		} else {
-			b
-		}
-		val second = if (first === a) {
-			b
-		} else {
-			a
-		}
-		return when (first) {
+		return when (a) {
 			is ULong -> {
-				first shl toSigned(second).toInt()
+				a shl toSigned(b).toInt()
 			}
 			is UInt -> {
-				first shl toSigned(second).toInt()
+				a shl toSigned(b).toInt()
 			}
 			is UShort -> {
-				(first.toUInt() shl toSigned(second).toInt()).toUShort()
+				(a.toUInt() shl toSigned(b).toInt()).toUShort()
 			}
 			is UByte -> {
-				(first.toUInt() shl toSigned(second).toInt()).toUByte()
+				(a.toUInt() shl toSigned(b).toInt()).toUByte()
 			}
-			is Number -> sal(first, second as Number)
+			is Number -> sal(a, b as Number)
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for SAL! (${a::class.java.name} + ${b::class.java.name})")
 		}
 	}
@@ -465,25 +454,20 @@ object VirtualMachine {
 		} else {
 			b
 		}
-		val second = if (first === a) {
-			b
-		} else {
-			a
-		}
 		return when (first) {
 			is ULong -> {
-				first xor toUnsigned(second)
+				toUnsigned(a) xor toUnsigned(b)
 			}
 			is UInt -> {
-				first xor toUnsigned(second).toUInt()
+				(toUnsigned(a) xor toUnsigned(b)).toUInt()
 			}
 			is UShort -> {
-				first xor toUnsigned(second).toUShort()
+				(toUnsigned(a) xor toUnsigned(b)).toUShort()
 			}
 			is UByte -> {
-				first xor toUnsigned(second).toUByte()
+				(toUnsigned(a) xor toUnsigned(b)).toUByte()
 			}
-			is Number -> xor(first, second as Number)
+			is Number -> xor(a as Number, b as Number)
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for SAL! (${a::class.java.name} + ${b::class.java.name})")
 		}
 	}
@@ -494,25 +478,20 @@ object VirtualMachine {
 		} else {
 			b
 		}
-		val second = if (first === a) {
-			b
-		} else {
-			a
-		}
 		return when (first) {
 			is ULong -> {
-				first and toUnsigned(second)
+				toUnsigned(a) and toUnsigned(b)
 			}
 			is UInt -> {
-				first and toUnsigned(second).toUInt()
+				(toUnsigned(a) and toUnsigned(b)).toUInt()
 			}
 			is UShort -> {
-				first and toUnsigned(second).toUShort()
+				(toUnsigned(a) and toUnsigned(b)).toUShort()
 			}
 			is UByte -> {
-				first and toUnsigned(second).toUByte()
+				(toUnsigned(a) and toUnsigned(b)).toUByte()
 			}
-			is Number -> and(first, second as Number)
+			is Number -> and(a as Number, b as Number)
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for SAL! (${a::class.java.name} + ${b::class.java.name})")
 		}
 	}
@@ -523,30 +502,51 @@ object VirtualMachine {
 		} else {
 			b
 		}
-		val second = if (first === a) {
-			b
-		} else {
-			a
-		}
 		return when (first) {
 			is ULong -> {
-				first or toUnsigned(second)
+				toUnsigned(a) or toUnsigned(b)
 			}
 			is UInt -> {
-				first or toUnsigned(second).toUInt()
+				(toUnsigned(a) or toUnsigned(b)).toUInt()
 			}
 			is UShort -> {
-				first or toUnsigned(second).toUShort()
+				(toUnsigned(a) or toUnsigned(b)).toUShort()
 			}
 			is UByte -> {
-				first or toUnsigned(second).toUByte()
+				(toUnsigned(a) or toUnsigned(b)).toUByte()
 			}
-			is Number -> or(first, second as Number)
+			is Number -> or(a as Number, b as Number)
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for SAL! (${a::class.java.name} + ${b::class.java.name})")
 		}
 	}
 
-	private fun readBool(data: Any): Boolean {
+	private fun cmp(a: Any, b: Any): Int {
+		val first = if (typeSize(a) >= typeSize(b)) {
+			a
+		} else {
+			b
+		}
+		return when (first) {
+			is String -> a.toString().compareTo(b.toString())
+			is ULong -> {
+				toUnsigned(a).compareTo(toUnsigned(b))
+			}
+			is UInt -> {
+				toUnsigned(a).compareTo(toUnsigned(b))
+			}
+			is UShort -> {
+				toUnsigned(a).compareTo(toUnsigned(b))
+			}
+			is UByte -> {
+				toUnsigned(a).compareTo(toUnsigned(b))
+			}
+			is Number -> cmp(a as Number, b as Number)
+			is List<*> -> TODO("LIST ADD")
+			else -> throw IllegalStateException("[FATAL][VM] Invalid types for addition! (${a::class.java.name} + ${b::class.java.name})")
+		}
+	}
+
+	private fun readBool(data: Any, local: Map<UInt, Any>): Boolean {
 		return when (data) {
 			is Number -> data != 0
 			is Boolean -> data
@@ -554,22 +554,25 @@ object VirtualMachine {
 			is UInt -> data != 0u
 			is UShort -> data != 0u
 			is UByte -> data != 0u
+			is PTIR.Variable -> readBool(safeGetDataType(data, local), local)
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for Bool! ${data::class.java.name}")
 		}
 	}
 
 	private fun invoke(name: String, method: PTIR.Method, args: Array<out Any>): Any? {
 		val local = mutableMapOf<UInt, Any>()
-		local[0u] = args
+		local[0u] = args.toList()
 		var line = 0
 		try {
+			val inside = mutableListOf<Boolean>()
+			val loops = mutableListOf<LoopState>()
+			val ifs = mutableListOf<IfState>()
 			while (line < method.bytecode.size) {
-				val loop = LoopState()
 				val op = method.bytecode[line]
 				when (op.type) {
 					PTIR.Op.RETURN -> {
-						return if (op.args.isNotEmpty()) {
-							safeGetDataType(op.args[0], local)
+						return if (op.args.size > 1) {
+							safeGetDataType(op.args[1], local)
 						} else {
 							null
 						}
@@ -579,19 +582,31 @@ object VirtualMachine {
 						val condition = op.args[0] as PTIR.Variable
 						val start = op.args[1] as UInt
 						val end = op.args[2] as UInt
-						if (readBool(condition)) {
-							loop.condition = condition
-							loop.start = start.toInt()
-							loop.end = end.toInt()
+						if (readBool(condition, local)) {
+							loops.add(LoopState(condition, start.toInt(), end.toInt()))
+							inside.add(true)
 						} else {
-							line = end.toInt() - 1
+							line = end.toInt()
 						}
 					}
 					PTIR.Op.BREAK -> {
-						line = loop.end
-						loop.condition = null
+						if (inside.removeLast()) {
+							val loop = loops.removeLast()
+							line = loop.end
+						} else {
+							val loop = ifs.removeLast()
+							line = loop.afterElse
+						}
 					}
-					PTIR.Op.GET_ARRAY_VAR -> TODO()
+					PTIR.Op.GET_ARRAY_VAR -> {
+						val set = op.args[0] as PTIR.Variable
+						val get = safeGetDataType(op.args[1], local) as List<*>
+						val index = (op.args[2] as UInt).toInt()
+						check(get.size > index) {
+							"[FATAL][IR] Index out of bounds!"
+						}
+						setDataType(set, get[index], local)
+					}
 					PTIR.Op.SET_ARRAY_VAR -> TODO()
 					PTIR.Op.SET_VAR -> {
 						val a = safeGetDataType(op.args[1], local)
@@ -605,9 +620,33 @@ object VirtualMachine {
 					PTIR.Op.SET_STRUCT_VAR -> TODO()
 					PTIR.Op.NEW_ARRAY -> TODO()
 					PTIR.Op.NEW_STRUCT -> TODO()
-					PTIR.Op.COMPARE -> TODO()
-					PTIR.Op.IF_NOT_EQUALS -> TODO()
-					PTIR.Op.IF_EQUALS -> TODO()
+					PTIR.Op.COMPARE -> {
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
+						setDataType(op.args[0] as PTIR.Variable, cmp(a, b), local)
+					}
+					PTIR.Op.IF_NOT_EQUALS -> {
+						val a = safeGetDataType(op.args[0], local)
+						val b = safeGetDataType(op.args[1], local)
+						val result = cmp(a, b)
+						if (result == 0) {
+							line = (op.args[2] as UInt).toInt()
+						} else {
+							ifs.add(IfState((op.args[2] as UInt).toInt(), (op.args[3] as UInt).toInt()))
+							inside.add(false)
+						}
+					}
+					PTIR.Op.IF_EQUALS -> {
+						val a = safeGetDataType(op.args[0], local)
+						val b = safeGetDataType(op.args[1], local)
+						val result = cmp(a, b)
+						if (result == 0) {
+							ifs.add(IfState((op.args[2] as UInt).toInt(), (op.args[3] as UInt).toInt()))
+							inside.add(false)
+						} else {
+							line = (op.args[2] as UInt).toInt()
+						}
+					}
 					PTIR.Op.IF_LESS_THAN -> TODO()
 					PTIR.Op.IF_GREATER_THAN -> TODO()
 					PTIR.Op.IF_NULL -> TODO()
@@ -615,59 +654,59 @@ object VirtualMachine {
 						/*no op*/
 					}
 					PTIR.Op.REMAINDER -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, mod(a, b), local)
 					}
 					PTIR.Op.DIVIDE -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, div(a, b), local)
 					}
 					PTIR.Op.MULTIPLY -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, mul(a, b), local)
 					}
 					PTIR.Op.ADD -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, add(a, b), local)
 					}
 					PTIR.Op.SUBTRACT -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, sub(a, b), local)
 					}
 					PTIR.Op.AND -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, and(a, b), local)
 					}
 					PTIR.Op.OR -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, or(a, b), local)
 					}
 					PTIR.Op.SHL -> error("[FATAL][VM] SHL not supported on JVM Interpreter!")
 					PTIR.Op.SHR -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, shr(a, b), local)
 					}
 					PTIR.Op.SAR -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, sar(a, b), local)
 					}
 					PTIR.Op.SAL -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, sal(a, b), local)
 					}
 					PTIR.Op.XOR -> {
-						val a = safeGetDataType(op.args[0], local)
-						val b = safeGetDataType(op.args[1], local)
+						val a = safeGetDataType(op.args[1], local)
+						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, xor(a, b), local)
 					}
 					PTIR.Op.INVOKE -> {
@@ -701,9 +740,30 @@ object VirtualMachine {
 					}
 					else -> error("[FATAL][VM] Unknown Op: ${op.type}!")
 				}
-				line++
-				if (loop.condition != null && readBool(loop.condition!!)) {
-					line = loop.start
+				if (inside.isEmpty()) {
+					line++
+				} else if (inside.last()) {
+					val loop = loops.last()
+					if (line == loop.end) {
+						if (readBool(loop.condition, local)) {
+							line = loop.start
+						} else {
+							loops.removeLast()
+							inside.removeLast()
+							line++
+						}
+					} else {
+						line++
+					}
+				} else {
+					val if_ = ifs.last()
+					if (if_.endIf == line) {
+						inside.removeLast()
+						ifs.removeLast()
+						line = if_.afterElse
+					} else {
+						line++
+					}
 				}
 			}
 		} catch (ex: Exception) {
@@ -716,7 +776,7 @@ object VirtualMachine {
 			} else {
 				emptyList()
 			}
-			println("Error on line $line of $name.ptir")
+			println("Error on line $line of $name.ptir [${ex.message}]")
 			if (debugMessages.isNotEmpty()) {
 				println("\tDebug messages:")
 				debugMessages.forEach { println("\t\t$it") }

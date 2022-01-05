@@ -6,6 +6,10 @@ import tech.poder.ir.api.Variable
 object Math {
 	val mathLib = CodeFile("std.math")
 
+	val code by lazy {
+		mathLib.asCode()
+	}
+
 	//Complexity is O(log(n))
 	val powInt = mathLib.addMethod {
 		val pow = newLocal()

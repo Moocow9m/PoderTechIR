@@ -32,6 +32,12 @@ data class MethodBuilder(
 		debugInfo.add(PTIR.Debug(listOf(line.toUInt()), msg, true))
 	}
 
+	private val placeholder = PTIR.Expression(PTIR.Op.DEFAULT)
+
+	private fun addPlaceholder() {
+		bytecode.add(placeholder)
+	}
+
 	fun addOp(op: PTIR.Op, store: Variable? = null, vararg args: Any) {
 		val argsNoVars = args.map {
 			when (it) {
@@ -58,11 +64,11 @@ data class MethodBuilder(
 	}
 
 	fun getArrayVar(array: Variable, index: Int, to: Variable) {
-		addOp(PTIR.Op.GET_ARRAY_VAR, to, index, array)
+		addOp(PTIR.Op.GET_ARRAY_VAR, to, array, index.toUInt())
 	}
 
 	fun setArrayVar(array: Variable, index: Int, from: Variable) {
-		addOp(PTIR.Op.SET_ARRAY_VAR, array, index, from)
+		addOp(PTIR.Op.SET_ARRAY_VAR, array, index.toUInt(), from)
 	}
 
 	fun getStructVar(structVar: Variable, struct: Struct, field: UInt, to: Variable) {
@@ -123,10 +129,11 @@ data class MethodBuilder(
 
 	fun loop(condition: Variable, builder: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
+		addPlaceholder()
 		builder.invoke(this)
 		val end = nextLineNumber()
-		addOp(PTIR.Op.LOOP, condition, start + 1u, end + 1u)
-		swapLine(start, end)
+		addOp(PTIR.Op.LOOP, condition, start + 1u, end - 1u)
+		replaceLine(start, end)
 	}
 
 	fun break_() {
@@ -198,58 +205,68 @@ data class MethodBuilder(
 		bytecode.add(index, PTIR.Expression(target.type, correctedArgs))
 	}
 
-	private fun swapLine(target: UInt, from: UInt) {
-		bytecode.add(target.toInt(), bytecode[from.toInt()])
-		bytecode.removeAt((from + 1u).toInt())
+	private fun replaceLine(target: UInt, with: UInt) {
+		val index = target.toInt()
+		val index2 = with.toInt()
+		val get = bytecode[index2]
+		bytecode.removeAt(index)
+		bytecode.add(index, get)
+		bytecode.removeAt(index2)
 	}
 
 	fun ifNull(check: Variable, if_: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
+		addPlaceholder()
 		if_.invoke(this)
 		val end = nextLineNumber()
-		addOp(PTIR.Op.IF_NULL, check, end, end + 1u) //last two args are: end Of IF location and after ELSE location
-		swapLine(start, end)
+		addOp(PTIR.Op.IF_NULL, check, end, end) //last two args are: end Of IF location and after ELSE location
+		replaceLine(start, end)
 	}
 
 	fun else_(block: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
+		addPlaceholder()
 		block.invoke(this)
 		val end = nextLineNumber()
-		addOp(PTIR.Op.ELSE, null, start, end)
-		swapLine(start, end)
+		addOp(PTIR.Op.ELSE, null, start, end - 1u)
+		replaceLine(start, end)
 		updateIf(start, end)
 	}
 
 	fun ifEquals(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
+		addPlaceholder()
 		if_.invoke(this)
 		val end = nextLineNumber()
-		addOp(PTIR.Op.IF_EQUALS, a, b, end, end + 1u)
-		swapLine(start, end)
+		addOp(PTIR.Op.IF_EQUALS, a, b, end - 1u, end)
+		replaceLine(start, end)
 	}
 
 	fun ifLessThan(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
+		addPlaceholder()
 		if_.invoke(this)
 		val end = nextLineNumber()
-		addOp(PTIR.Op.IF_LESS_THAN, a, b, end, end + 1u)
-		swapLine(start, end)
+		addOp(PTIR.Op.IF_LESS_THAN, a, b, end - 1u, end)
+		replaceLine(start, end)
 	}
 
 	fun ifGreaterThan(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
+		addPlaceholder()
 		if_.invoke(this)
 		val end = nextLineNumber()
-		addOp(PTIR.Op.IF_GREATER_THAN, a, b, end, end + 1u)
-		swapLine(start, end)
+		addOp(PTIR.Op.IF_GREATER_THAN, a, b, end - 1u, end)
+		replaceLine(start, end)
 	}
 
 	fun ifNotEquals(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
+		addPlaceholder()
 		if_.invoke(this)
 		val end = nextLineNumber()
-		addOp(PTIR.Op.IF_NOT_EQUALS, a, b, end, end + 1u)
-		swapLine(start, end)
+		addOp(PTIR.Op.IF_NOT_EQUALS, a, b, end - 1u, end)
+		replaceLine(start, end)
 	}
 
 	override fun toString(): String {
