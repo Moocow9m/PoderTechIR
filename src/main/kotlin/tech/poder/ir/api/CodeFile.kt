@@ -13,7 +13,7 @@ data class CodeFile(val name: String) {
 		if (!methods.contains(builder)) {
 			methods.add(builder)
 		}
-		return methods.indexOf(builder).toUInt()
+		return builder.id
 	}
 
 	fun asCode(): PTIR.Code {

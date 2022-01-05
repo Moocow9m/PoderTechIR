@@ -272,4 +272,22 @@ data class MethodBuilder(
 	override fun toString(): String {
 		return "Method(id=$id, method=$method)"
 	}
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+
+		other as MethodBuilder
+
+		if (parent != other.parent) return false
+		if (id != other.id) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = parent.hashCode()
+		result = 31 * result + id.hashCode()
+		return result
+	}
 }
