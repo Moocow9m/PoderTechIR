@@ -1,5 +1,6 @@
 package tech.poder.ir.vm
 
+import tech.poder.ir.api.Struct
 import tech.poder.ptir.PTIR
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -559,6 +560,20 @@ object VirtualMachine {
 		}
 	}
 
+	private fun defaultType(type: PTIR.Type): Any? {
+		return when (type) {
+			PTIR.Type.INT, PTIR.Type.INT64 -> 0L
+			PTIR.Type.FLOAT, PTIR.Type.FLOAT64 -> 0.0
+			PTIR.Type.ARRAY, PTIR.Type.LIST -> mutableListOf<Any?>()
+			PTIR.Type.INT8 -> 0.toByte()
+			PTIR.Type.INT16 -> 0.toShort()
+			PTIR.Type.INT32 -> 0
+			PTIR.Type.FLOAT32 -> 0f
+			PTIR.Type.STRUCT -> null
+			else -> error("[FATAL][VM] Invalid types for Default System! ${type.name}")
+		}
+	}
+
 	private fun invoke(name: String, method: PTIR.Method, args: Array<out Any>): Any? {
 		val local = mutableMapOf<UInt, Any>()
 		local[0u] = mutableListOf<Any?>(*args)
@@ -624,13 +639,31 @@ object VirtualMachine {
 						val a = safeGetDataType(op.args[1], local)
 						setDataType(op.args[0] as PTIR.Variable, a, local)
 					}
-					PTIR.Op.GET_STRUCT_VAR -> TODO()
-					PTIR.Op.SET_STRUCT_VAR -> TODO()
+					PTIR.Op.GET_STRUCT_VAR -> {
+						val set = op.args[0] as PTIR.Variable
+						val structVar = safeGetDataType(op.args[1] as PTIR.Variable, local) as List<Any?>
+						val field = op.args[2] as UInt
+						setDataType(set, structVar[field.toInt()], local)
+					}
+					PTIR.Op.SET_STRUCT_VAR -> {
+						val setStruct = safeGetDataType(op.args[0] as PTIR.Variable, local) as MutableList<Any?>
+						val get = safeGetDataType(op.args[1] as PTIR.Variable, local)
+						val field = op.args[2] as UInt
+						setStruct[field.toInt()] = get
+					}
 					PTIR.Op.NEW_ARRAY -> {
 						val set = op.args[0] as PTIR.Variable
 						setDataType(set, mutableListOf<Any?>(), local)
 					}
-					PTIR.Op.NEW_STRUCT -> TODO()
+					PTIR.Op.NEW_STRUCT -> {
+						val store = op.args[0] as PTIR.Variable
+						val allStructs = enviornment[name]!!.structs
+						val struct = allStructs[(op.args[1] as UInt).toInt()]
+						val newStruct = MutableList(struct.size) {
+							defaultType(struct[it])
+						}
+						setDataType(store, newStruct, local)
+					}
 					PTIR.Op.COMPARE -> {
 						val a = safeGetDataType(op.args[1], local)
 						val b = safeGetDataType(op.args[2], local)

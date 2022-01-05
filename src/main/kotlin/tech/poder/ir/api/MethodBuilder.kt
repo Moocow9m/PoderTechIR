@@ -73,12 +73,12 @@ data class MethodBuilder(
 
 	fun getStructVar(structVar: Variable, struct: Struct, field: UInt, to: Variable) {
 		val id = parent.registerOrAddStruct(struct)
-		addOp(PTIR.Op.GET_STRUCT_VAR, to, id, field, structVar)
+		addOp(PTIR.Op.GET_STRUCT_VAR, to, structVar, field, id)
 	}
 
 	fun setStructVar(structVar: Variable, struct: Struct, field: UInt, from: Variable) {
 		val id = parent.registerOrAddStruct(struct)
-		addOp(PTIR.Op.SET_STRUCT_VAR, structVar, id, field, from)
+		addOp(PTIR.Op.SET_STRUCT_VAR, structVar, from, field, id)
 	}
 
 	fun setVar(to: Variable, value: Any) {
