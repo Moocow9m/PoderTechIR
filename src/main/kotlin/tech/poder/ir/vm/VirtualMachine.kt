@@ -561,7 +561,7 @@ object VirtualMachine {
 
 	private fun invoke(name: String, method: PTIR.Method, args: Array<out Any>): Any? {
 		val local = mutableMapOf<UInt, Any>()
-		local[0u] = args.toList()
+		local[0u] = mutableListOf<Any?>(*args)
 		var line = 0
 		try {
 			val inside = mutableListOf<Boolean>()
@@ -607,7 +607,15 @@ object VirtualMachine {
 						}
 						setDataType(set, get[index], local)
 					}
-					PTIR.Op.SET_ARRAY_VAR -> TODO()
+					PTIR.Op.SET_ARRAY_VAR -> {
+						val set = safeGetDataType(op.args[0] as PTIR.Variable, local) as MutableList<Any?> //use map instead?
+						val get = safeGetDataType(op.args[1], local)
+						val index = (op.args[2] as UInt).toInt()
+						while (set.size < index) {
+							set.add(null)
+						}
+						set[index] = get
+					}
 					PTIR.Op.SET_VAR -> {
 						val a = safeGetDataType(op.args[1], local)
 						setDataType(op.args[0] as PTIR.Variable, a, local)
@@ -618,7 +626,10 @@ object VirtualMachine {
 					}
 					PTIR.Op.GET_STRUCT_VAR -> TODO()
 					PTIR.Op.SET_STRUCT_VAR -> TODO()
-					PTIR.Op.NEW_ARRAY -> TODO()
+					PTIR.Op.NEW_ARRAY -> {
+						val set = op.args[0] as PTIR.Variable
+						setDataType(set, mutableListOf<Any?>(), local)
+					}
 					PTIR.Op.NEW_STRUCT -> TODO()
 					PTIR.Op.COMPARE -> {
 						val a = safeGetDataType(op.args[1], local)
@@ -647,9 +658,37 @@ object VirtualMachine {
 							line = (op.args[2] as UInt).toInt()
 						}
 					}
-					PTIR.Op.IF_LESS_THAN -> TODO()
-					PTIR.Op.IF_GREATER_THAN -> TODO()
-					PTIR.Op.IF_NULL -> TODO()
+					PTIR.Op.IF_LESS_THAN -> {
+						val a = safeGetDataType(op.args[0], local)
+						val b = safeGetDataType(op.args[1], local)
+						val result = cmp(a, b)
+						if (result < 0) {
+							ifs.add(IfState((op.args[2] as UInt).toInt(), (op.args[3] as UInt).toInt()))
+							inside.add(false)
+						} else {
+							line = (op.args[2] as UInt).toInt()
+						}
+					}
+					PTIR.Op.IF_GREATER_THAN -> {
+						val a = safeGetDataType(op.args[0], local)
+						val b = safeGetDataType(op.args[1], local)
+						val result = cmp(a, b)
+						if (result > 0) {
+							ifs.add(IfState((op.args[2] as UInt).toInt(), (op.args[3] as UInt).toInt()))
+							inside.add(false)
+						} else {
+							line = (op.args[2] as UInt).toInt()
+						}
+					}
+					PTIR.Op.IF_NULL -> {
+						val a = getDataType(op.args[0], local)
+						if (a == null) {
+							ifs.add(IfState((op.args[2] as UInt).toInt(), (op.args[3] as UInt).toInt()))
+							inside.add(false)
+						} else {
+							line = (op.args[2] as UInt).toInt()
+						}
+					}
 					PTIR.Op.ELSE -> {
 						/*no op*/
 					}
