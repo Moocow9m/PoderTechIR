@@ -20,6 +20,10 @@ data class CodeFile(val name: String) {
 		return PTIR.Code(name, methods.map { it.method }, methods.map { it.id }, structs.map { it.types.toList() })
 	}
 
+	fun asHeader(): PTIR.Code {
+		return PTIR.Code(name)
+	}
+
 	fun write(out: OutputStream) {
 		asCode().toBytes(out)
 	}
