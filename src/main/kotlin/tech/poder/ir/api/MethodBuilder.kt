@@ -16,6 +16,7 @@ data class MethodBuilder(
 	fun getId(): UInt {
 		return myId
 	}
+
 	fun newLocal(): Variable {
 		return Variable.newLocal(this)
 	}
