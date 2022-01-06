@@ -5,13 +5,17 @@ import tech.poder.ptir.PTIR
 data class MethodBuilder(
 	val parent: CodeFile,
 ) {
-	val id: UInt = parent.id++
+	private val myId: UInt = parent.id++
 	private val bytecode: MutableList<PTIR.Expression> = mutableListOf()
 	private val extraInfo: MutableList<PTIR.Info> = mutableListOf()
 	private val debugInfo: MutableList<PTIR.Debug> = mutableListOf()
 	val method: PTIR.Method = PTIR.Method(bytecode, extraInfo, debugInfo)
 	internal var varId = 1u
 
+
+	fun getId(): UInt {
+		return myId
+	}
 	fun newLocal(): Variable {
 		return Variable.newLocal(this)
 	}
@@ -270,7 +274,7 @@ data class MethodBuilder(
 	}
 
 	override fun toString(): String {
-		return "Method(id=$id, method=$method)"
+		return "Method(id=$myId, method=$method)"
 	}
 
 	override fun equals(other: Any?): Boolean {
@@ -280,14 +284,14 @@ data class MethodBuilder(
 		other as MethodBuilder
 
 		if (parent != other.parent) return false
-		if (id != other.id) return false
+		if (myId != other.myId) return false
 
 		return true
 	}
 
 	override fun hashCode(): Int {
 		var result = parent.hashCode()
-		result = 31 * result + id.hashCode()
+		result = 31 * result + myId.hashCode()
 		return result
 	}
 }

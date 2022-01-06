@@ -13,11 +13,19 @@ data class CodeFile(val name: String) {
 		if (!methods.contains(builder)) {
 			methods.add(builder)
 		}
-		return builder.id
+		return builder.getId()
+	}
+
+	fun addMethodStub(): MethodBuilder {
+		val builder = MethodBuilder(this)
+		if (!methods.contains(builder)) {
+			methods.add(builder)
+		}
+		return builder
 	}
 
 	fun asCode(): PTIR.Code {
-		return PTIR.Code(name, methods.map { it.method }, methods.map { it.id }, structs.map { it.types.toList() })
+		return PTIR.Code(name, methods.map { it.method }, methods.map { it.getId() }, structs.map { it.types.toList() })
 	}
 
 	fun asHeader(): PTIR.Code {
