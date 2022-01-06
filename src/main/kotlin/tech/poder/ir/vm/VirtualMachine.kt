@@ -1,6 +1,5 @@
 package tech.poder.ir.vm
 
-import tech.poder.ir.api.Struct
 import tech.poder.ptir.PTIR
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -560,17 +559,33 @@ object VirtualMachine {
 		}
 	}
 
-	private fun defaultType(type: PTIR.Type): Any? {
-		return when (type) {
-			PTIR.Type.INT, PTIR.Type.INT64 -> 0L
+	private fun defaultType(type: PTIR.FullType): Any? {
+		return when (type.type) {
+			PTIR.Type.INT, PTIR.Type.INT64 -> if (type.unsigned) {
+				0uL
+			} else {
+				0L
+			}
 			PTIR.Type.FLOAT, PTIR.Type.FLOAT64 -> 0.0
 			PTIR.Type.ARRAY, PTIR.Type.LIST -> mutableListOf<Any?>()
-			PTIR.Type.INT8 -> 0.toByte()
-			PTIR.Type.INT16 -> 0.toShort()
-			PTIR.Type.INT32 -> 0
+			PTIR.Type.INT8 -> if (type.unsigned) {
+				0.toUByte()
+			} else {
+				0.toByte()
+			}
+			PTIR.Type.INT16 -> if (type.unsigned) {
+				0.toUShort()
+			} else {
+				0.toShort()
+			}
+			PTIR.Type.INT32 -> if (type.unsigned) {
+				0
+			} else {
+				0u
+			}
 			PTIR.Type.FLOAT32 -> 0f
 			PTIR.Type.STRUCT -> null
-			else -> error("[FATAL][VM] Invalid types for Default System! ${type.name}")
+			else -> error("[FATAL][VM] Invalid types for Default System! $type")
 		}
 	}
 
@@ -623,7 +638,8 @@ object VirtualMachine {
 						setDataType(set, get[index], local)
 					}
 					PTIR.Op.SET_ARRAY_VAR -> {
-						val set = safeGetDataType(op.args[0] as PTIR.Variable, local) as MutableList<Any?> //use map instead?
+						val set =
+							safeGetDataType(op.args[0] as PTIR.Variable, local) as MutableList<Any?> //use map instead?
 						val get = safeGetDataType(op.args[1], local)
 						val index = (op.args[2] as UInt).toInt()
 						while (set.size < index) {
