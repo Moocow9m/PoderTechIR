@@ -20,7 +20,6 @@ internal class VMTest {
 			invoke(PTIR.STDCall.PRINT, args = arrayOf("13^16 = "))
 			add(tmp, tmp, "!\n")
 			invoke(PTIR.STDCall.PRINT, args = arrayOf(tmp))
-			invoke(PTIR.STDCall.PRINT, args = arrayOf("Hello, World!\n"))
 		}
 
 	}
@@ -28,7 +27,6 @@ internal class VMTest {
 	@Test
 	fun helloWorld() {
 		val code = testCode.asCode()
-		println(code)
 		//VirtualMachine.loadFile(code) //Not needed as exec also loads the target file
 		VirtualMachine.exec(code, helloWorld)
 	}
@@ -36,7 +34,6 @@ internal class VMTest {
 	@Test
 	fun helloWorldWithPow() {
 		val code = testCode.asCode()
-		println(code)
 		VirtualMachine.loadFile(Math.code)
 		//VirtualMachine.loadFile(code) //Not needed as exec also loads the target file
 		VirtualMachine.exec(code, helloWorldWithPow)

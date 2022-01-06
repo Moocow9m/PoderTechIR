@@ -70,4 +70,8 @@ data class CodeFile(val name: String) {
 
 		return name == other.name
 	}
+
+	override fun toString(): String {
+		return "CodeFile(name='$name', methods=[${methods.joinToString(", ")}], structs=[${structs.joinToString(", ")}])"
+	}
 }
