@@ -25,7 +25,7 @@ value class Variable private constructor(internal val id: List<Any>) {
 			return last - 1u
 		}
 
-		internal fun newGlobal(): Variable {
+		fun newGlobal(): Variable {
 			return Variable(listOf(false, last++))
 		}
 	}
