@@ -8,11 +8,8 @@ data class CodeFile(val name: String) {
 	private val structs: MutableSet<Struct> = mutableSetOf()
 	internal var id = 0u
 	fun addMethod(method: MethodBuilder.() -> Unit): UInt {
-		val builder = MethodBuilder(this)
-		method.invoke(builder)
-		if (!methods.contains(builder)) {
-			methods.add(builder)
-		}
+		val builder = addMethodStub()
+		fromMethodStub(builder, method)
 		return builder.getId()
 	}
 
@@ -22,6 +19,10 @@ data class CodeFile(val name: String) {
 			methods.add(builder)
 		}
 		return builder
+	}
+
+	fun fromMethodStub(method: MethodBuilder, block: MethodBuilder.() -> Unit) {
+		block.invoke(method)
 	}
 
 	fun asCode(): PTIR.Code {

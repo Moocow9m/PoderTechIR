@@ -13,26 +13,27 @@ data class MethodBuilder(
 	internal var varId = 1u
 
 
-	fun getId(): UInt {
+	internal fun getId(): UInt {
 		return myId
 	}
-	fun newLocal(): Variable {
+
+	internal fun newLocal(): Variable {
 		return Variable.newLocal(this)
 	}
 
-	fun newGlobal(): Variable {
+	internal fun newGlobal(): Variable {
 		return Variable.newGlobal()
 	}
 
-	fun provideDebugInfo(debug: PTIR.Debug) {
+	internal fun provideDebugInfo(debug: PTIR.Debug) {
 		debugInfo.add(debug)
 	}
 
-	fun provideDebugLines(startLine: UInt, endLine: UInt = startLine, text: String) {
+	internal fun provideDebugLines(startLine: UInt, endLine: UInt = startLine, text: String) {
 		debugInfo.add(PTIR.Debug(listOf(startLine, endLine), text))
 	}
 
-	fun addBreakPoint(line: Int, msg: String) {
+	internal fun addBreakPoint(line: Int, msg: String) {
 		debugInfo.add(PTIR.Debug(listOf(line.toUInt()), msg, true))
 	}
 
@@ -42,7 +43,7 @@ data class MethodBuilder(
 		bytecode.add(placeholder)
 	}
 
-	fun addOp(op: PTIR.Op, store: Variable? = null, vararg args: Any) {
+	internal fun addOp(op: PTIR.Op, store: Variable? = null, vararg args: Any) {
 		val argsNoVars = args.map {
 			when (it) {
 				is Variable -> {
@@ -63,47 +64,47 @@ data class MethodBuilder(
 		}
 	}
 
-	fun compare(op: PTIR.Op, store: Variable, left: Any, right: Any) {
+	internal fun compare(op: PTIR.Op, store: Variable, left: Any, right: Any) {
 		addOp(op, store, left, right)
 	}
 
-	fun getArrayVar(array: Variable, index: Int, to: Variable) {
+	internal fun getArrayVar(array: Variable, index: Int, to: Variable) {
 		addOp(PTIR.Op.GET_ARRAY_VAR, to, array, index.toUInt())
 	}
 
-	fun setArrayVar(array: Variable, index: Int, from: Variable) {
+	internal fun setArrayVar(array: Variable, index: Int, from: Variable) {
 		addOp(PTIR.Op.SET_ARRAY_VAR, array, index.toUInt(), from)
 	}
 
-	fun getStructVar(structVar: Variable, struct: Struct, field: UInt, to: Variable) {
+	internal fun getStructVar(structVar: Variable, struct: Struct, field: UInt, to: Variable) {
 		val id = parent.registerOrAddStruct(struct)
 		addOp(PTIR.Op.GET_STRUCT_VAR, to, structVar, field, id)
 	}
 
-	fun setStructVar(structVar: Variable, struct: Struct, field: UInt, from: Variable) {
+	internal fun setStructVar(structVar: Variable, struct: Struct, field: UInt, from: Variable) {
 		val id = parent.registerOrAddStruct(struct)
 		addOp(PTIR.Op.SET_STRUCT_VAR, structVar, from, field, id)
 	}
 
-	fun setVar(to: Variable, value: Any) {
+	internal fun setVar(to: Variable, value: Any) {
 		addOp(PTIR.Op.SET_VAR, to, value)
 	}
 
-	fun getVar(from: Variable, to: Variable) {
+	internal fun getVar(from: Variable, to: Variable) {
 		setVar(to, from)
 		//addOp(PTIR.Op.GET_VAR, to, from)
 	}
 
-	fun newArray(store: Variable, size: UInt = 0u) {
+	internal fun newArray(store: Variable, size: UInt = 0u) {
 		addOp(PTIR.Op.NEW_ARRAY, store, size)
 	}
 
-	fun newStruct(target: Variable, struct: Struct) {
+	internal fun newStruct(target: Variable, struct: Struct) {
 		val id = parent.registerOrAddStruct(struct)
 		addOp(PTIR.Op.NEW_STRUCT, target, id)
 	}
 
-	fun invoke(codeFile: CodeFile, method: UInt, store: Variable? = null, vararg args: Any) {
+	internal fun invoke(codeFile: CodeFile, method: UInt, store: Variable? = null, vararg args: Any) {
 		if (codeFile.name == parent.name) {
 			addOp(PTIR.Op.INVOKE, store, "", method, *args)
 		} else {
@@ -111,11 +112,11 @@ data class MethodBuilder(
 		}
 	}
 
-	fun invoke(stdCall: PTIR.STDCall, store: Variable? = null, vararg args: Any) {
+	internal fun invoke(stdCall: PTIR.STDCall, store: Variable? = null, vararg args: Any) {
 		addOp(PTIR.Op.INVOKE, store, stdCall, *args)
 	}
 
-	fun return_(value: Any? = null) {
+	internal fun return_(value: Any? = null) {
 		if (value == null) {
 			addOp(PTIR.Op.RETURN)
 		} else {
@@ -123,15 +124,15 @@ data class MethodBuilder(
 		}
 	}
 
-	fun throw_(value: String) {
+	internal fun throw_(value: String) {
 		addOp(PTIR.Op.THROW, null, value)
 	}
 
-	fun nextLineNumber(): UInt {
+	internal fun nextLineNumber(): UInt {
 		return (bytecode.size).toUInt()
 	}
 
-	fun loop(condition: Variable, builder: MethodBuilder.() -> Unit) {
+	internal fun loop(condition: Variable, builder: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
 		addPlaceholder()
 		builder.invoke(this)
@@ -140,59 +141,59 @@ data class MethodBuilder(
 		replaceLine(start, end)
 	}
 
-	fun break_() {
+	internal fun break_() {
 		addOp(PTIR.Op.BREAK)
 	}
 
-	fun and(left: Variable, right: Variable, store: Variable) {
+	internal fun and(left: Variable, right: Variable, store: Variable) {
 		addOp(PTIR.Op.AND, store, left, right)
 	}
 
-	fun or(left: Variable, right: Variable, store: Variable) {
+	internal fun or(left: Variable, right: Variable, store: Variable) {
 		addOp(PTIR.Op.OR, store, left, right)
 	}
 
-	fun xor(left: Variable, right: Variable, store: Variable) {
+	internal fun xor(left: Variable, right: Variable, store: Variable) {
 		addOp(PTIR.Op.XOR, store, left, right)
 	}
 
-	fun shl(left: Variable, right: Variable, store: Variable) {
+	internal fun shl(left: Variable, right: Variable, store: Variable) {
 		addOp(PTIR.Op.SHL, store, left, right)
 	}
 
-	fun shr(left: Variable, right: Variable, store: Variable) {
+	internal fun shr(left: Variable, right: Variable, store: Variable) {
 		addOp(PTIR.Op.SHR, store, left, right)
 	}
 
-	fun sar(left: Variable, right: Variable, store: Variable) {
+	internal fun sar(left: Variable, right: Variable, store: Variable) {
 		addOp(PTIR.Op.SAR, store, left, right)
 	}
 
-	fun sal(left: Variable, right: Variable, store: Variable) {
+	internal fun sal(left: Variable, right: Variable, store: Variable) {
 		addOp(PTIR.Op.SAL, store, left, right)
 	}
 
-	fun add(store: Variable, a: Any, b: Any) {
+	internal fun add(store: Variable, a: Any, b: Any) {
 		addOp(PTIR.Op.ADD, store, a, b)
 	}
 
-	fun subtract(store: Variable, a: Any, b: Any) {
+	internal fun subtract(store: Variable, a: Any, b: Any) {
 		addOp(PTIR.Op.SUBTRACT, store, a, b)
 	}
 
-	fun multiply(store: Variable, a: Any, b: Any) {
+	internal fun multiply(store: Variable, a: Any, b: Any) {
 		addOp(PTIR.Op.MULTIPLY, store, a, b)
 	}
 
-	fun divide(store: Variable, a: Any, b: Any) {
+	internal fun divide(store: Variable, a: Any, b: Any) {
 		addOp(PTIR.Op.DIVIDE, store, a, b)
 	}
 
-	fun modulo(store: Variable, a: Any, b: Any) {
+	internal fun modulo(store: Variable, a: Any, b: Any) {
 		addOp(PTIR.Op.REMAINDER, store, a, b)
 	}
 
-	fun setNull(store: Variable) {
+	internal fun setNull(store: Variable) {
 		addOp(PTIR.Op.NULL, store)
 	}
 
@@ -218,7 +219,7 @@ data class MethodBuilder(
 		bytecode.removeAt(index2)
 	}
 
-	fun ifNull(check: Variable, if_: MethodBuilder.() -> Unit) {
+	internal fun ifNull(check: Variable, if_: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
 		addPlaceholder()
 		if_.invoke(this)
@@ -227,7 +228,7 @@ data class MethodBuilder(
 		replaceLine(start, end)
 	}
 
-	fun else_(block: MethodBuilder.() -> Unit) {
+	internal fun else_(block: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
 		addPlaceholder()
 		block.invoke(this)
@@ -237,7 +238,7 @@ data class MethodBuilder(
 		updateIf(start, end)
 	}
 
-	fun ifEquals(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
+	internal fun ifEquals(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
 		addPlaceholder()
 		if_.invoke(this)
@@ -246,7 +247,7 @@ data class MethodBuilder(
 		replaceLine(start, end)
 	}
 
-	fun ifLessThan(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
+	internal fun ifLessThan(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
 		addPlaceholder()
 		if_.invoke(this)
@@ -255,7 +256,7 @@ data class MethodBuilder(
 		replaceLine(start, end)
 	}
 
-	fun ifGreaterThan(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
+	internal fun ifGreaterThan(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
 		addPlaceholder()
 		if_.invoke(this)
@@ -264,7 +265,7 @@ data class MethodBuilder(
 		replaceLine(start, end)
 	}
 
-	fun ifNotEquals(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
+	internal fun ifNotEquals(a: Variable, b: Any, if_: MethodBuilder.() -> Unit) {
 		val start = nextLineNumber()
 		addPlaceholder()
 		if_.invoke(this)
