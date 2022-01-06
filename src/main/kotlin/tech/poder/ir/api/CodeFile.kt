@@ -15,7 +15,7 @@ data class CodeFile(val name: String) {
 		}
 	}
 
-	private val methods: MutableList<MethodBuilder> = mutableListOf()
+	private val methods: MutableList<MethodBuilder> = mutableListOf(MethodBuilder(this)) //always add initial method
 	private val structs: MutableSet<Struct> = mutableSetOf()
 
 	fun addMethod(method: MethodBuilder.() -> Unit): UInt {
@@ -26,9 +26,7 @@ data class CodeFile(val name: String) {
 
 	fun addMethodStub(): UInt {
 		val builder = MethodBuilder(this)
-		if (!methods.contains(builder)) {
-			methods.add(builder)
-		}
+		methods.add(builder)
 		return builder.id
 	}
 

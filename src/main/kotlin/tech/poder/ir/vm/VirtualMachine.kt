@@ -8,10 +8,12 @@ import kotlin.experimental.xor
 object VirtualMachine {
 	private val enviornment = mutableMapOf<String, PTIR.Code>()
 	private val global = mutableMapOf<UInt, Any>()
+	private val codeInit = mutableSetOf<String>()
 
 	fun resetEnv() {
 		global.clear()
 		enviornment.clear()
+		codeInit.clear()
 	}
 
 	fun loadFile(code: PTIR.Code) {
@@ -19,7 +21,8 @@ object VirtualMachine {
 	}
 
 	fun exec(code: PTIR.Code, method: UInt, vararg args: Any) {
-		invoke(code.id, code.methods[method.toInt()], args)
+		loadFile(code)
+		invoke(code.id, method.toInt(), args)
 	}
 
 	private fun getDataType(arg: Any, local: Map<UInt, Any>): Any? {
@@ -589,7 +592,11 @@ object VirtualMachine {
 		}
 	}
 
-	private fun invoke(name: String, method: PTIR.Method, args: Array<out Any>): Any? {
+	private fun invoke(name: String, methodId: Int, args: Array<out Any>): Any? {
+		if (methodId != 0 && !codeInit.contains(name)) {
+			invoke(name, 0, args)
+		}
+		val method = enviornment[name]!!.methods[methodId]
 		val local = mutableMapOf<UInt, Any>()
 		local[0u] = mutableListOf<Any?>(*args)
 		var line = 0
@@ -805,15 +812,13 @@ object VirtualMachine {
 								b = name
 							}
 							val c = op.args[2] as UInt
-							val file = enviornment[b]!!
-							val newMethod = file.methods[c.toInt()]
 							if (op.args.size > 3) {
 								setDataType(
-									a, invoke(b, newMethod, op.args.subList(3, op.args.size).toTypedArray()), local
+									a, invoke(b, c.toInt(), op.args.subList(3, op.args.size).toTypedArray()), local
 								)
 							} else {
 								setDataType(
-									a, invoke(b, newMethod, emptyArray()), local
+									a, invoke(b, c.toInt(), emptyArray()), local
 								)
 							}
 						} else {
