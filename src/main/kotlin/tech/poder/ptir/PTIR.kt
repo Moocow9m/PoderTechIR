@@ -19,9 +19,9 @@ object PTIR {
 		}
 	}
 	enum class Type {
+		ARRAY,
 		INT,
 		FLOAT,
-		ARRAY,
 		LIST,
 		STRUCT,
 		INT8,
@@ -33,7 +33,7 @@ object PTIR {
 		;
 		companion object {
 			val values = values()
-			val DEFAULT = INT
+			val DEFAULT = ARRAY
 		}
 	}
 	enum class Op {
