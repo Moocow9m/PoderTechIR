@@ -20,7 +20,7 @@ object VirtualMachine {
 	}
 
 	fun exec(code: PTIR.Code, method: UInt, vararg args: Any) {
-		invoke(code.id, code.methods[code.methodIndex.indexOf(method)], args)
+		invoke(code.id, code.methods[method.toInt()], args)
 	}
 
 	private fun getDataType(arg: Any, local: Map<UInt, Any>): Any? {
@@ -790,7 +790,7 @@ object VirtualMachine {
 							}
 							val c = op.args[2] as UInt
 							val file = enviornment[b]!!
-							val newMethod = file.methods[file.methodIndex[c.toInt()].toInt()]
+							val newMethod = file.methods[c.toInt()]
 							if (op.args.size > 3) {
 								setDataType(
 									a, invoke(b, newMethod, op.args.subList(3, op.args.size).toTypedArray()), local

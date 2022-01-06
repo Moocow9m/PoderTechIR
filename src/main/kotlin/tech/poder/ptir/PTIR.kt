@@ -255,7 +255,7 @@ object PTIR {
 			}
 		}
 	}
-	data class Code(val id: String = "", val methods: List<Method> = emptyList(), val methodIndex: List<UInt> = emptyList(), val structs: List<List<Type>> = emptyList()): Packet {
+	data class Code(val id: String = "", val methods: List<Method> = emptyList(), val lastGlobalVarId: UInt = 0u, val structs: List<List<Type>> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Code()
 			fun fromBytes(stream: java.io.InputStream): Code {
@@ -264,10 +264,7 @@ object PTIR {
 					val it0: Method = ReadStd.readPacket(stream, Method.Companion)
 					it0
 				}
-				val methodIndex = List(ReadStd.readVUInt(stream).toInt()) {
-					val it0 = ReadStd.readVUInt(stream)
-					it0
-				}
+				val lastGlobalVarId = ReadStd.readVUInt(stream)
 				val structs = List(ReadStd.readVUInt(stream).toInt()) {
 					val it0 = List(ReadStd.readVUInt(stream).toInt()) {
 						val it1 = Type.values[ReadStd.readVUInt(stream).toInt()]
@@ -275,7 +272,7 @@ object PTIR {
 					}
 					it0
 				}
-				return Code(id, methods, methodIndex, structs)
+				return Code(id, methods, lastGlobalVarId, structs)
 			}
 		}
 		override fun toBytes(stream: java.io.OutputStream) {
@@ -284,10 +281,7 @@ object PTIR {
 			methods.forEach { it0 ->
 				WriteStd.writePacket(stream, it0)
 			}
-			WriteStd.writeVUInt(stream, methodIndex.size.toUInt())
-			methodIndex.forEach { it0 ->
-				WriteStd.writeVUInt(stream, it0)
-			}
+			WriteStd.writeVUInt(stream, lastGlobalVarId)
 			WriteStd.writeVUInt(stream, structs.size.toUInt())
 			structs.forEach { it0 ->
 				WriteStd.writeVUInt(stream, it0.size.toUInt())

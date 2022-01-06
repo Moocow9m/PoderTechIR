@@ -4,9 +4,20 @@ import tech.poder.ptir.PTIR
 import java.io.OutputStream
 
 data class CodeFile(val name: String) {
+	companion object {
+		fun resetEnv() {
+			Variable.resetEnv() //for shared states to be disconnected
+		}
+
+		fun presetEnv(startingVariable: UInt = 1u) {
+			check(startingVariable > 0u) { "startingVariable must be greater than 0!" }
+			Variable.presetEnv(startingVariable)
+		}
+	}
+
 	private val methods: MutableList<MethodBuilder> = mutableListOf()
 	private val structs: MutableSet<Struct> = mutableSetOf()
-	internal var id = 0u
+
 	fun addMethod(method: MethodBuilder.() -> Unit): UInt {
 		val builder = addMethodStub()
 		fromMethodStub(builder, method)
@@ -18,16 +29,20 @@ data class CodeFile(val name: String) {
 		if (!methods.contains(builder)) {
 			methods.add(builder)
 		}
-		return builder.getId()
+		return builder.id
+	}
+
+	internal fun idOf(methodBuilder: MethodBuilder): UInt {
+		return methods.indexOf(methodBuilder).toUInt()
 	}
 
 	fun fromMethodStub(id: UInt, block: MethodBuilder.() -> Unit) {
-		val method = methods.find { it.getId() == id }!!
+		val method = methods.find { it.id == id }!!
 		block.invoke(method)
 	}
 
 	fun asCode(): PTIR.Code {
-		return PTIR.Code(name, methods.map { it.method }, methods.map { it.getId() }, structs.map { it.types.toList() })
+		return PTIR.Code(name, methods.map { it.method }, Variable.lastGlobalId(), structs.map { it.types.toList() })
 	}
 
 	fun asHeader(): PTIR.Code {
