@@ -70,12 +70,12 @@ data class MethodBuilder(
 		addOp(op, store, left, right)
 	}
 
-	fun getArrayVar(array: Variable, index: Int, to: Variable) {
-		addOp(PTIR.Op.GET_ARRAY_VAR, to, array, index.toUInt())
+	fun getArrayVar(array: Variable, index: Any, to: Variable) {
+		addOp(PTIR.Op.GET_ARRAY_VAR, to, array, index)
 	}
 
-	fun setArrayVar(array: Variable, index: Int, from: Variable) {
-		addOp(PTIR.Op.SET_ARRAY_VAR, array, index.toUInt(), from)
+	fun setArrayVar(array: Variable, index: Any, from: Variable) {
+		addOp(PTIR.Op.SET_ARRAY_VAR, array, index, from)
 	}
 
 	fun getStructVar(structVar: Variable, struct: Struct, field: UInt, to: Variable) {

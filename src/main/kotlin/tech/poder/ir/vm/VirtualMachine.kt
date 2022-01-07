@@ -638,7 +638,7 @@ object VirtualMachine {
 					PTIR.Op.GET_ARRAY_VAR -> {
 						val set = op.args[0] as PTIR.Variable
 						val get = safeGetDataType(op.args[1], local) as List<*>
-						val index = (op.args[2] as UInt).toInt()
+						val index = toSigned(safeGetDataType(op.args[2], local)).toInt()
 						check(get.size > index) {
 							"[FATAL][IR] Index out of bounds!"
 						}
@@ -648,7 +648,7 @@ object VirtualMachine {
 						val set =
 							safeGetDataType(op.args[0] as PTIR.Variable, local) as MutableList<Any?> //use map instead?
 						val get = safeGetDataType(op.args[1], local)
-						val index = (op.args[2] as UInt).toInt()
+						val index = toSigned(safeGetDataType(op.args[2], local)).toInt()
 						while (set.size < index) {
 							set.add(null)
 						}
