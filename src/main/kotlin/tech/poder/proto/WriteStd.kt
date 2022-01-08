@@ -82,8 +82,28 @@ object WriteStd {
 				writeVInt(stream, any)
 			}
 			is Byte -> {
-				writeVUInt(stream, Packet.Types.VINT.ordinal.toUInt())
+				writeVUInt(stream, Packet.Types.BYTE.ordinal.toUInt())
+				stream.write(any.toInt())
+			}
+			is UByte -> {
+				writeVUInt(stream, Packet.Types.UBYTE.ordinal.toUInt())
+				stream.write(any.toInt())
+			}
+			is Short -> {
+				writeVUInt(stream, Packet.Types.VSHORT.ordinal.toUInt())
 				writeVInt(stream, any.toInt())
+			}
+			is UShort -> {
+				writeVUInt(stream, Packet.Types.VUSHORT.ordinal.toUInt())
+				writeVUInt(stream, any.toUInt())
+			}
+			is Long -> {
+				writeVUInt(stream, Packet.Types.VLONG.ordinal.toUInt())
+				TODO("LONG")
+			}
+			is ULong -> {
+				writeVUInt(stream, Packet.Types.VULONG.ordinal.toUInt())
+				TODO("Unsigned LONG")
 			}
 			is Packet -> {
 				writeVUInt(stream, Packet.Types.PACKET.ordinal.toUInt())

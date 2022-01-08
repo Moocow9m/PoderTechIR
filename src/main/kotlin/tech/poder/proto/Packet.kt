@@ -2,7 +2,7 @@ package tech.poder.proto
 
 interface Packet {
 	enum class Types {
-		ENUM, PACKET, LIST, STRING, UNION, BOOL, VUINT, VINT, UNKNOWN
+		ENUM, PACKET, LIST, STRING, UNION, BOOL, VUINT, VINT, BYTE, UBYTE, VSHORT, VUSHORT, VLONG, VULONG, UNKNOWN
 	}
 
 	fun length(): Int {

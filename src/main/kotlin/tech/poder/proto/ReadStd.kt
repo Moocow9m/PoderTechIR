@@ -72,7 +72,15 @@ object ReadStd {
 			}
 			Packet.Types.LIST -> readAnyList(stream)
 			Packet.Types.BOOL -> readBoolean(stream)
-			else -> throw Exception("Unknown type code: $code")
+			Packet.Types.ENUM -> TODO("ENUM")
+			Packet.Types.UNION -> TODO("UNION")
+			Packet.Types.BYTE -> stream.read().toByte()
+			Packet.Types.UBYTE -> stream.read().toUByte()
+			Packet.Types.VSHORT -> readVInt(stream).toShort()
+			Packet.Types.VUSHORT -> readVUInt(stream).toUShort()
+			Packet.Types.VLONG -> TODO("LONG")
+			Packet.Types.VULONG -> TODO("Unsigned LONG")
+			Packet.Types.UNKNOWN -> throw Exception("Unknown type code: $code")
 		}
 	}
 }
