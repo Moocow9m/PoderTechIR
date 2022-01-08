@@ -25,7 +25,7 @@ object VirtualMachine {
 		invoke(code.id, method.toInt(), args)
 	}
 
-	private fun getDataType(arg: Any, local: Map<UInt, Any>): Any? {
+	private fun getDataType(arg: Any, local: Map<UInt, Any>, localOnly: Boolean = false): Any? {
 		return when (arg) {
 			is PTIR.Variable -> {
 				var type: Any? = arg
@@ -33,7 +33,11 @@ object VirtualMachine {
 					type = if (type.local) {
 						local[type.index]
 					} else {
-						global[type.index]
+						if (localOnly) {
+							break
+						} else {
+							global[type.index]
+						}
 					}
 				}
 				type
@@ -49,8 +53,8 @@ object VirtualMachine {
 		}
 	}
 
-	private fun safeGetDataType(arg: Any, local: Map<UInt, Any>): Any {
-		val tmp = getDataType(arg, local)
+	private fun safeGetDataType(arg: Any, local: Map<UInt, Any>, localOnly: Boolean = false): Any {
+		val tmp = getDataType(arg, local, localOnly)
 		check(tmp != null) {
 			"[FATAL][VM] Variable was null on GET!"
 		}
@@ -819,7 +823,7 @@ object VirtualMachine {
 							val c = op.args[2] as UInt
 							if (op.args.size > 3) {
 								setDataType(
-									a, invoke(b, c.toInt(), op.args.subList(3, op.args.size).toTypedArray()), local
+									a, invoke(b, c.toInt(), op.args.subList(3, op.args.size).map { safeGetDataType(it, local, true) }.toTypedArray()), local
 								)
 							} else {
 								setDataType(
