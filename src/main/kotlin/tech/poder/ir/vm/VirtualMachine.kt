@@ -28,11 +28,15 @@ object VirtualMachine {
 	private fun getDataType(arg: Any, local: Map<UInt, Any>): Any? {
 		return when (arg) {
 			is PTIR.Variable -> {
-				if (arg.local) {
-					local[arg.index]
-				} else {
-					global[arg.index]
+				var type: Any? = arg
+				while (type != null && type is PTIR.Variable) {
+					type = if (arg.local) {
+						local[arg.index]
+					} else {
+						global[arg.index]
+					}
 				}
+				type
 			}
 			is String -> arg
 			is Number -> arg
