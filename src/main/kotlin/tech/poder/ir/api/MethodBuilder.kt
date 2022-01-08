@@ -74,7 +74,7 @@ data class MethodBuilder(
 		addOp(PTIR.Op.GET_ARRAY_VAR, to, array, index)
 	}
 
-	fun setArrayVar(array: Variable, index: Any, from: Variable) {
+	fun setArrayVar(array: Variable, index: Any, from: Any) {
 		addOp(PTIR.Op.SET_ARRAY_VAR, array, index, from)
 	}
 
