@@ -30,10 +30,10 @@ object VirtualMachine {
 			is PTIR.Variable -> {
 				var type: Any? = arg
 				while (type != null && type is PTIR.Variable) {
-					type = if (arg.local) {
-						local[arg.index]
+					type = if (type.local) {
+						local[type.index]
 					} else {
-						global[arg.index]
+						global[type.index]
 					}
 				}
 				type
