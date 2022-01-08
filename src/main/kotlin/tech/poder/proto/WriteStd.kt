@@ -81,6 +81,10 @@ object WriteStd {
 				writeVUInt(stream, Packet.Types.VINT.ordinal.toUInt())
 				writeVInt(stream, any)
 			}
+			is Byte -> {
+				writeVUInt(stream, Packet.Types.VINT.ordinal.toUInt())
+				writeVInt(stream, any.toInt())
+			}
 			is Packet -> {
 				writeVUInt(stream, Packet.Types.PACKET.ordinal.toUInt())
 				writeString(stream, any::class.java.name)
