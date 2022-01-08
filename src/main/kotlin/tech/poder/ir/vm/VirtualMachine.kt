@@ -45,6 +45,7 @@ object VirtualMachine {
 			is ULong -> arg
 			is UShort -> arg
 			is Boolean -> arg
+			is Collection<*> -> arg.toMutableList()
 			else -> TODO(arg::class.java.name)
 		}
 	}
