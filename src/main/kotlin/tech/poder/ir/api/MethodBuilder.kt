@@ -45,7 +45,7 @@ data class MethodBuilder(
 		bytecode.add(placeholder)
 	}
 
-	fun addOp(op: PTIR.Op, store: Variable? = null, vararg args: Any) {
+	internal fun addOp(op: PTIR.Op, store: Variable? = null, vararg args: Any) {
 		val argsNoVars = args.map {
 			when (it) {
 				is Variable -> {
