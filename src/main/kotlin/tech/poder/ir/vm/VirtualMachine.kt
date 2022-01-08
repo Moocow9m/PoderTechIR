@@ -298,7 +298,7 @@ object VirtualMachine {
 			is UByte -> {
 				first + toUnsigned(second).toUByte()
 			}
-			is Number -> add(first, second as Number)
+			is Number -> add(first, toSigned(second))
 			is List<*> -> TODO("LIST ADD")
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for addition! (${a::class.java.name} + ${b::class.java.name})")
 		}
@@ -311,7 +311,6 @@ object VirtualMachine {
 			b
 		}
 		return when (first) {
-			is String -> TODO("STRING SUB")
 			is ULong -> {
 				toUnsigned(a) - toUnsigned(b)
 			}
@@ -325,7 +324,6 @@ object VirtualMachine {
 				(toUnsigned(a) - toUnsigned(b)).toUByte()
 			}
 			is Number -> sub(a as Number, b as Number)
-			is List<*> -> TODO("LIST ADD")
 			else -> throw IllegalStateException("[FATAL][VM] Invalid types for subtraction! (${a::class.java.name} + ${b::class.java.name})")
 		}
 	}
