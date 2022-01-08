@@ -160,19 +160,19 @@ data class MethodBuilder(
 	}
 
 	fun shl(left: Variable, right: Variable, store: Variable) {
-		addOp(PTIR.Op.SHL, store, left, right)
+		addOp(PTIR.Op.SAL, store, left, right)
 	}
 
 	fun shr(left: Variable, right: Variable, store: Variable) {
-		addOp(PTIR.Op.SHR, store, left, right)
-	}
-
-	fun sar(left: Variable, right: Variable, store: Variable) {
 		addOp(PTIR.Op.SAR, store, left, right)
 	}
 
-	fun sal(left: Variable, right: Variable, store: Variable) {
-		addOp(PTIR.Op.SAL, store, left, right)
+	fun ushr(left: Variable, right: Variable, store: Variable) {
+		addOp(PTIR.Op.SHR, store, left, right)
+	}
+
+	fun ushl(left: Variable, right: Variable, store: Variable) {
+		addOp(PTIR.Op.SHL, store, left, right)
 	}
 
 	fun add(store: Variable, a: Any, b: Any) {
