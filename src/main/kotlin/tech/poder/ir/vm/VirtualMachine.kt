@@ -28,19 +28,15 @@ object VirtualMachine {
 	private fun getDataType(arg: Any, local: Map<UInt, Any>, localOnly: Boolean = false): Any? {
 		return when (arg) {
 			is PTIR.Variable -> {
-				var type: Any? = arg
-				while (type != null && type is PTIR.Variable) {
-					type = if (type.local) {
-						local[type.index]
+				if (arg.local) {
+					local[arg.index]
+				} else {
+					if (localOnly) {
+						arg
 					} else {
-						if (localOnly) {
-							break
-						} else {
-							global[type.index]
-						}
+						global[arg.index]
 					}
 				}
-				type
 			}
 			is String -> arg
 			is Number -> arg
@@ -823,7 +819,14 @@ object VirtualMachine {
 							val c = op.args[2] as UInt
 							if (op.args.size > 3) {
 								setDataType(
-									a, invoke(b, c.toInt(), op.args.subList(3, op.args.size).map { safeGetDataType(it, local, true) }.toTypedArray()), local
+									a,
+									invoke(
+										b,
+										c.toInt(),
+										op.args.subList(3, op.args.size).map { safeGetDataType(it, local, true) }
+											.toTypedArray()
+									),
+									local
 								)
 							} else {
 								setDataType(
