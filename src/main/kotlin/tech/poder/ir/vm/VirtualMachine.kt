@@ -65,10 +65,11 @@ object VirtualMachine {
 				global.remove(variable.index)
 			}
 		} else {
+			val tmp = safeGetDataType(value, local)
 			if (variable.local) {
-				local[variable.index] = value
+				local[variable.index] = tmp
 			} else {
-				global[variable.index] = value
+				global[variable.index] = tmp
 			}
 		}
 	}
