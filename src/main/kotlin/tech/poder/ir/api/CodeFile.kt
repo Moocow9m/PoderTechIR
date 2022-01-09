@@ -1,5 +1,7 @@
 package tech.poder.ir.api
 
+import tech.poder.proto.BitInputStream
+import tech.poder.proto.BitOutputStream
 import tech.poder.ptir.PTIR
 import java.io.OutputStream
 
@@ -12,6 +14,10 @@ data class CodeFile(val name: String) {
 		fun presetEnv(startingVariable: UInt = 1u) {
 			check(startingVariable > 0u) { "startingVariable must be greater than 0!" }
 			Variable.presetEnv(startingVariable)
+		}
+
+		fun read(inputStream: BitInputStream): PTIR.Code {
+			return PTIR.Code.fromBytes(inputStream)
 		}
 	}
 
@@ -47,7 +53,7 @@ data class CodeFile(val name: String) {
 		return PTIR.Code(name)
 	}
 
-	fun write(out: OutputStream) {
+	fun write(out: BitOutputStream) {
 		asCode().toBytes(out)
 	}
 

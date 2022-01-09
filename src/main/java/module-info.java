@@ -7,5 +7,6 @@ module PoderTechIR.main {
 	exports tech.poder.ir.util;
 	exports tech.poder.ir.vm;
 	exports tech.poder.ir.vm.std;
+	exports tech.poder.proto;
 	exports tech.poder.ptir;
 }
