@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test
 import tech.poder.ir.api.CodeFile
 import tech.poder.ir.vm.VirtualMachine
 import tech.poder.ir.vm.std.Math
-import tech.poder.ptir.PTIR
 
 internal class VMTest {
 

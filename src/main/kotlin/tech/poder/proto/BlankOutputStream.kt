@@ -8,6 +8,7 @@ class BlankOutputStream(var amountWritten: Int = 0) : OutputStream() {
 			return BitOutputStream(BlankOutputStream())
 		}
 	}
+
 	override fun write(b: Int) {
 		amountWritten++
 	}

@@ -5,22 +5,20 @@ Poder Tech Intermediate Representative
 By Moocow9m: 2022
  */
 
-import tech.poder.proto.BitInputStream
-import tech.poder.proto.ReadStd
-import tech.poder.proto.BitOutputStream
-import tech.poder.proto.Packet
-import tech.poder.proto.WriteStd
+import tech.poder.proto.*
 
 object PTIR {
 	enum class STDCall {
 		PRINT,
 		STREAM,
 		;
+
 		companion object {
 			val values = values()
 			val DEFAULT = PRINT
 		}
 	}
+
 	enum class Type {
 		ARRAY,
 		INT,
@@ -34,11 +32,13 @@ object PTIR {
 		FLOAT32,
 		FLOAT64,
 		;
+
 		companion object {
 			val values = values()
 			val DEFAULT = ARRAY
 		}
 	}
+
 	enum class Op {
 		RETURN,
 		THROW,
@@ -74,12 +74,18 @@ object PTIR {
 		NULL,
 		IF_NULL,
 		;
+
 		companion object {
 			val values = values()
 			val DEFAULT = RETURN
 		}
 	}
-	data class Debug(val methodLinesIndexes: List<UInt> = emptyList(), val methodLinesText: String = "", val breakPoints: Boolean = false): Packet {
+
+	data class Debug(
+		val methodLinesIndexes: List<UInt> = emptyList(),
+		val methodLinesText: String = "",
+		val breakPoints: Boolean = false
+	) : Packet {
 		companion object {
 			val DEFAULT = Debug()
 			fun fromBytes(stream: BitInputStream): Debug {
@@ -92,6 +98,7 @@ object PTIR {
 				return Debug(methodLinesIndexes, methodLinesText, breakPoints)
 			}
 		}
+
 		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, methodLinesIndexes.size.toUInt())
 			methodLinesIndexes.forEach { it0 ->
@@ -101,7 +108,8 @@ object PTIR {
 			WriteStd.writeBoolean(stream, breakPoints)
 		}
 	}
-	data class Info(val index: List<UInt> = emptyList()): Packet {
+
+	data class Info(val index: List<UInt> = emptyList()) : Packet {
 		companion object {
 			val DEFAULT = Info()
 			fun fromBytes(stream: BitInputStream): Info {
@@ -112,6 +120,7 @@ object PTIR {
 				return Info(index)
 			}
 		}
+
 		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, index.size.toUInt())
 			index.forEach { it0 ->
@@ -119,7 +128,8 @@ object PTIR {
 			}
 		}
 	}
-	data class Variable(val local: Boolean = false, val index: UInt = 0u): Packet {
+
+	data class Variable(val local: Boolean = false, val index: UInt = 0u) : Packet {
 		companion object {
 			val DEFAULT = Variable()
 			fun fromBytes(stream: BitInputStream): Variable {
@@ -128,12 +138,14 @@ object PTIR {
 				return Variable(local, index)
 			}
 		}
+
 		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeBoolean(stream, local)
 			WriteStd.writeVUInt(stream, index)
 		}
 	}
-	data class Expression(val type: Op = Op.DEFAULT, val args: List<Any> = emptyList()): Packet {
+
+	data class Expression(val type: Op = Op.DEFAULT, val args: List<Any> = emptyList()) : Packet {
 		companion object {
 			val DEFAULT = Expression()
 			fun fromBytes(stream: BitInputStream): Expression {
@@ -144,6 +156,7 @@ object PTIR {
 				}
 				return Expression(type, args)
 			}
+
 			private fun mapRead0(stream: BitInputStream, id: Int): Any {
 				return when (id) {
 					0 -> {
@@ -167,6 +180,7 @@ object PTIR {
 				}
 			}
 		}
+
 		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, type.ordinal.toUInt())
 			WriteStd.writeVUInt(stream, args.size.toUInt())
@@ -174,6 +188,7 @@ object PTIR {
 				mapWrite0(stream, it0)
 			}
 		}
+
 		private fun mapWrite0(stream: BitOutputStream, value: Any) {
 			return when (value) {
 				is Op -> {
@@ -203,7 +218,12 @@ object PTIR {
 			}
 		}
 	}
-	data class Method(val bytecode: List<Expression> = emptyList(), val extraInfo: List<Info> = emptyList(), val debugInfo: List<Debug> = emptyList()): Packet {
+
+	data class Method(
+		val bytecode: List<Expression> = emptyList(),
+		val extraInfo: List<Info> = emptyList(),
+		val debugInfo: List<Debug> = emptyList()
+	) : Packet {
 		companion object {
 			val DEFAULT = Method()
 			fun fromBytes(stream: BitInputStream): Method {
@@ -222,6 +242,7 @@ object PTIR {
 				return Method(bytecode, extraInfo, debugInfo)
 			}
 		}
+
 		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, bytecode.size.toUInt())
 			bytecode.forEach { it0 ->
@@ -237,7 +258,8 @@ object PTIR {
 			}
 		}
 	}
-	data class FullType(val type: Type = Type.DEFAULT, val unsigned: Boolean = false): Packet {
+
+	data class FullType(val type: Type = Type.DEFAULT, val unsigned: Boolean = false) : Packet {
 		companion object {
 			val DEFAULT = FullType()
 			fun fromBytes(stream: BitInputStream): FullType {
@@ -246,12 +268,19 @@ object PTIR {
 				return FullType(type, unsigned)
 			}
 		}
+
 		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, type.ordinal.toUInt())
 			WriteStd.writeBoolean(stream, unsigned)
 		}
 	}
-	data class Code(val id: String = "", val methods: List<Method> = emptyList(), val lastGlobalVarId: UInt = 0u, val structs: List<List<FullType>> = emptyList()): Packet {
+
+	data class Code(
+		val id: String = "",
+		val methods: List<Method> = emptyList(),
+		val lastGlobalVarId: UInt = 0u,
+		val structs: List<List<FullType>> = emptyList()
+	) : Packet {
 		companion object {
 			val DEFAULT = Code()
 			fun fromBytes(stream: BitInputStream): Code {
@@ -271,6 +300,7 @@ object PTIR {
 				return Code(id, methods, lastGlobalVarId, structs)
 			}
 		}
+
 		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeString(stream, id)
 			WriteStd.writeVUInt(stream, methods.size.toUInt())

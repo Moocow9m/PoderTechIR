@@ -5,7 +5,6 @@ import tech.poder.ir.api.CodeFile
 import tech.poder.ir.vm.std.Math
 import tech.poder.proto.BitInputStream
 import tech.poder.proto.BitOutputStream
-import tech.poder.ptir.PTIR
 import java.nio.file.Files
 import java.nio.file.Paths
 
