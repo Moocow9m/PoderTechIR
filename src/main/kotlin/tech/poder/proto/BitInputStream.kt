@@ -6,15 +6,32 @@ class BitInputStream(private val realInputStream: InputStream) : InputStream() {
 	var bitPos = 0
 	var bitBuffer = 0
 
+	fun skipSpareBits() {
+		if (bitPos > 0) {
+			bitPos = 0
+		}
+	}
+
 	fun readBit(): Boolean {
-		TODO()
+		if (bitPos == 0) {
+			bitBuffer = realInputStream.read()
+			bitPos = 8
+		}
+		bitPos--
+		return (bitBuffer and (1 shl bitPos)) != 0
 	}
 
 	override fun read(): Int {
 		return if (bitPos == 0) {
 			realInputStream.read()
 		} else {
-			TODO()
+			var result = 0
+			repeat(8) {
+				if (readBit()) {
+					result = result or (1 shl it)
+				}
+			}
+			result
 		}
 	}
 

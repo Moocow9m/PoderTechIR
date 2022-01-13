@@ -6,6 +6,15 @@ open class BitOutputStream(internal val realOutputStream: OutputStream) : Output
 	var bitPos = 0
 	var bitBuffer = 0
 
+	fun flushSpareBits() {
+		if (bitPos > 0) {
+			bitBuffer = bitBuffer shl (8 - bitPos)
+			realOutputStream.write(bitBuffer)
+			bitBuffer = 0
+			bitPos = 0
+		}
+	}
+
 	open fun writeBit(bit: Boolean) {
 		bitBuffer = bitBuffer shl 1
 		if (bit) {
@@ -23,11 +32,11 @@ open class BitOutputStream(internal val realOutputStream: OutputStream) : Output
 		if (bitPos == 0) {
 			realOutputStream.write(b)
 		} else {
-			val remainingSpace = 8 - bitPos
-			val mask = (bitBuffer shl remainingSpace) - 1
-			val newBitBuffer = b and mask
-			realOutputStream.write(newBitBuffer)
-			bitBuffer = newBitBuffer
+			var tmp = b
+			repeat(8) {
+				writeBit(tmp and 1 != 0)
+				tmp = tmp shr 1
+			}
 		}
 	}
 
