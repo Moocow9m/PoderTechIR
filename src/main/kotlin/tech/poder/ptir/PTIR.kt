@@ -151,29 +151,45 @@ object PTIR {
 			fun fromBytes(stream: BitInputStream): Expression {
 				val type = Op.values[ReadStd.readVUInt(stream).toInt()]
 				val args = List(ReadStd.readVUInt(stream).toInt()) {
-					val it0 = mapRead0(stream, ReadStd.readVUInt(stream).toInt())
+					val it0 = mapRead0(stream)
 					it0
 				}
 				return Expression(type, args)
 			}
 
-			private fun mapRead0(stream: BitInputStream, id: Int): Any {
-				return when (id) {
-					0 -> {
+			val map0ToBin = mapOf(
+				2u to listOf(false, false),
+				1u to listOf(false, true),
+				0u to listOf(true, false),
+				4u to listOf(true, true, false),
+				3u to listOf(true, true, true),
+			)
+			val binToMap0 = mapOf(
+				listOf(false, false) to 2u,
+				listOf(false, true) to 1u,
+				listOf(true, false) to 0u,
+				listOf(true, true, false) to 4u,
+				listOf(true, true, true) to 3u,
+			)
+			const val MAX_BITS: Int = 4
+
+			private fun mapRead0(stream: BitInputStream): Any {
+				return when (val id = ReadStd.readHuffman(stream, binToMap0, MAX_BITS) as UInt) {
+					0u -> {
 						Op.values[ReadStd.readVUInt(stream).toInt()]
 					}
-					1 -> {
+					1u -> {
 						Expression.fromBytes(stream)
 					}
-					2 -> {
+					2u -> {
 						Variable.fromBytes(stream)
 					}
-					3 -> {
+					3u -> {
 						List(ReadStd.readVUInt(stream).toInt()) {
-							mapRead0(stream, ReadStd.readVUInt(stream).toInt())
+							mapRead0(stream)
 						}
 					}
-					4 -> {
+					4u -> {
 						ReadStd.readAny(stream)
 					}
 					else -> throw java.lang.IllegalArgumentException("Unknown id: $id")
@@ -192,26 +208,26 @@ object PTIR {
 		private fun mapWrite0(stream: BitOutputStream, value: Any) {
 			return when (value) {
 				is Op -> {
-					WriteStd.writeVUInt(stream, 0u)
+					WriteStd.writeHuffman(stream, map0ToBin[0u]!!)
 					WriteStd.writeVUInt(stream, value.ordinal.toUInt())
 				}
 				is Expression -> {
-					WriteStd.writeVUInt(stream, 1u)
+					WriteStd.writeHuffman(stream, map0ToBin[1u]!!)
 					value.toBytes(stream)
 				}
 				is Variable -> {
-					WriteStd.writeVUInt(stream, 2u)
+					WriteStd.writeHuffman(stream, map0ToBin[2u]!!)
 					value.toBytes(stream)
 				}
 				is List<*> -> {
-					WriteStd.writeVUInt(stream, 3u)
+					WriteStd.writeHuffman(stream, map0ToBin[3u]!!)
 					WriteStd.writeVUInt(stream, value.size.toUInt())
 					value.forEach { it1 ->
 						mapWrite0(stream, it1!!)
 					}
 				}
 				is Any -> {
-					WriteStd.writeVUInt(stream, 4u)
+					WriteStd.writeHuffman(stream, map0ToBin[4u]!!)
 					WriteStd.writeAny(stream, value)
 				}
 				else -> throw java.lang.IllegalArgumentException("Unknown type: ${value::class.java.name}")

@@ -50,4 +50,38 @@ class Huffman {
 		println(")")
 		println("const val MAX_BITS: Int = ${largest + 1}")
 	}
+
+	@Test
+	fun createReadWriteMap() {
+		val queue = PriorityQueue(FrequencySorter)
+		queue.offer(DynamicHuffmanLeaf(0u, 1000))
+		queue.offer(DynamicHuffmanLeaf(1u, 950))
+		queue.offer(DynamicHuffmanLeaf(2u, 900))
+		queue.offer(DynamicHuffmanLeaf(3u, 850))
+		queue.offer(DynamicHuffmanLeaf(4u, 800))
+		val finalBin = HuffmanTree.mapToBinary(HuffmanTree.treeToMap(HuffmanTree.fromQueue(queue)))
+		var smallest = Int.MAX_VALUE
+		var largest = Int.MIN_VALUE
+		var average = 0.0
+		finalBin.forEach { (_, u) ->
+			if (u.size < smallest) smallest = u.size
+			if (u.size > largest) largest = u.size
+			average += u.size
+		}
+		average /= finalBin.size
+		println("Smallest: $smallest")
+		println("Largest: $largest")
+		println("Average: $average")
+		println("val map0ToBin = mapOf(")
+		finalBin.forEach { (t, u) ->
+			println("\t${t} to listOf(${u.joinToString(", ")}),")
+		}
+		println(")")
+		println("val binToMap0 = mapOf(")
+		finalBin.forEach { (t, u) ->
+			println("\tlistOf(${u.joinToString(", ")}) to ${t},")
+		}
+		println(")")
+		println("const val MAX_BITS: Int = ${largest + 1}")
+	}
 }
