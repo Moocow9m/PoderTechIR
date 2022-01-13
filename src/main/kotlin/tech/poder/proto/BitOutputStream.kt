@@ -2,11 +2,11 @@ package tech.poder.proto
 
 import java.io.OutputStream
 
-class BitOutputStream(internal val realOutputStream: OutputStream) : OutputStream() {
+open class BitOutputStream(internal val realOutputStream: OutputStream) : OutputStream() {
 	var bitPos = 0
 	var bitBuffer = 0
 
-	fun writeBit(bit: Boolean) {
+	open fun writeBit(bit: Boolean) {
 		bitBuffer = bitBuffer shl 1
 		if (bit) {
 			bitBuffer = bitBuffer or 1

@@ -1,24 +1,20 @@
 package tech.poder.proto
 
-import java.io.OutputStream
-
-class BlankOutputStream(var amountWritten: Int = 0) : OutputStream() {
-	companion object {
-		fun makeBitVersion(): BitOutputStream {
-			return BitOutputStream(BlankOutputStream())
-		}
-	}
-
-	override fun write(b: Int) {
+class BlankOutputStream(var amountWritten: ULong = 0uL) : BitOutputStream(nullOutputStream()) {
+	override fun writeBit(bit: Boolean) {
 		amountWritten++
 	}
 
+	override fun write(b: Int) {
+		amountWritten += 8uL
+	}
+
 	override fun write(b: ByteArray) {
-		amountWritten += b.size
+		amountWritten += b.size.toULong() * 8uL
 	}
 
 	override fun write(b: ByteArray, off: Int, len: Int) {
-		amountWritten += len
+		amountWritten += len.toULong() * 8uL
 	}
 
 }

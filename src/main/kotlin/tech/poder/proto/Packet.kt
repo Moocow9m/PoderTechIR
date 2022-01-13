@@ -5,11 +5,11 @@ interface Packet {
 		ENUM, PACKET, LIST, STRING, UNION, BOOL, VUINT, VINT, BYTE, UBYTE, VSHORT, VUSHORT, VLONG, VULONG, UNKNOWN
 	}
 
-	fun length(): Int {
-		val os = BlankOutputStream.makeBitVersion()
+	fun length(): ULong {
+		val os = BlankOutputStream()
 		toBytes(os)
 		os.close()
-		return (os.realOutputStream as BlankOutputStream).amountWritten
+		return os.amountWritten
 	}
 
 	fun toBytes(stream: BitOutputStream)
