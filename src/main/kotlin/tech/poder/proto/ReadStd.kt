@@ -111,8 +111,8 @@ object ReadStd {
 			Packet.Types.UBYTE -> stream.read().toUByte()
 			Packet.Types.VSHORT -> readVInt(stream).toShort()
 			Packet.Types.VUSHORT -> readVUInt(stream).toUShort()
-			Packet.Types.VLONG -> TODO("LONG")
-			Packet.Types.VULONG -> TODO("Unsigned LONG")
+			Packet.Types.VLONG -> readVLong(stream)
+			Packet.Types.VULONG -> readVULong(stream)
 			Packet.Types.UNKNOWN -> throw Exception("Unknown type code: $code")
 		}
 	}

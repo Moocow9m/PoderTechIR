@@ -123,11 +123,11 @@ object WriteStd {
 			}
 			is Long -> {
 				writeVUInt(stream, Packet.Types.VLONG.ordinal.toUInt())
-				TODO("LONG")
+				writeVLong(stream, any)
 			}
 			is ULong -> {
 				writeVUInt(stream, Packet.Types.VULONG.ordinal.toUInt())
-				TODO("Unsigned LONG")
+				writeVULong(stream, any)
 			}
 			is Packet -> {
 				writeVUInt(stream, Packet.Types.PACKET.ordinal.toUInt())

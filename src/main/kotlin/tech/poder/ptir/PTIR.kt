@@ -145,36 +145,21 @@ object PTIR {
 			private fun mapRead0(stream: java.io.InputStream, id: Int): Any {
 				return when (id) {
 					0 -> {
-						ReadStd.readVInt(stream)
-					}
-					1 -> {
-						ReadStd.readVUInt(stream)
-					}
-					2 -> {
-						ReadStd.readString(stream)
-					}
-					3 -> {
 						Op.values[ReadStd.readVUInt(stream).toInt()]
 					}
-					4 -> {
+					1 -> {
 						Expression.fromBytes(stream)
 					}
-					5 -> {
-						ReadStd.readBoolean(stream)
-					}
-					6 -> {
+					2 -> {
 						Variable.fromBytes(stream)
 					}
-					7 -> {
-						ReadStd.readVLong(stream)
-					}
-					8 -> {
-						ReadStd.readVULong(stream)
-					}
-					9 -> {
+					3 -> {
 						List(ReadStd.readVUInt(stream).toInt()) {
 							mapRead0(stream, ReadStd.readVUInt(stream).toInt())
 						}
+					}
+					4 -> {
+						ReadStd.readAny(stream)
 					}
 					else -> throw java.lang.IllegalArgumentException("Unknown id: $id")
 				}
@@ -189,48 +174,28 @@ object PTIR {
 		}
 		private fun mapWrite0(stream: java.io.OutputStream, value: Any) {
 			return when (value) {
-				is Int -> {
-					WriteStd.writeVUInt(stream, 0u)
-					WriteStd.writeVInt(stream, value)
-				}
-				is UInt -> {
-					WriteStd.writeVUInt(stream, 1u)
-					WriteStd.writeVUInt(stream, value)
-				}
-				is String -> {
-					WriteStd.writeVUInt(stream, 2u)
-					WriteStd.writeString(stream, value)
-				}
 				is Op -> {
-					WriteStd.writeVUInt(stream, 3u)
+					WriteStd.writeVUInt(stream, 0u)
 					WriteStd.writeVUInt(stream, value.ordinal.toUInt())
 				}
 				is Expression -> {
-					WriteStd.writeVUInt(stream, 4u)
+					WriteStd.writeVUInt(stream, 1u)
 					value.toBytes(stream)
-				}
-				is Boolean -> {
-					WriteStd.writeVUInt(stream, 5u)
-					WriteStd.writeBoolean(stream, value)
 				}
 				is Variable -> {
-					WriteStd.writeVUInt(stream, 6u)
+					WriteStd.writeVUInt(stream, 2u)
 					value.toBytes(stream)
 				}
-				is Long -> {
-					WriteStd.writeVUInt(stream, 7u)
-					WriteStd.writeVLong(stream, value)
-				}
-				is ULong -> {
-					WriteStd.writeVUInt(stream, 8u)
-					WriteStd.writeVULong(stream, value)
-				}
 				is List<*> -> {
-					WriteStd.writeVUInt(stream, 9u)
+					WriteStd.writeVUInt(stream, 3u)
 					WriteStd.writeVUInt(stream, value.size.toUInt())
 					value.forEach { it1 ->
 						mapWrite0(stream, it1!!)
 					}
+				}
+				is Any -> {
+					WriteStd.writeVUInt(stream, 4u)
+					WriteStd.writeAny(stream, value)
 				}
 				else -> throw java.lang.IllegalArgumentException("Unknown type: ${value::class.java.name}")
 			}
