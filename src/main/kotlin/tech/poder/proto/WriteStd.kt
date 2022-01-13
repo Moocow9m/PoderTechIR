@@ -68,7 +68,7 @@ object WriteStd {
 	}
 
 	fun writeBoolean(stream: BitOutputStream, bool: Boolean) {
-		stream.write(if (bool) 1 else 0)
+		stream.writeBit(bool)
 	}
 
 	fun writeList(stream: BitOutputStream, list: List<*>) {//write shortcut(on read, type is known)

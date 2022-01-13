@@ -81,7 +81,7 @@ object ReadStd {
 	}
 
 	fun readBoolean(stream: BitInputStream): Boolean {
-		return stream.read() != 0
+		return stream.readBit()
 	}
 
 	fun readAnyList(stream: BitInputStream): List<Any> {
