@@ -12,6 +12,9 @@ import tech.poder.proto.WriteStd
 object PTIR {
 	enum class STDCall {
 		PRINT,
+		OPEN_STREAM,
+		WRITE_STREAM,
+		READ_STREAM,
 		;
 		companion object {
 			val values = values()
@@ -255,7 +258,6 @@ object PTIR {
 			}
 		}
 	}
-
 	data class FullType(val type: Type = Type.DEFAULT, val unsigned: Boolean = false): Packet {
 		companion object {
 			val DEFAULT = FullType()
@@ -270,7 +272,6 @@ object PTIR {
 			WriteStd.writeBoolean(stream, unsigned)
 		}
 	}
-
 	data class Code(val id: String = "", val methods: List<Method> = emptyList(), val lastGlobalVarId: UInt = 0u, val structs: List<List<FullType>> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Code()
