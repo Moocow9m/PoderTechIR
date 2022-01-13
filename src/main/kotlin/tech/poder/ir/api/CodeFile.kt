@@ -3,7 +3,6 @@ package tech.poder.ir.api
 import tech.poder.proto.BitInputStream
 import tech.poder.proto.BitOutputStream
 import tech.poder.ptir.PTIR
-import java.io.OutputStream
 
 data class CodeFile(val name: String) {
 	companion object {

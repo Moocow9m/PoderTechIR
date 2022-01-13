@@ -6,7 +6,6 @@ import tech.poder.ir.vm.std.Math
 import tech.poder.proto.BitInputStream
 import tech.poder.proto.BitOutputStream
 import tech.poder.ptir.PTIR
-import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Paths
 

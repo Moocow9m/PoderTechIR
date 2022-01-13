@@ -2,7 +2,7 @@ package tech.poder.proto
 
 import java.io.InputStream
 
-class BitInputStream(private val realInputStream: InputStream): InputStream() {
+class BitInputStream(private val realInputStream: InputStream) : InputStream() {
 	var bitPos = 0
 	var bitBuffer = 0
 

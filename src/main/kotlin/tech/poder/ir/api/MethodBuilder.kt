@@ -8,6 +8,7 @@ data class MethodBuilder(
 	companion object {
 		private var lastId = 0uL
 	}
+
 	private val bytecode: MutableList<PTIR.Expression> = mutableListOf()
 	private val extraInfo: MutableList<PTIR.Info> = mutableListOf()
 	private val debugInfo: MutableList<PTIR.Debug> = mutableListOf()

@@ -13,7 +13,9 @@ dependencies {
     implementation(platform(kotlin("bom")))
     implementation(kotlin("stdlib-jdk8"))
     implementation(kotlin("reflect"))
-    testImplementation("org.junit.platform:junit-platform-commons:1.7.0")
+    implementation(platform(kotlin("bom")))
+    testImplementation("org.apiguardian:apiguardian-api:1.1.2") //Fix for JUnit > 1.7.X
+    testRuntimeOnly("org.junit.platform:junit-platform-commons:1.8.2")
     testImplementation(kotlin("test"))
 }
 
