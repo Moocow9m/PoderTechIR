@@ -6,10 +6,11 @@ interface Packet {
 	}
 
 	fun length(): Int {
-		val os = BlankOutputStream()
+		val os = BlankOutputStream.makeBitVersion()
 		toBytes(os)
-		return os.amountWritten
+		os.close()
+		return (os.realOutputStream as BlankOutputStream).amountWritten
 	}
 
-	fun toBytes(stream: java.io.OutputStream)
+	fun toBytes(stream: BitOutputStream)
 }

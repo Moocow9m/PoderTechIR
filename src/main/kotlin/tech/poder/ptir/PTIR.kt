@@ -5,7 +5,9 @@ Poder Tech Intermediate Representative
 By Moocow9m: 2022
  */
 
+import tech.poder.proto.BitInputStream
 import tech.poder.proto.ReadStd
+import tech.poder.proto.BitOutputStream
 import tech.poder.proto.Packet
 import tech.poder.proto.WriteStd
 
@@ -80,7 +82,7 @@ object PTIR {
 	data class Debug(val methodLinesIndexes: List<UInt> = emptyList(), val methodLinesText: String = "", val breakPoints: Boolean = false): Packet {
 		companion object {
 			val DEFAULT = Debug()
-			fun fromBytes(stream: java.io.InputStream): Debug {
+			fun fromBytes(stream: BitInputStream): Debug {
 				val methodLinesIndexes = List(ReadStd.readVUInt(stream).toInt()) {
 					val it0 = ReadStd.readVUInt(stream)
 					it0
@@ -90,7 +92,7 @@ object PTIR {
 				return Debug(methodLinesIndexes, methodLinesText, breakPoints)
 			}
 		}
-		override fun toBytes(stream: java.io.OutputStream) {
+		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, methodLinesIndexes.size.toUInt())
 			methodLinesIndexes.forEach { it0 ->
 				WriteStd.writeVUInt(stream, it0)
@@ -102,7 +104,7 @@ object PTIR {
 	data class Info(val index: List<UInt> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Info()
-			fun fromBytes(stream: java.io.InputStream): Info {
+			fun fromBytes(stream: BitInputStream): Info {
 				val index = List(ReadStd.readVUInt(stream).toInt()) {
 					val it0 = ReadStd.readVUInt(stream)
 					it0
@@ -110,7 +112,7 @@ object PTIR {
 				return Info(index)
 			}
 		}
-		override fun toBytes(stream: java.io.OutputStream) {
+		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, index.size.toUInt())
 			index.forEach { it0 ->
 				WriteStd.writeVUInt(stream, it0)
@@ -120,13 +122,13 @@ object PTIR {
 	data class Variable(val local: Boolean = false, val index: UInt = 0u): Packet {
 		companion object {
 			val DEFAULT = Variable()
-			fun fromBytes(stream: java.io.InputStream): Variable {
+			fun fromBytes(stream: BitInputStream): Variable {
 				val local = ReadStd.readBoolean(stream)
 				val index = ReadStd.readVUInt(stream)
 				return Variable(local, index)
 			}
 		}
-		override fun toBytes(stream: java.io.OutputStream) {
+		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeBoolean(stream, local)
 			WriteStd.writeVUInt(stream, index)
 		}
@@ -134,7 +136,7 @@ object PTIR {
 	data class Expression(val type: Op = Op.DEFAULT, val args: List<Any> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Expression()
-			fun fromBytes(stream: java.io.InputStream): Expression {
+			fun fromBytes(stream: BitInputStream): Expression {
 				val type = Op.values[ReadStd.readVUInt(stream).toInt()]
 				val args = List(ReadStd.readVUInt(stream).toInt()) {
 					val it0 = mapRead0(stream, ReadStd.readVUInt(stream).toInt())
@@ -142,7 +144,7 @@ object PTIR {
 				}
 				return Expression(type, args)
 			}
-			private fun mapRead0(stream: java.io.InputStream, id: Int): Any {
+			private fun mapRead0(stream: BitInputStream, id: Int): Any {
 				return when (id) {
 					0 -> {
 						Op.values[ReadStd.readVUInt(stream).toInt()]
@@ -165,14 +167,14 @@ object PTIR {
 				}
 			}
 		}
-		override fun toBytes(stream: java.io.OutputStream) {
+		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, type.ordinal.toUInt())
 			WriteStd.writeVUInt(stream, args.size.toUInt())
 			args.forEach { it0 ->
 				mapWrite0(stream, it0)
 			}
 		}
-		private fun mapWrite0(stream: java.io.OutputStream, value: Any) {
+		private fun mapWrite0(stream: BitOutputStream, value: Any) {
 			return when (value) {
 				is Op -> {
 					WriteStd.writeVUInt(stream, 0u)
@@ -204,7 +206,7 @@ object PTIR {
 	data class Method(val bytecode: List<Expression> = emptyList(), val extraInfo: List<Info> = emptyList(), val debugInfo: List<Debug> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Method()
-			fun fromBytes(stream: java.io.InputStream): Method {
+			fun fromBytes(stream: BitInputStream): Method {
 				val bytecode = List(ReadStd.readVUInt(stream).toInt()) {
 					val it0: Expression = ReadStd.readPacket(stream, Expression.Companion)
 					it0
@@ -220,7 +222,7 @@ object PTIR {
 				return Method(bytecode, extraInfo, debugInfo)
 			}
 		}
-		override fun toBytes(stream: java.io.OutputStream) {
+		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, bytecode.size.toUInt())
 			bytecode.forEach { it0 ->
 				WriteStd.writePacket(stream, it0)
@@ -238,13 +240,13 @@ object PTIR {
 	data class FullType(val type: Type = Type.DEFAULT, val unsigned: Boolean = false): Packet {
 		companion object {
 			val DEFAULT = FullType()
-			fun fromBytes(stream: java.io.InputStream): FullType {
+			fun fromBytes(stream: BitInputStream): FullType {
 				val type = Type.values[ReadStd.readVUInt(stream).toInt()]
 				val unsigned = ReadStd.readBoolean(stream)
 				return FullType(type, unsigned)
 			}
 		}
-		override fun toBytes(stream: java.io.OutputStream) {
+		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, type.ordinal.toUInt())
 			WriteStd.writeBoolean(stream, unsigned)
 		}
@@ -252,7 +254,7 @@ object PTIR {
 	data class Code(val id: String = "", val methods: List<Method> = emptyList(), val lastGlobalVarId: UInt = 0u, val structs: List<List<FullType>> = emptyList()): Packet {
 		companion object {
 			val DEFAULT = Code()
-			fun fromBytes(stream: java.io.InputStream): Code {
+			fun fromBytes(stream: BitInputStream): Code {
 				val id = ReadStd.readString(stream)
 				val methods = List(ReadStd.readVUInt(stream).toInt()) {
 					val it0: Method = ReadStd.readPacket(stream, Method.Companion)
@@ -269,7 +271,7 @@ object PTIR {
 				return Code(id, methods, lastGlobalVarId, structs)
 			}
 		}
-		override fun toBytes(stream: java.io.OutputStream) {
+		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeString(stream, id)
 			WriteStd.writeVUInt(stream, methods.size.toUInt())
 			methods.forEach { it0 ->

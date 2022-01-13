@@ -1,12 +1,11 @@
 package tech.poder.proto
 
-import java.io.InputStream
 import kotlin.math.max
 import kotlin.math.min
 
 object ReadStd {
 
-	fun readVarInt(input: InputStream): Int {
+	fun readVarInt(input: BitInputStream): Int {
 		var length = 0
 		var result = 0
 		var shift = 0
@@ -27,7 +26,7 @@ object ReadStd {
 		return result
 	}
 
-	fun readVarLong(input: InputStream): Long {
+	fun readVarLong(input: BitInputStream): Long {
 		var length = 0L
 		var result = 0L
 		var shift = 0
@@ -56,42 +55,42 @@ object ReadStd {
 		return value shr 1 xor -(value and 1)
 	}
 
-	fun readVInt(stream: InputStream): Int {
+	fun readVInt(stream: BitInputStream): Int {
 		return readZigZag(readVarInt(stream))
 	}
 
-	fun readVUInt(stream: InputStream): UInt {
+	fun readVUInt(stream: BitInputStream): UInt {
 		return readVarInt(stream).toUInt()
 	}
 
-	fun readVLong(stream: InputStream): Long {
+	fun readVLong(stream: BitInputStream): Long {
 		return readZigZag(readVarLong(stream))
 	}
 
-	fun readVULong(stream: InputStream): ULong {
+	fun readVULong(stream: BitInputStream): ULong {
 		return readVarLong(stream).toULong()
 	}
 
-	fun readString(stream: InputStream): String {
+	fun readString(stream: BitInputStream): String {
 		return stream.readNBytes(readVUInt(stream).toInt()).decodeToString()
 	}
 
-	fun <T> readPacket(stream: InputStream, objectInstance: Any): T {
-		return objectInstance::class.java.getMethod("fromBytes", InputStream::class.java)
+	fun <T> readPacket(stream: BitInputStream, objectInstance: Any): T {
+		return objectInstance::class.java.getMethod("fromBytes", BitInputStream::class.java)
 			.invoke(objectInstance, stream) as T
 	}
 
-	fun readBoolean(stream: InputStream): Boolean {
+	fun readBoolean(stream: BitInputStream): Boolean {
 		return stream.read() != 0
 	}
 
-	fun readAnyList(stream: InputStream): List<Any> {
+	fun readAnyList(stream: BitInputStream): List<Any> {
 		return List(readVUInt(stream).toInt()) {
 			readAny(stream)
 		}
 	}
 
-	fun readAny(stream: InputStream): Any {
+	fun readAny(stream: BitInputStream): Any {
 		return when (val code =
 			Packet.Types.values()[max(min(readVUInt(stream).toInt(), Packet.Types.UNKNOWN.ordinal), 0)]) {
 			Packet.Types.VUINT -> readVUInt(stream)
