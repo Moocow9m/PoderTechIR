@@ -5,6 +5,9 @@ module PoderTechIR.main {
 
 	exports tech.poder.ir.api;
 	exports tech.poder.ir.util;
+	exports tech.poder.ir.util.encode;
+	exports tech.poder.ir.util.encode.dynamic;
+	exports tech.poder.ir.util.encode.normal;
 	exports tech.poder.ir.vm;
 	exports tech.poder.ir.vm.std;
 	exports tech.poder.proto;

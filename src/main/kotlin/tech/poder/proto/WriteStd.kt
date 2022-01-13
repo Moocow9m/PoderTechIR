@@ -78,6 +78,12 @@ object WriteStd {
 		}
 	}
 
+	fun writeHuffman(stream: BitOutputStream, data: List<Boolean>) {
+		data.forEach {
+			stream.writeBit(it)
+		}
+	}
+
 	fun writeAnyNoPrefix(stream: BitOutputStream, any: Any) {//write shortcut(on read, type is known)
 		when (any) {
 			is UInt -> writeVUInt(stream, any)
@@ -92,56 +98,56 @@ object WriteStd {
 	fun writeAny(stream: BitOutputStream, any: Any) {
 		when (any) {
 			is Enum<*> -> {
-				writeVUInt(stream, Packet.Types.ENUM.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.ENUM]!!)
 				writeVUInt(stream, any.ordinal.toUInt())
 			}
 			is UInt -> {
-				writeVUInt(stream, Packet.Types.VUINT.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.VUINT]!!)
 				writeVUInt(stream, any)
 			}
 			is Int -> {
-				writeVUInt(stream, Packet.Types.VINT.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.VINT]!!)
 				writeVInt(stream, any)
 			}
 			is Byte -> {
-				writeVUInt(stream, Packet.Types.BYTE.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.BYTE]!!)
 				stream.write(any.toInt())
 			}
 			is UByte -> {
-				writeVUInt(stream, Packet.Types.UBYTE.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.UBYTE]!!)
 				stream.write(any.toInt())
 			}
 			is Short -> {
-				writeVUInt(stream, Packet.Types.VSHORT.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.VSHORT]!!)
 				writeVInt(stream, any.toInt())
 			}
 			is UShort -> {
-				writeVUInt(stream, Packet.Types.VUSHORT.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.VUSHORT]!!)
 				writeVUInt(stream, any.toUInt())
 			}
 			is Long -> {
-				writeVUInt(stream, Packet.Types.VLONG.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.VLONG]!!)
 				writeVLong(stream, any)
 			}
 			is ULong -> {
-				writeVUInt(stream, Packet.Types.VULONG.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.VULONG]!!)
 				writeVULong(stream, any)
 			}
 			is Packet -> {
-				writeVUInt(stream, Packet.Types.PACKET.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.PACKET]!!)
 				writeString(stream, any::class.java.name)
 				writePacket(stream, any)
 			}
 			is String -> {
-				writeVUInt(stream, Packet.Types.STRING.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.STRING]!!)
 				writeString(stream, any)
 			}
 			is List<*> -> {
-				writeVUInt(stream, Packet.Types.LIST.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.LIST]!!)
 				writeAnyList(stream, any)
 			}
 			is Boolean -> {
-				writeVUInt(stream, Packet.Types.BOOL.ordinal.toUInt())
+				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.BOOL]!!)
 				writeBoolean(stream, any)
 			}
 			else -> error("Unsupported type: ${any::class.simpleName}")

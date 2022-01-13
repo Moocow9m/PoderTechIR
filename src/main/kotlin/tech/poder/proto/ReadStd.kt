@@ -84,6 +84,16 @@ object ReadStd {
 		return stream.readBit()
 	}
 
+	fun readHuffman(stream: BitInputStream, targetMap: Map<List<Boolean>, *>, maxDepth: Int): Any {
+		val next = mutableListOf<Boolean>()
+
+		while (!targetMap.containsKey(next) && next.size < maxDepth) {
+			next.add(stream.readBit())
+		}
+
+		return targetMap[next]!!
+	}
+
 	fun readAnyList(stream: BitInputStream): List<Any> {
 		return List(readVUInt(stream).toInt()) {
 			readAny(stream)
@@ -91,8 +101,7 @@ object ReadStd {
 	}
 
 	fun readAny(stream: BitInputStream): Any {
-		return when (val code =
-			Packet.Types.values()[max(min(readVUInt(stream).toInt(), Packet.Types.UNKNOWN.ordinal), 0)]) {
+		return when (val code = readHuffman(stream, Packet.Types.binToTypes, Packet.Types.MAX_BITS) as Packet.Types) {
 			Packet.Types.VUINT -> readVUInt(stream)
 			Packet.Types.VINT -> readVInt(stream)
 			Packet.Types.STRING -> readString(stream)
