@@ -16,7 +16,23 @@ object WriteStd {
 		}
 	}
 
+	fun writeVarLong(out: OutputStream, long: Long) {
+		var value = long
+		while (true) {
+			if (value and 0x7F == value) {
+				out.write(value.toInt())
+				return
+			}
+			out.write((value and 0x7F or 0x80).toInt())
+			value = value ushr 7
+		}
+	}
+
 	fun writeZigZag(value: Int): Int {
+		return (value shl 1) xor (value shr 31)
+	}
+
+	fun writeZigZag(value: Long): Long {
 		return (value shl 1) xor (value shr 31)
 	}
 
@@ -26,6 +42,14 @@ object WriteStd {
 
 	fun writeVUInt(stream: OutputStream, int: UInt) {
 		writeVarInt(stream, int.toInt())
+	}
+
+	fun writeVLong(stream: OutputStream, long: Long) {
+		writeVarLong(stream, writeZigZag(long))
+	}
+
+	fun writeVULong(stream: OutputStream, long: ULong) {
+		writeVarLong(stream, long.toLong())
 	}
 
 	fun writeString(stream: OutputStream, string: String) {

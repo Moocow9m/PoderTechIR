@@ -115,6 +115,10 @@ data class MethodBuilder(
 		}
 	}
 
+	fun print(arg: Any) {
+		invoke(PTIR.STDCall.PRINT, null, arg)
+	}
+
 	fun invoke(stdCall: PTIR.STDCall, store: Variable? = null, vararg args: Any) {
 		addOp(PTIR.Op.INVOKE, store, stdCall, *args)
 	}

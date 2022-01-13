@@ -27,7 +27,32 @@ object ReadStd {
 		return result
 	}
 
+	fun readVarLong(input: InputStream): Long {
+		var length = 0L
+		var result = 0L
+		var shift = 0
+		var b: Long
+		do {
+			length++
+			if (length > 5) {
+				throw Exception("VarInt too long")
+			}
+			b = input.read().toLong()
+			if (b == -1L) {
+				throw Exception("Unexpected end of stream")
+			}
+			result = result or ((b and 0x7F) shl shift)
+			shift += 7
+
+		} while (b and 0x80 != 0L)
+		return result
+	}
+
 	fun readZigZag(value: Int): Int {
+		return value shr 1 xor -(value and 1)
+	}
+
+	fun readZigZag(value: Long): Long {
 		return value shr 1 xor -(value and 1)
 	}
 
@@ -37,6 +62,14 @@ object ReadStd {
 
 	fun readVUInt(stream: InputStream): UInt {
 		return readVarInt(stream).toUInt()
+	}
+
+	fun readVLong(stream: InputStream): Long {
+		return readZigZag(readVarLong(stream))
+	}
+
+	fun readVULong(stream: InputStream): ULong {
+		return readVarLong(stream).toULong()
 	}
 
 	fun readString(stream: InputStream): String {

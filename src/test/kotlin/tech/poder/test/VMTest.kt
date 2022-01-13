@@ -11,15 +11,15 @@ internal class VMTest {
 	companion object {
 		val testCode = CodeFile("Meow")
 		val helloWorld = testCode.addMethod {
-			invoke(PTIR.STDCall.PRINT, args = arrayOf("Hello, World!\n"))
+			print("Hello, World!\n")
 		}
 
 		val helloWorldWithPow = testCode.addMethod {
 			val tmp = newLocal()
 			invoke(Math.mathLib, Math.powInt, tmp, 13L, 16L)
-			invoke(PTIR.STDCall.PRINT, args = arrayOf("13^16 = "))
+			print("13^16 = ")
 			add(tmp, tmp, "!\n")
-			invoke(PTIR.STDCall.PRINT, args = arrayOf(tmp))
+			print(tmp)
 		}
 
 	}

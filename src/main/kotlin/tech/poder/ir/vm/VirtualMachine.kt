@@ -835,6 +835,20 @@ object VirtualMachine {
 						} else {
 							when (PTIR.STDCall.values[(op.args[1] as UInt).toInt()]) {
 								PTIR.STDCall.PRINT -> print(safeGetDataType(op.args[2], local))
+								PTIR.STDCall.STREAM -> when (op.args[2] as UInt) {
+									0u -> {
+										//open
+									}
+									1u -> {
+										//close
+									}
+									2u -> {
+										//read
+									}
+									3u -> {
+										//write
+									}
+								}
 								else -> error("[FATAL][VM] Unknown STDCALL: ${PTIR.STDCall.values[(op.args[1] as UInt).toInt()]}!")
 							}
 						}

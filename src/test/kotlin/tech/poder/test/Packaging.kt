@@ -11,20 +11,11 @@ import java.nio.file.Paths
 
 internal class Packaging {
 
-	val codeTest = CodeFile("Meow").let {
-		it.addMethod {
-			invoke(PTIR.STDCall.PRINT, args = arrayOf("Meow"))
-			val powered = newLocal()
-			invoke(Math.mathLib, Math.powInt, powered, 2, 3)
-		}
-		it
-	}
-
 	@Test
 	fun generalConstruction() {
 		println("Math.Std.Pow: " + Math.mathLib.asCode())
 
-		println("Main: " + codeTest.asCode())
+		println("Main: " + VMTest.testCode.asCode())
 	}
 
 	@Test
@@ -34,7 +25,7 @@ internal class Packaging {
 		Files.deleteIfExists(tmp)
 
 		var nos: BitOutputStream
-		listOf(codeTest, Math.mathLib).forEach {
+		listOf(VMTest.testCode, Math.mathLib).forEach {
 			nos = BitOutputStream(Files.newOutputStream(tmp))
 			it.write(nos)
 			nos.close()
