@@ -158,18 +158,18 @@ object PTIR {
 			}
 
 			val map0ToBin = mapOf(
-				2u to listOf(false, false),
-				1u to listOf(false, true),
-				0u to listOf(true, false),
-				4u to listOf(true, true, false),
-				3u to listOf(true, true, true),
+				0u to listOf(false, false),
+				4u to listOf(false, true),
+				2u to listOf(true, false),
+				3u to listOf(true, true, false),
+				1u to listOf(true, true, true),
 			)
 			val binToMap0 = mapOf(
-				listOf(false, false) to 2u,
-				listOf(false, true) to 1u,
-				listOf(true, false) to 0u,
-				listOf(true, true, false) to 4u,
-				listOf(true, true, true) to 3u,
+				listOf(false, false) to 0u,
+				listOf(false, true) to 4u,
+				listOf(true, false) to 2u,
+				listOf(true, true, false) to 3u,
+				listOf(true, true, true) to 1u,
 			)
 			const val MAX_BITS: Int = 4
 

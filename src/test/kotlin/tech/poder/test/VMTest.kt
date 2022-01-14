@@ -8,7 +8,7 @@ import tech.poder.ir.vm.std.Math
 internal class VMTest {
 
 	companion object {
-		val testCode = CodeFile("Meow")
+		val testCode = CodeFile("TestCode")
 		val helloWorld = testCode.addMethod {
 			print("Hello, World!\n")
 		}

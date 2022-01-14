@@ -2,7 +2,7 @@ package tech.poder.proto
 
 object WriteStd {
 
-	fun writeVarInt(out: BitOutputStream, int: Int) {
+	private fun writeVarInt(out: BitOutputStream, int: Int) {
 		var value = int
 		while (true) {
 			if (value and 0x7F == value) {
@@ -14,7 +14,7 @@ object WriteStd {
 		}
 	}
 
-	fun writeVarLong(out: BitOutputStream, long: Long) {
+	private fun writeVarLong(out: BitOutputStream, long: Long) {
 		var value = long
 		while (true) {
 			if (value and 0x7F == value) {
@@ -26,11 +26,11 @@ object WriteStd {
 		}
 	}
 
-	fun writeZigZag(value: Int): Int {
+	private fun writeZigZag(value: Int): Int {
 		return (value shl 1) xor (value shr 31)
 	}
 
-	fun writeZigZag(value: Long): Long {
+	private fun writeZigZag(value: Long): Long {
 		return (value shl 1) xor (value shr 31)
 	}
 
