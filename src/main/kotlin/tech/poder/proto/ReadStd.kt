@@ -1,8 +1,5 @@
 package tech.poder.proto
 
-import kotlin.math.max
-import kotlin.math.min
-
 object ReadStd {
 
 	fun readVarInt(input: BitInputStream): Int {
@@ -72,7 +69,17 @@ object ReadStd {
 	}
 
 	fun readString(stream: BitInputStream): String {
-		return stream.readNBytes(readVUInt(stream).toInt()).decodeToString()
+		return if (Packet.countHuffmanFrequency) {
+			stream.readNBytes(readVUInt(stream).toInt()).decodeToString().let { s ->
+				s.forEach {
+					val key = "Read_String_${it}"
+					Packet.frequencyList[key] = Packet.frequencyList.getOrDefault(key, 0) + 1
+				}
+				s
+			}
+		} else {
+			stream.readNBytes(readVUInt(stream).toInt()).decodeToString()
+		}
 	}
 
 	fun <T> readPacket(stream: BitInputStream, objectInstance: Any): T {

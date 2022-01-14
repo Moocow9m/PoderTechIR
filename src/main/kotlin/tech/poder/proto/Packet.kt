@@ -3,6 +3,7 @@ package tech.poder.proto
 interface Packet {
 	enum class Types {
 		ENUM, PACKET, LIST, STRING, UNION, BOOL, VUINT, VINT, BYTE, UBYTE, VSHORT, VUSHORT, VLONG, VULONG, UNKNOWN;
+
 		companion object {
 			val typesToBin = mapOf(
 				UNION to listOf(false, false, false),
