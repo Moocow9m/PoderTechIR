@@ -1,6 +1,13 @@
 package tech.poder.ir.vm
 
+import tech.poder.ir.api.Variable
 import tech.poder.ptir.PTIR
+//import java.net.http.HttpClient
+import java.nio.ByteBuffer
+import java.nio.channels.SeekableByteChannel
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.experimental.xor
@@ -9,6 +16,7 @@ object VirtualMachine {
 	private val enviornment = mutableMapOf<String, PTIR.Code>()
 	private val global = mutableMapOf<UInt, Any>()
 	private val codeInit = mutableSetOf<String>()
+	//private val client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build()
 
 	fun resetEnv() {
 		global.clear()
@@ -837,16 +845,140 @@ object VirtualMachine {
 								PTIR.STDCall.PRINT -> print(safeGetDataType(op.args[2], local))
 								PTIR.STDCall.STREAM -> when (op.args[2] as UInt) {
 									0u -> {
+										val location = op.args[3] as String
+										val protocolTarget = location.split("://")
+										when (protocolTarget[0].lowercase()) {
+											"http", "https" -> {
+												TODO() //may not do till after bootstrap due to rewrite complexity
+											}
+											"file" -> {
+												setDataType(a, Files.newByteChannel(Paths.get(protocolTarget[1]).toAbsolutePath(), StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE), local)
+											}
+										}
 										//open
 									}
 									1u -> {
-										//close
+										when (val res = safeGetDataType(a, local)) {
+											is SeekableByteChannel -> {
+												res.close()
+											}
+											else -> TODO()
+										}
 									}
 									2u -> {
-										//read
+										val location = op.args[3] as Variable
+										when (val obj = safeGetDataType(location, local)) {
+											is SeekableByteChannel -> {
+												var res = getDataType(a, local)
+												if (res == null) {
+													setDataType(a, ByteBuffer.allocate(1024), local)
+													res = getDataType(a, local)
+												} else {
+													when (res) {
+														is List<*> -> {
+															setDataType(a, ByteBuffer.wrap(res.map { toSigned(it!!).toByte() }.toByteArray()), local)
+															res = getDataType(a, local)
+														}
+														is ByteBuffer -> {
+															//no op
+														}
+														else -> TODO(res.toString())
+													}
+												}
+												res as ByteBuffer
+												obj.read(res)
+												res.flip()
+											}
+											else -> TODO(obj.toString())
+										}
 									}
 									3u -> {
+										val location = op.args[3] as Variable
+										when (val obj = safeGetDataType(location, local)) {
+											is SeekableByteChannel -> {
+												var res = getDataType(a, local)
+												if (res == null) {
+													setDataType(a, ByteBuffer.allocate(1024), local)
+													res = getDataType(a, local)
+												} else {
+													when (res) {
+														is List<*> -> {
+															setDataType(a, ByteBuffer.wrap(res.map { toSigned(it!!).toByte() }.toByteArray()), local)
+															res = getDataType(a, local)
+														}
+														is ByteBuffer -> {
+															//no op
+														}
+														else -> TODO(res.toString())
+													}
+												}
+												res as ByteBuffer
+												obj.write(res)
+												res.clear()
+											}
+											else -> TODO(obj.toString())
+										}
 										//write
+									}
+									4u -> {
+										val location = op.args[3] as Variable
+										val size = when (val res = safeGetDataType(location, local)) {
+											is SeekableByteChannel -> {
+												res.size()
+											}
+											is ByteBuffer -> {
+												res.limit()
+											}
+											else -> TODO()
+										}
+										setDataType(a, size, local)
+									}
+									5u -> {
+										val location = op.args[3] as Variable
+										val size = when (val res = safeGetDataType(location, local)) {
+											is SeekableByteChannel -> {
+												res.position()
+											}
+											is ByteBuffer -> {
+												res.position()
+											}
+											else -> TODO()
+										}
+										setDataType(a, size, local)
+									}
+									6u -> {
+										val obj = safeGetDataType(op.args[3], local)
+										when (val res = safeGetDataType(a, local)) {
+											is SeekableByteChannel -> {
+												res.position(toSigned(obj).toLong())
+											}
+											is ByteBuffer -> {
+												res.position(toSigned(obj).toInt())
+											}
+											else -> TODO()
+										}
+										//set position(file only)
+										//submit(http only)
+									}
+									7u -> {
+
+										val res = when (val obj = safeGetDataType(op.args[3], local)) {
+											is SeekableByteChannel -> {
+												val buf = ByteBuffer.allocate(1024)
+												obj.read(buf)
+												buf.flip()
+												List(buf.remaining()) {
+													buf.get()
+												}
+											}
+											is ByteBuffer -> {
+												List(obj.remaining()) {
+													obj.get()
+												}
+											}
+											else -> TODO(obj.toString())
+										}
+										setDataType(a, res, local)
 									}
 								}
 								else -> error("[FATAL][VM] Unknown STDCALL: ${PTIR.STDCall.values[(op.args[1] as UInt).toInt()]}!")

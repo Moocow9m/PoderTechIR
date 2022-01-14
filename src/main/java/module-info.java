@@ -2,6 +2,7 @@ module PoderTechIR.main {
 	requires jdk.incubator.foreign;
 	requires kotlin.stdlib.jdk8;
 	requires kotlin.stdlib.jdk7;
+	//requires java.net.http;
 
 	exports tech.poder.ir.api;
 	exports tech.poder.ir.util;
