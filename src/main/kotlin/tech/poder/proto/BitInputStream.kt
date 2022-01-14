@@ -27,8 +27,9 @@ class BitInputStream(private val realInputStream: InputStream) : InputStream() {
 		} else {
 			var result = 0
 			repeat(8) {
+				result = result shl 1
 				if (readBit()) {
-					result = result or (1 shl it)
+					result = result or 1
 				}
 			}
 			result

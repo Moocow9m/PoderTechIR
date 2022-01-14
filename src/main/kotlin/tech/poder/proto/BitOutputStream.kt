@@ -32,11 +32,14 @@ open class BitOutputStream(internal val realOutputStream: OutputStream) : Output
 		if (bitPos == 0) {
 			realOutputStream.write(b)
 		} else {
-			var tmp = b
-			repeat(8) {
-				writeBit(tmp and 1 != 0)
-				tmp = tmp shr 1
-			}
+			writeBit(b and 128 != 0)
+			writeBit(b and 64 != 0)
+			writeBit(b and 32 != 0)
+			writeBit(b and 16 != 0)
+			writeBit(b and 8 != 0)
+			writeBit(b and 4 != 0)
+			writeBit(b and 2 != 0)
+			writeBit(b and 1 != 0)
 		}
 	}
 
