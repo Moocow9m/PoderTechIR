@@ -40,6 +40,13 @@ interface Packet {
 		}
 	}
 
+	companion object {
+		const val countHuffmanFrequency = false
+		val frequencyList by lazy {
+			mutableMapOf<String, Int>()
+		}
+	}
+
 	fun length(): ULong {
 		val os = BlankOutputStream()
 		toBytes(os)

@@ -101,7 +101,12 @@ object ReadStd {
 	}
 
 	fun readAny(stream: BitInputStream): Any {
-		return when (val code = readHuffman(stream, Packet.Types.binToTypes, Packet.Types.MAX_BITS) as Packet.Types) {
+		val code = readHuffman(stream, Packet.Types.binToTypes, Packet.Types.MAX_BITS) as Packet.Types
+		if (Packet.countHuffmanFrequency) {
+			val key = "ReadSTD_ANY_${code}"
+			Packet.frequencyList[key] = Packet.frequencyList.getOrDefault(key, 0) + 1
+		}
+		return when (code) {
 			Packet.Types.VUINT -> readVUInt(stream)
 			Packet.Types.VINT -> readVInt(stream)
 			Packet.Types.STRING -> readString(stream)

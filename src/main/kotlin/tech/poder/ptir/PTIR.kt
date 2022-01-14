@@ -174,7 +174,12 @@ object PTIR {
 			const val MAX_BITS: Int = 4
 
 			private fun mapRead0(stream: BitInputStream): Any {
-				return when (val id = ReadStd.readHuffman(stream, binToMap0, MAX_BITS) as UInt) {
+				val id = ReadStd.readHuffman(stream, binToMap0, MAX_BITS) as UInt
+				if (Packet.countHuffmanFrequency) {
+					val key = "Expression_Read0_${id}"
+					Packet.frequencyList[key] = Packet.frequencyList.getOrDefault(key, 0) + 1
+				}
+				return when (id) {
 					0u -> {
 						Op.values[ReadStd.readVUInt(stream).toInt()]
 					}
