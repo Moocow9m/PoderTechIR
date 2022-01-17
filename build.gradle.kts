@@ -34,6 +34,7 @@ tasks {
     val javaVersion = JavaVersion.VERSION_17.toString()
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        dependsOn(clean)
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
         kotlinOptions.jvmTarget = javaVersion
@@ -44,6 +45,7 @@ tasks {
     }
 
     withType<JavaCompile> {
+        dependsOn(clean)
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
     }
@@ -56,6 +58,10 @@ tasks {
     val sourcesJar by creating(Jar::class) {
         archiveClassifier.set("sources")
         from(sourceSets.main.get().allSource)
+    }
+
+    build {
+        dependsOn(clean)
     }
 
     jar {
