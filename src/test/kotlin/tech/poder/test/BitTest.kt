@@ -1,5 +1,6 @@
 package tech.poder.test
 
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import tech.poder.proto.BitInputStream
 import tech.poder.proto.BitOutputStream
@@ -7,6 +8,7 @@ import java.io.ByteArrayOutputStream
 
 class BitTest {
 	@Test
+	@DisplayName("Test Write/Read Bits(Basic)")
 	fun readWriteTestBasic() {
 		val outputStream = ByteArrayOutputStream(1024)
 		val output = BitOutputStream(outputStream)
@@ -25,6 +27,7 @@ class BitTest {
 	}
 
 	@Test
+	@DisplayName("Test Write/Read Bits(Extra)")
 	fun readWriteTestExtra() {
 		val outputStream = ByteArrayOutputStream(3)
 		val output = BitOutputStream(outputStream)

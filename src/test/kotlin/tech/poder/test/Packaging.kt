@@ -1,5 +1,6 @@
 package tech.poder.test
 
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import tech.poder.ir.api.CodeFile
 import tech.poder.ir.vm.std.Math
@@ -11,6 +12,7 @@ import java.nio.file.Paths
 internal class Packaging {
 
 	@Test
+	@DisplayName("Test General Construction")
 	fun generalConstruction() {
 		println("Math.Std.Pow: " + Math.mathLib.asCode())
 
@@ -18,6 +20,7 @@ internal class Packaging {
 	}
 
 	@Test
+	@DisplayName("Test Write/Read Code")
 	fun writeReadTest() {
 		val tmp = Files.createTempFile(Paths.get("").toAbsolutePath(), "tmp", ".bin")
 

@@ -1,5 +1,6 @@
 package tech.poder.test
 
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import tech.poder.ir.api.CodeFile
 import tech.poder.ir.vm.VirtualMachine
@@ -24,6 +25,7 @@ internal class VMTest {
 	}
 
 	@Test
+	@DisplayName("Test VM Hello World")
 	fun helloWorld() {
 		val code = testCode.asCode()
 		//VirtualMachine.loadFile(code) //Not needed as exec also loads the target file
@@ -31,6 +33,7 @@ internal class VMTest {
 	}
 
 	@Test
+	@DisplayName("Test VM Hello World with pow")
 	fun helloWorldWithPow() {
 		val code = testCode.asCode()
 		VirtualMachine.loadFile(Math.code)

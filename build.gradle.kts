@@ -69,4 +69,14 @@ tasks {
         archives(sourcesJar)
         archives(jar)
     }
+
+    graalvmNative {
+        binaries["main"].let {
+            it.imageName.set("podertechir")
+            it.verbose.set(true)
+            it.fallback.set(false)
+            it.mainClass.set("tech.poder.test.VMTest")
+            it.debug.set(false)
+        }
+    }
 }
