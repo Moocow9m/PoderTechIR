@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.6.10"
+    id("org.graalvm.buildtools.native")
 }
 
 group = "tech.poder.ir"
@@ -58,10 +59,6 @@ tasks {
     val sourcesJar by creating(Jar::class) {
         archiveClassifier.set("sources")
         from(sourceSets.main.get().allSource)
-    }
-
-    build {
-        dependsOn(clean)
     }
 
     jar {
