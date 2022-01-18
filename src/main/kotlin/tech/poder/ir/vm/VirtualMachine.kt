@@ -8,18 +8,33 @@ import java.nio.channels.SeekableByteChannel
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.experimental.xor
 
 object VirtualMachine {
 	private val enviornment = mutableMapOf<String, PTIR.Code>()
-	private val global = mutableMapOf<UInt, Any>()
+	private val headFrag = ConcurrentLinkedQueue<UInt>()
+	private val last = AtomicInteger(1)
+	private val heap = mutableMapOf<UInt, Any>()
 	private val codeInit = mutableSetOf<String>()
-	//private val client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2).build()
+	private val emptyList = 0u
+
+	private fun allocateNew(): UInt {
+		val head = headFrag.poll()
+		if (head != null) {
+			return head
+		}
+		return last.getAndIncrement().toUInt()
+	}
 
 	fun resetEnv() {
-		global.clear()
+		heap.clear()
+		headFrag.clear()
+		last.set(1)
+		heap[emptyList] = emptyList<Any>()
 		enviornment.clear()
 		codeInit.clear()
 	}
@@ -30,19 +45,26 @@ object VirtualMachine {
 
 	fun exec(code: PTIR.Code, method: UInt, vararg args: Any) {
 		loadFile(code)
-		invoke(code.id, method.toInt(), args)
+		val id = allocateNew()
+		heap[id] = args.toMutableList()
+		invoke(code.id, method.toInt(), id)
 	}
 
-	private fun getDataType(arg: Any, local: Map<UInt, Any>, localOnly: Boolean = false): Any? {
+	private fun getDataType(arg: Any, local: Map<UInt, UInt>, localOnly: Boolean = false): Any? {
 		return when (arg) {
 			is PTIR.Variable -> {
 				if (arg.local) {
-					local[arg.index]
+					val loc = local[arg.index]
+					if (loc == null) {
+						null
+					} else {
+						heap[loc]
+					}
 				} else {
 					if (localOnly) {
 						arg
 					} else {
-						global[arg.index]
+						heap[arg.index]
 					}
 				}
 			}
@@ -58,7 +80,7 @@ object VirtualMachine {
 		}
 	}
 
-	private fun safeGetDataType(arg: Any, local: Map<UInt, Any>, localOnly: Boolean = false): Any {
+	private fun safeGetDataType(arg: Any, local: Map<UInt, UInt>, localOnly: Boolean = false): Any {
 		val tmp = getDataType(arg, local, localOnly)
 		check(tmp != null) {
 			"[FATAL][VM] Variable was null on GET!"
@@ -66,20 +88,33 @@ object VirtualMachine {
 		return tmp
 	}
 
-	private fun setDataType(variable: PTIR.Variable, value: Any?, local: MutableMap<UInt, Any>) {
+	private fun setDataType(variable: PTIR.Variable, value: Any?, local: MutableMap<UInt, UInt>) {
 		if (value == null) {
-			if (variable.local) {
+			val res = if (variable.local) {
 				local.remove(variable.index)
 			} else {
-				global.remove(variable.index)
+				if (variable.index != 0u) {
+					val res = heap.remove(variable.index)
+					headFrag.add(variable.index)
+					res
+				} else {
+					null
+				}
+			}
+			if (res == PTIR.Variable) {
+				setDataType(variable, null, local) //Garbage collection
 			}
 		} else {
 			val tmp = safeGetDataType(value, local)
-			if (variable.local) {
-				local[variable.index] = tmp
+			setDataType(variable, null, local) //Garbage collection
+			val id = if (variable.local) {
+				val id = allocateNew()
+				local[variable.index] = id
+				id
 			} else {
-				global[variable.index] = tmp
+				allocateNew()
 			}
+			heap[id] = tmp
 		}
 	}
 
@@ -561,7 +596,7 @@ object VirtualMachine {
 		}
 	}
 
-	private fun readBool(data: Any, local: Map<UInt, Any>): Boolean {
+	private fun readBool(data: Any, local: Map<UInt, UInt>): Boolean {
 		return when (data) {
 			is Number -> data != 0
 			is Boolean -> data
@@ -604,13 +639,13 @@ object VirtualMachine {
 		}
 	}
 
-	private fun invoke(name: String, methodId: Int, args: Array<out Any>): Any? {
+	private fun invoke(name: String, methodId: Int, args: UInt): Any? {
 		if (methodId != 0 && !codeInit.contains(name)) {
 			invoke(name, 0, args)
 		}
 		val method = enviornment[name]!!.methods[methodId]
-		val local = mutableMapOf<UInt, Any>()
-		local[0u] = mutableListOf<Any?>(*args)
+		val local = mutableMapOf<UInt, UInt>()
+		local[0u] = args
 		var line = 0
 		try {
 			val inside = mutableListOf<Boolean>()
@@ -825,19 +860,20 @@ object VirtualMachine {
 							}
 							val c = op.args[2] as UInt
 							if (op.args.size > 3) {
+								val argIndex = allocateNew()
+								heap[argIndex] = op.args.subList(3, op.args.size).map { safeGetDataType(it, local, true) }.toMutableList()
 								setDataType(
 									a,
 									invoke(
 										b,
 										c.toInt(),
-										op.args.subList(3, op.args.size).map { safeGetDataType(it, local, true) }
-											.toTypedArray()
+										argIndex
 									),
 									local
 								)
 							} else {
 								setDataType(
-									a, invoke(b, c.toInt(), emptyArray()), local
+									a, invoke(b, c.toInt(), emptyList), local
 								)
 							}
 						} else {
@@ -979,6 +1015,14 @@ object VirtualMachine {
 											else -> TODO(obj.toString())
 										}
 										setDataType(a, res, local)
+									}
+								}
+								PTIR.STDCall.STRING_UTILS -> when (op.args[2] as UInt) {
+									0u -> {
+										//stringToBytes
+									}
+									1u -> {
+										//bytesToString
 									}
 								}
 								else -> error("[FATAL][VM] Unknown STDCALL: ${PTIR.STDCall.values[(op.args[1] as UInt).toInt()]}!")

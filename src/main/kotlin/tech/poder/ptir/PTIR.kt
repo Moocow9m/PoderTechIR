@@ -11,6 +11,7 @@ object PTIR {
 	enum class STDCall {
 		PRINT,
 		STREAM,
+		STRING_UTILS,
 		;
 
 		companion object {
