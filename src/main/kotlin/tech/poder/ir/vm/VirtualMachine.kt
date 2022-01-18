@@ -15,7 +15,7 @@ import kotlin.experimental.or
 import kotlin.experimental.xor
 
 object VirtualMachine {
-	private val enviornment = mutableMapOf<String, PTIR.Code>()
+	private val environment = mutableMapOf<String, PTIR.Code>()
 	private val headFrag = ConcurrentLinkedQueue<UInt>()
 	private val last = AtomicInteger(1)
 	private val heap = mutableMapOf<UInt, Any>()
@@ -40,12 +40,12 @@ object VirtualMachine {
 		headFrag.clear()
 		last.set(1)
 		heap[emptyList] = emptyList<Any>()
-		enviornment.clear()
+		environment.clear()
 		codeInit.clear()
 	}
 
 	fun loadFile(code: PTIR.Code) {
-		enviornment[code.id] = code
+		environment[code.id] = code
 	}
 
 	fun exec(code: PTIR.Code, method: UInt, vararg args: Any) {
@@ -644,7 +644,7 @@ object VirtualMachine {
 		if (methodId != 0 && !codeInit.contains(name)) {
 			invoke(name, 0, args)
 		}
-		val method = enviornment[name]!!.methods[methodId]
+		val method = environment[name]!!.methods[methodId]
 		val local = mutableMapOf<UInt, UInt>()
 		local[0u] = args
 		var line = 0
@@ -728,7 +728,7 @@ object VirtualMachine {
 					}
 					PTIR.Op.NEW_STRUCT -> {
 						val store = op.args[0] as PTIR.Variable
-						val allStructs = enviornment[name]!!.structs
+						val allStructs = environment[name]!!.structs
 						val struct = allStructs[(op.args[1] as UInt).toInt()]
 						val newStruct = MutableList(struct.size) {
 							defaultType(struct[it])
