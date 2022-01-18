@@ -893,7 +893,6 @@ object VirtualMachine {
 												setDataType(a, Files.newByteChannel(Paths.get(protocolTarget[1]).toAbsolutePath(), StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE), local)
 											}
 										}
-										//open
 									}
 									1u -> {
 										when (val res = safeGetDataType(a, local)) {
@@ -956,7 +955,6 @@ object VirtualMachine {
 											}
 											else -> TODO(obj.toString())
 										}
-										//write
 									}
 									4u -> {
 										val location = op.args[3] as Variable
@@ -999,7 +997,6 @@ object VirtualMachine {
 										//submit(http only)
 									}
 									7u -> {
-
 										val res = when (val obj = safeGetDataType(op.args[3], local)) {
 											is SeekableByteChannel -> {
 												val buf = ByteBuffer.allocate(1024)
@@ -1021,9 +1018,13 @@ object VirtualMachine {
 								}
 								PTIR.STDCall.STRING_UTILS -> when (op.args[2] as UInt) {
 									0u -> {
+										val location = safeGetDataType(op.args[3], local) as String
+										setDataType(a, location.encodeToByteArray().toMutableList(), local)
 										//stringToBytes
 									}
 									1u -> {
+										val location = safeGetDataType(op.args[3], local) as List<Byte>
+										setDataType(a, location.toByteArray().decodeToString(), local)
 										//bytesToString
 									}
 								}

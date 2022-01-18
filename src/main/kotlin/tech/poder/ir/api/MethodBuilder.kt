@@ -119,6 +119,46 @@ data class MethodBuilder(
 		invoke(PTIR.STDCall.PRINT, null, arg)
 	}
 
+	fun stringToBytes(arg: Any, result: Variable) {
+		invoke(PTIR.STDCall.STRING_UTILS, result, 0u, arg)
+	}
+
+	fun bytesToString(arg: Any, result: Variable) {
+		invoke(PTIR.STDCall.STRING_UTILS, result, 1u, arg)
+	}
+
+	fun openIO(result: Variable, address: Variable) {
+		invoke(PTIR.STDCall.STREAM, result, 0u, address)
+	}
+
+	fun closeIO(io: Variable) {
+		invoke(PTIR.STDCall.STREAM, io, 1u)
+	}
+
+	fun readIO(io: Variable, to: Variable) {
+		invoke(PTIR.STDCall.STREAM, to, 2u, io)
+	}
+
+	fun writeIO(io: Variable, from: Variable) {
+		invoke(PTIR.STDCall.STREAM, from, 3u, io)
+	}
+
+	fun sizeOfIO(io: Variable, result: Variable) {
+		invoke(PTIR.STDCall.STREAM, result, 4u, io)
+	}
+
+	fun getPositionOfIO(io: Variable, result: Variable) {
+		invoke(PTIR.STDCall.STREAM, result, 5u, io)
+	}
+
+	fun setPositionOfIO(io: Variable, to: Any) {
+		invoke(PTIR.STDCall.STREAM, io, 6u, to)
+	}
+
+	fun ioResultsToBytes(from: Variable, result: Variable) {
+		invoke(PTIR.STDCall.STREAM, result, 7u, from)
+	}
+
 	fun invoke(stdCall: PTIR.STDCall, store: Variable? = null, vararg args: Any) {
 		addOp(PTIR.Op.INVOKE, store, stdCall, *args)
 	}
