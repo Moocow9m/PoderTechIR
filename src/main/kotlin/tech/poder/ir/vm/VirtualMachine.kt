@@ -22,12 +22,17 @@ object VirtualMachine {
 	private val codeInit = mutableSetOf<String>()
 	private val emptyList = 0u
 
-	private fun allocateNew(): UInt {
+	private fun allocate(): UInt {
 		val head = headFrag.poll()
 		if (head != null) {
 			return head
 		}
 		return last.getAndIncrement().toUInt()
+	}
+
+	private fun deallocate(address: UInt) {
+		heap.remove(address)
+		headFrag.add(address)
 	}
 
 	fun resetEnv() {
@@ -45,9 +50,14 @@ object VirtualMachine {
 
 	fun exec(code: PTIR.Code, method: UInt, vararg args: Any) {
 		loadFile(code)
-		val id = allocateNew()
-		heap[id] = args.toMutableList()
-		invoke(code.id, method.toInt(), id)
+		if (args.isEmpty()) {
+			invoke(code.id, method.toInt(), emptyList)
+		} else {
+			val id = allocate()
+			heap[id] = args.toMutableList()
+			invoke(code.id, method.toInt(), id)
+			deallocate(id)
+		}
 	}
 
 	private fun getDataType(arg: Any, local: Map<UInt, UInt>, localOnly: Boolean = false): Any? {
@@ -90,29 +100,20 @@ object VirtualMachine {
 
 	private fun setDataType(variable: PTIR.Variable, value: Any?, local: MutableMap<UInt, UInt>) {
 		if (value == null) {
-			val res = if (variable.local) {
+			if (variable.local) {
 				local.remove(variable.index)
-			} else {
-				if (variable.index != 0u) {
-					val res = heap.remove(variable.index)
-					headFrag.add(variable.index)
-					res
-				} else {
-					null
-				}
-			}
-			if (res == PTIR.Variable) {
-				setDataType(variable, null, local) //Garbage collection
+			} else if (variable.index != 0u) { //Don't GC the empty list
+				deallocate(variable.index)
 			}
 		} else {
 			val tmp = safeGetDataType(value, local)
-			setDataType(variable, null, local) //Garbage collection
+			setDataType(variable, null, local) //Garbage collection (GC)
 			val id = if (variable.local) {
-				val id = allocateNew()
+				val id = allocate()
 				local[variable.index] = id
 				id
 			} else {
-				allocateNew()
+				allocate()
 			}
 			heap[id] = tmp
 		}
@@ -860,7 +861,7 @@ object VirtualMachine {
 							}
 							val c = op.args[2] as UInt
 							if (op.args.size > 3) {
-								val argIndex = allocateNew()
+								val argIndex = allocate()
 								heap[argIndex] = op.args.subList(3, op.args.size).map { safeGetDataType(it, local, true) }.toMutableList()
 								setDataType(
 									a,
@@ -871,6 +872,7 @@ object VirtualMachine {
 									),
 									local
 								)
+								deallocate(argIndex)
 							} else {
 								setDataType(
 									a, invoke(b, c.toInt(), emptyList), local
