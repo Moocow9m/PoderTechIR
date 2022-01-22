@@ -13,6 +13,7 @@ repositories {
 dependencies {
     implementation(platform(kotlin("bom")))
     implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
     implementation(kotlin("reflect"))
     implementation(platform(kotlin("bom")))
     testImplementation("org.apiguardian:apiguardian-api:1.1.2") //Fix for JUnit > 1.7.X
@@ -68,15 +69,5 @@ tasks {
     artifacts {
         archives(sourcesJar)
         archives(jar)
-    }
-
-    graalvmNative {
-        binaries["main"].let {
-            it.imageName.set("podertechir")
-            it.verbose.set(true)
-            it.fallback.set(false)
-            it.mainClass.set("tech.poder.test.VMTest")
-            it.debug.set(false)
-        }
     }
 }

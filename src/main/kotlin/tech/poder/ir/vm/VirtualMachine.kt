@@ -1,8 +1,11 @@
 package tech.poder.ir.vm
 
+//import java.net.http.HttpClient
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import tech.poder.ir.api.Variable
 import tech.poder.ptir.PTIR
-//import java.net.http.HttpClient
 import java.nio.ByteBuffer
 import java.nio.channels.SeekableByteChannel
 import java.nio.file.Files
@@ -17,10 +20,10 @@ import kotlin.experimental.xor
 object VirtualMachine {
 	private val environment = mutableMapOf<String, PTIR.Code>()
 	private val headFrag = ConcurrentLinkedQueue<UInt>()
-	private val last = AtomicInteger(1)
+	private val last = AtomicInteger(2)
 	private val heap = mutableMapOf<UInt, Any>()
 	private val codeInit = mutableSetOf<String>()
-	private val emptyList = 0u
+	private val emptyList = 1u
 
 	private fun allocate(): UInt {
 		val head = headFrag.poll()
@@ -50,13 +53,15 @@ object VirtualMachine {
 
 	fun exec(code: PTIR.Code, method: UInt, vararg args: Any) {
 		loadFile(code)
-		if (args.isEmpty()) {
-			invoke(code.id, method.toInt(), emptyList)
-		} else {
-			val id = allocate()
-			heap[id] = args.toMutableList()
-			invoke(code.id, method.toInt(), id)
-			deallocate(id)
+		runBlocking {
+			if (args.isEmpty()) {
+				invoke(code.id, method.toInt(), emptyList)
+			} else {
+				val id = allocate()
+				heap[id] = args.toMutableList()
+				invoke(code.id, method.toInt(), id)
+				deallocate(id)
+			}
 		}
 	}
 
@@ -85,6 +90,7 @@ object VirtualMachine {
 			is ULong -> arg
 			is UShort -> arg
 			is Boolean -> arg
+			is Job -> arg
 			is Collection<*> -> arg.toMutableList()
 			else -> TODO(arg::class.java.name)
 		}
@@ -640,7 +646,7 @@ object VirtualMachine {
 		}
 	}
 
-	private fun invoke(name: String, methodId: Int, args: UInt): Any? {
+	private suspend fun invoke(name: String, methodId: Int, args: UInt): Any? = runBlocking {
 		if (methodId != 0 && !codeInit.contains(name)) {
 			invoke(name, 0, args)
 		}
@@ -656,7 +662,7 @@ object VirtualMachine {
 				val op = method.bytecode[line]
 				when (op.type) {
 					PTIR.Op.RETURN -> {
-						return if (op.args.size > 1) {
+						return@runBlocking if (op.args.size > 1) {
 							safeGetDataType(op.args[1], local)
 						} else {
 							null
@@ -852,6 +858,55 @@ object VirtualMachine {
 						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, xor(a, b), local)
 					}
+					PTIR.Op.LAUNCH -> {
+						val a = op.args[0]
+						val returnTo = if (a is PTIR.Variable) {
+							a
+						} else {
+							Variable.VOID
+						}
+
+						val invokePointer = if (returnTo == Variable.VOID) {
+							1
+						} else {
+							0
+						}
+						var b = op.args[invokePointer] as String
+						if (b.isBlank()) {
+							b = name
+						}
+						val c = op.args[invokePointer + 1] as UInt
+
+						val job = if (op.args.size > invokePointer + 1) {
+							launch {
+								val argIndex = allocate()
+								heap[argIndex] =
+									op.args.subList(invokePointer + 2, op.args.size).map { safeGetDataType(it, local, true) }
+										.toMutableList()
+								setDataType(
+									Variable.VOID,
+									invoke(
+										b,
+										c.toInt(),
+										argIndex
+									),
+									local
+								)
+								deallocate(argIndex)
+							}
+						} else {
+							launch {
+								setDataType(
+									Variable.VOID, invoke(b, c.toInt(), emptyList), local
+								)
+							}
+						}
+						setDataType(returnTo, job, local)
+					}
+					PTIR.Op.AWAIT -> {
+						val a = safeGetDataType(op.args[0], local) as Job
+						a.join()
+					}
 					PTIR.Op.INVOKE -> {
 						val a = op.args[0] as PTIR.Variable
 						if (op.args[1] is String) {
@@ -862,7 +917,9 @@ object VirtualMachine {
 							val c = op.args[2] as UInt
 							if (op.args.size > 3) {
 								val argIndex = allocate()
-								heap[argIndex] = op.args.subList(3, op.args.size).map { safeGetDataType(it, local, true) }.toMutableList()
+								heap[argIndex] =
+									op.args.subList(3, op.args.size).map { safeGetDataType(it, local, true) }
+										.toMutableList()
 								setDataType(
 									a,
 									invoke(
@@ -890,7 +947,16 @@ object VirtualMachine {
 												TODO() //may not do till after bootstrap due to rewrite complexity
 											}
 											"file" -> {
-												setDataType(a, Files.newByteChannel(Paths.get(protocolTarget[1]).toAbsolutePath(), StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE), local)
+												setDataType(
+													a,
+													Files.newByteChannel(
+														Paths.get(protocolTarget[1]).toAbsolutePath(),
+														StandardOpenOption.CREATE,
+														StandardOpenOption.READ,
+														StandardOpenOption.WRITE
+													),
+													local
+												)
 											}
 										}
 									}
@@ -913,7 +979,12 @@ object VirtualMachine {
 												} else {
 													when (res) {
 														is List<*> -> {
-															setDataType(a, ByteBuffer.wrap(res.map { toSigned(it!!).toByte() }.toByteArray()), local)
+															setDataType(
+																a,
+																ByteBuffer.wrap(res.map { toSigned(it!!).toByte() }
+																	.toByteArray()),
+																local
+															)
 															res = getDataType(a, local)
 														}
 														is ByteBuffer -> {
@@ -940,7 +1011,12 @@ object VirtualMachine {
 												} else {
 													when (res) {
 														is List<*> -> {
-															setDataType(a, ByteBuffer.wrap(res.map { toSigned(it!!).toByte() }.toByteArray()), local)
+															setDataType(
+																a,
+																ByteBuffer.wrap(res.map { toSigned(it!!).toByte() }
+																	.toByteArray()),
+																local
+															)
 															res = getDataType(a, local)
 														}
 														is ByteBuffer -> {
@@ -1080,6 +1156,6 @@ object VirtualMachine {
 			}
 			throw ex
 		}
-		return null
+		null
 	}
 }

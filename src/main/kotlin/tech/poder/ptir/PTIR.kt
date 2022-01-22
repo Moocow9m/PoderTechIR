@@ -72,6 +72,8 @@ object PTIR {
 		SAL,
 		XOR,
 		INVOKE,
+		LAUNCH,
+		AWAIT,
 		NULL,
 		IF_NULL,
 		;

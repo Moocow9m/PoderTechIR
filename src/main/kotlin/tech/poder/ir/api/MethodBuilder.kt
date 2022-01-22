@@ -115,6 +115,18 @@ data class MethodBuilder(
 		}
 	}
 
+	fun await(job: Variable) {
+		addOp(PTIR.Op.AWAIT, job)
+	}
+
+	fun launch(codeFile: CodeFile, method: UInt, store: Variable? = null, vararg args: Any) {
+		if (codeFile.name == parent.name) {
+			addOp(PTIR.Op.INVOKE, store, "", method, *args)
+		} else {
+			addOp(PTIR.Op.INVOKE, store, codeFile.name, method, *args)
+		}
+	}
+
 	fun print(arg: Any) {
 		invoke(PTIR.STDCall.PRINT, null, arg)
 	}
