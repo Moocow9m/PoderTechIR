@@ -23,20 +23,20 @@ dependencies {
 
 tasks {
 
-    val javaDestination = compileJava.get().destinationDirectory.get()
+    /*val javaDestination = compileJava.get().destinationDirectory.get()
     val javaTestDestination = compileTestJava.get().destinationDirectory.get()
     compileKotlin {
         destinationDirectory.set(javaDestination)
     }
     compileTestKotlin {
         destinationDirectory.set(javaTestDestination)
-    }
+    }*/
 
     //val javaVersionCompat = JavaVersion.VERSION_16.toString()
     val javaVersion = JavaVersion.VERSION_17.toString()
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        dependsOn(clean)
+        //dependsOn(clean)
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
         kotlinOptions.jvmTarget = javaVersion
@@ -47,14 +47,14 @@ tasks {
     }
 
     withType<JavaCompile> {
-        dependsOn(clean)
+        //dependsOn(clean)
         sourceCompatibility = javaVersion
         targetCompatibility = javaVersion
     }
 
     withType<Test> {
         useJUnitPlatform()
-        jvmArgs("--add-modules=jdk.incubator.foreign", "--enable-native-access=PoderTechIR.main")
+        jvmArgs("--add-modules=jdk.incubator.foreign", "--enable-native-access=ALL-UNNAMED")
     }
 
     val sourcesJar by creating(Jar::class) {
