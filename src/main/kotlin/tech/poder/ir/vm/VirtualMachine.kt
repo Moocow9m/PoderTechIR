@@ -858,6 +858,39 @@ object VirtualMachine {
 						val b = safeGetDataType(op.args[2], local)
 						setDataType(op.args[0] as PTIR.Variable, xor(a, b), local)
 					}
+					PTIR.Op.TYPE_OF -> {
+						val res = when (val type = safeGetDataType(op.args[1], local)) {
+							is UInt -> {
+								0u
+							}
+							is Int -> {
+								1u
+							}
+							is Byte -> {
+								3u
+							}
+							is UByte -> {
+								4u
+							}
+							is Long -> {
+								5u
+							}
+							is ULong -> {
+								6u
+							}
+							is Short -> {
+								7u
+							}
+							is UShort -> {
+								8u
+							}
+							is List<*> -> { //May be Struct or Normal List!
+								9u
+							}
+							else -> error("Type not recognized: ${type::class.java.name}")
+						}
+						setDataType(op.args[0] as PTIR.Variable, res, local)
+					}
 					PTIR.Op.LAUNCH -> {
 						val a = op.args[0]
 						val returnTo = if (a is PTIR.Variable) {

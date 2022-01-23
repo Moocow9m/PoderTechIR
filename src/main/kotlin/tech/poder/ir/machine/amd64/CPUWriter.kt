@@ -65,6 +65,10 @@ value class CPUWriter (val out: BitOutputStream) {
 				out.writeBit(true)
 				out.writeBit(true)
 			}
+			RegisterName.RAX_HIGH -> TODO()
+			RegisterName.RBX_HIGH -> TODO()
+			RegisterName.RCX_HIGH -> TODO()
+			RegisterName.RDX_HIGH -> TODO()
 		}
 	}
 

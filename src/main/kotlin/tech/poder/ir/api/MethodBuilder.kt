@@ -119,11 +119,15 @@ data class MethodBuilder(
 		addOp(PTIR.Op.AWAIT, job)
 	}
 
+	fun typeOf(store: Variable, type: Any) {
+		addOp(PTIR.Op.TYPE_OF, store, type)
+	}
+
 	fun launch(codeFile: CodeFile, method: UInt, store: Variable? = null, vararg args: Any) {
 		if (codeFile.name == parent.name) {
-			addOp(PTIR.Op.INVOKE, store, "", method, *args)
+			addOp(PTIR.Op.LAUNCH, store, "", method, *args)
 		} else {
-			addOp(PTIR.Op.INVOKE, store, codeFile.name, method, *args)
+			addOp(PTIR.Op.LAUNCH, store, codeFile.name, method, *args)
 		}
 	}
 

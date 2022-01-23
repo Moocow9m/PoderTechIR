@@ -71,6 +71,7 @@ object PTIR {
 		SAR,
 		SAL,
 		XOR,
+		TYPE_OF,
 		INVOKE,
 		LAUNCH,
 		AWAIT,

@@ -1,9 +1,10 @@
 package tech.poder.ir.machine.x86
 
 enum class RegisterSize {
-	M8,
-	M16,
-	M32,
-	M64,
-	M128,
+	I8,
+	I16,
+	I32,
+	I64,
+	I128,
+	I256,
 }
