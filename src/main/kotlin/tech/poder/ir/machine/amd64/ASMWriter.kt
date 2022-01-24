@@ -21,6 +21,15 @@ data class ASMWriter(val out: BitOutputStream, val forWindows: Boolean = false) 
 		private val newLine = "\n".encodeToByteArray()[0]
 		private val ret = "ret\n".encodeToByteArray()
 		private val header = "DEFAULT REL\n".encodeToByteArray()
+		val ARG_ONE = RegisterName.RDI
+		val ARG_TWO = RegisterName.RSI
+		val ARG_THREE = RegisterName.RDX
+		val ARG_FOUR = RegisterName.RCX
+		val ARG_FIVE = RegisterName.R8
+		val ARG_SIX = RegisterName.R9
+
+		val RETURN_VALUE = RegisterName.RAX
+
 	}
 
 	private fun size(of: RegisterSize): String {

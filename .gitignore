@@ -15,6 +15,7 @@ testFiles/
 # AWS User-specific
 .idea/**/aws.xml
 *.bin
+*.asm
 # Generated files
 .idea/**/contentModel.xml
 samples/**

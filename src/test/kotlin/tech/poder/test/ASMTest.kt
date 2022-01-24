@@ -28,7 +28,7 @@ class ASMTest {
 		val text = InternalSection(".text")
 		val printf = ExternalSection("printf")
 		val helloString = DBEntry.construct("myString1", "Hello World!")
-		val goodbyeString = DBEntry.construct("myString2", "...and goodbye!")
+		val goodbyeString = DBEntry.construct("myString2", "And goodbye!")
 		val fmt = DBEntry.construct("fmt", "%s\n")
 
 		writeSection(asmw, data) {
@@ -43,16 +43,17 @@ class ASMTest {
 			defineLabel(main)
 			//defineLabel(start)
 
-			lea(RegisterName.RSI, helloString, RegisterSize.I64)
-			lea(RegisterName.RDI, fmt, RegisterSize.I64)
+			lea(ASMWriter.ARG_TWO, helloString, RegisterSize.I64)
+			lea(ASMWriter.ARG_ONE, fmt, RegisterSize.I64)
 			mov(RegisterName.RAX, 0, RegisterSize.I32)
 			call(printf)
 
-			lea(RegisterName.RSI, goodbyeString, RegisterSize.I64)
-			lea(RegisterName.RDI, fmt, RegisterSize.I64)
+			lea(ASMWriter.ARG_TWO, goodbyeString, RegisterSize.I64)
+			lea(ASMWriter.ARG_ONE, fmt, RegisterSize.I64)
 			mov(RegisterName.RAX, 0, RegisterSize.I32)
 			call(printf)
 
+			mov(ASMWriter.RETURN_VALUE, 0, RegisterSize.I32) //Exit code 0
 			ret()
 		}
 		nos.close()
