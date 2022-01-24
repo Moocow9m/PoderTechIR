@@ -6,6 +6,8 @@ import tech.poder.ir.machine.amd64.ASMWriter
 import tech.poder.ir.machine.amd64.RegisterName
 import tech.poder.ir.machine.amd64.RegisterSize
 import tech.poder.ir.machine.asm.DBEntry
+import tech.poder.ir.machine.asm.ExternalSection
+import tech.poder.ir.machine.asm.InternalSection
 import tech.poder.ir.machine.asm.Section
 import tech.poder.proto.BitOutputStream
 import java.nio.file.Files
@@ -20,63 +22,45 @@ class ASMTest {
 		Files.deleteIfExists(tmp)
 		val nos = BitOutputStream(Files.newOutputStream(tmp))
 		val asmw = ASMWriter(nos)
-		val main = Section("main")
-		//val start = Section("_start")
-		val data = Section(".data")
-		val text = Section(".text")
-		val printf = Section("printf")
+		val main = InternalSection("main")
+		//val start = InternalSection("_start")
+		val data = InternalSection(".data")
+		val text = InternalSection(".text")
+		val printf = ExternalSection("printf")
 		val helloString = DBEntry.construct("myString1", "Hello World!")
 		val goodbyeString = DBEntry.construct("myString2", "...and goodbye!")
 		val fmt = DBEntry.construct("fmt", "%s\n")
 
-		writeSection(asmw, 0, data) { tabs ->
-			tabs(tabs)
+		writeSection(asmw, data) {
 			db(helloString)
-			tabs(tabs)
 			db(goodbyeString)
-			tabs(tabs)
 			db(fmt)
 		}
-		writeSection(asmw, 0, text) { tabs ->
-			tabs(tabs)
+		writeSection(asmw, text) {
 			asmw.globalize(main)
-			//tabs(tabs)
 			//asmw.globalize(start)
-			tabs(tabs)
 			asmw.defineLabel(printf, true)
-			tabs(tabs)
 			defineLabel(main)
-			//tabs(tabs)
 			//defineLabel(start)
 
-			tabs(tabs)
 			asmw.lea(RegisterName.RSI, helloString, RegisterSize.I64)
-			tabs(tabs)
 			asmw.lea(RegisterName.RDI, fmt, RegisterSize.I64)
-			tabs(tabs)
 			mov(RegisterName.RAX, 0, RegisterSize.I32)
-			tabs(tabs)
 			call(printf)
 
-			tabs(tabs)
 			asmw.lea(RegisterName.RSI, goodbyeString, RegisterSize.I64)
-			tabs(tabs)
 			asmw.lea(RegisterName.RDI, fmt, RegisterSize.I64)
-			tabs(tabs)
 			mov(RegisterName.RAX, 0, RegisterSize.I32)
-			tabs(tabs)
 			call(printf)
 
-			tabs(tabs)
 			ret()
 		}
 		nos.close()
 		//todo: test
 	}
 
-	private fun writeSection(writer: ASMWriter, tabs: Int, sec: Section, block: ASMWriter.(Int) -> Unit) {
-		writer.tabs(tabs)
+	private fun writeSection(writer: ASMWriter, sec: Section, block: ASMWriter.() -> Unit) {
 		writer.defineSection(sec)
-		block.invoke(writer, tabs + 1)
+		block.invoke(writer)
 	}
 }

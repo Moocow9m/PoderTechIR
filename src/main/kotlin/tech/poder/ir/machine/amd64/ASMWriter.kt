@@ -3,6 +3,8 @@ package tech.poder.ir.machine.amd64
 import tech.poder.ir.machine.HexNumber
 import tech.poder.ir.machine.Pointer
 import tech.poder.ir.machine.asm.DBEntry
+import tech.poder.ir.machine.asm.ExternalSection
+import tech.poder.ir.machine.asm.InternalSection
 import tech.poder.ir.machine.asm.Section
 import tech.poder.proto.BitOutputStream
 
@@ -113,8 +115,11 @@ data class ASMWriter(val out: BitOutputStream, val forWindows: Boolean = false) 
 	}
 
 	fun call(sec: Section) {
-		out.write("call ${sectionName(sec)} wrt ..plt".encodeToByteArray())
-		newLine()
+		if (sec is InternalSection) {
+			out.write("call ${sectionName(sec)}\n".encodeToByteArray())
+		} else {
+			out.write("call ${sectionName(sec)} wrt ..plt\n".encodeToByteArray())
+		}
 	}
 
 	fun mov(dst: Any, with: Any, size: RegisterSize) {
@@ -131,10 +136,6 @@ data class ASMWriter(val out: BitOutputStream, val forWindows: Boolean = false) 
 
 	fun newLine() {
 		out.write(newLine)
-	}
-
-	fun tabs(amount: Int) {
-		out.write("\t".repeat(amount).encodeToByteArray())
 	}
 
 	fun ret() {
