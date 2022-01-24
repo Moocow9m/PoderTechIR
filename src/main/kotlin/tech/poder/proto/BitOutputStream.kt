@@ -28,6 +28,10 @@ open class BitOutputStream(internal val realOutputStream: OutputStream) : Output
 		}
 	}
 
+	fun write(b: Byte) {
+		write(b.toInt())
+	}
+
 	override fun write(b: Int) {
 		if (bitPos == 0) {
 			realOutputStream.write(b)
