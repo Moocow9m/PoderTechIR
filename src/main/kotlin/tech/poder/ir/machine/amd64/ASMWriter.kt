@@ -100,18 +100,16 @@ data class ASMWriter(val out: BitOutputStream, val forWindows: Boolean = false) 
 		newLine()
 	}
 
-	fun defineLabel(sec: Section, external: Boolean = false) {
-		if (external) {
-			out.write("extern ${sectionName(sec)}".encodeToByteArray())
+	fun defineLabel(sec: Section) {
+		if (sec is ExternalSection) {
+			out.write("extern ${sectionName(sec)}\n".encodeToByteArray())
 		} else {
-			out.write("${sectionName(sec)}:".encodeToByteArray())
+			out.write("${sectionName(sec)}:\n".encodeToByteArray())
 		}
-		newLine()
 	}
 
 	fun globalize(sec: Section) {
-		out.write("global ${sectionName(sec)}".encodeToByteArray())
-		newLine()
+		out.write("global ${sectionName(sec)}\n".encodeToByteArray())
 	}
 
 	fun call(sec: Section) {

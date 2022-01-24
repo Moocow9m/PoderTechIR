@@ -37,19 +37,19 @@ class ASMTest {
 			db(fmt)
 		}
 		writeSection(asmw, text) {
-			asmw.globalize(main)
-			//asmw.globalize(start)
-			asmw.defineLabel(printf, true)
+			globalize(main)
+			//globalize(start)
+			defineLabel(printf)
 			defineLabel(main)
 			//defineLabel(start)
 
-			asmw.lea(RegisterName.RSI, helloString, RegisterSize.I64)
-			asmw.lea(RegisterName.RDI, fmt, RegisterSize.I64)
+			lea(RegisterName.RSI, helloString, RegisterSize.I64)
+			lea(RegisterName.RDI, fmt, RegisterSize.I64)
 			mov(RegisterName.RAX, 0, RegisterSize.I32)
 			call(printf)
 
-			asmw.lea(RegisterName.RSI, goodbyeString, RegisterSize.I64)
-			asmw.lea(RegisterName.RDI, fmt, RegisterSize.I64)
+			lea(RegisterName.RSI, goodbyeString, RegisterSize.I64)
+			lea(RegisterName.RDI, fmt, RegisterSize.I64)
 			mov(RegisterName.RAX, 0, RegisterSize.I32)
 			call(printf)
 
