@@ -16,6 +16,8 @@ testFiles/
 .idea/**/aws.xml
 *.bin
 *.asm
+*.obj
+*.exe
 # Generated files
 .idea/**/contentModel.xml
 samples/**

@@ -5,10 +5,14 @@ import tech.poder.ir.machine.amd64.RegisterSize
 
 @JvmInline
 value class Pointer(private val address: Any) {
-	override fun toString(): String {
+	fun toString(windows: Boolean): String {
 		return when (address) {
 			is String -> {
-				"[${address}]"
+				if (windows) {
+					"[$address wrt ..imagebase]"
+				} else {
+					"[${address} wrt ..plt]"
+				}
 			}
 			is Number -> {
 				"[0x${address.toLong().toString(16)}]"
@@ -22,5 +26,9 @@ value class Pointer(private val address: Any) {
 			}
 			else -> error("Unsupported type: ${address::class.java.name}")
 		}
+	}
+
+	override fun toString(): String {
+		return toString(false)
 	}
 }

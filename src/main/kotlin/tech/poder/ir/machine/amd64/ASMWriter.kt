@@ -21,12 +21,6 @@ data class ASMWriter(val out: BitOutputStream, val forWindows: Boolean = false) 
 		private val newLine = "\n".encodeToByteArray()[0]
 		private val ret = "ret\n".encodeToByteArray()
 		private val header = "DEFAULT REL\n".encodeToByteArray()
-		val ARG_ONE = RegisterName.RDI
-		val ARG_TWO = RegisterName.RSI
-		val ARG_THREE = RegisterName.RDX
-		val ARG_FOUR = RegisterName.RCX
-		val ARG_FIVE = RegisterName.R8
-		val ARG_SIX = RegisterName.R9
 
 		val RETURN_VALUE = RegisterName.RAX
 
@@ -43,7 +37,8 @@ data class ASMWriter(val out: BitOutputStream, val forWindows: Boolean = false) 
 	}
 
 	private fun sectionName(sec: Section): String {
-		return if (forWindows) {
+		return sec.name
+		/*if (forWindows) {
 			if (sec.name != "_start") {
 				"_${sec.name}"
 			} else {
@@ -51,16 +46,19 @@ data class ASMWriter(val out: BitOutputStream, val forWindows: Boolean = false) 
 			}
 		} else {
 			sec.name
-		}
+		}*/
 	}
 
 	private fun resolve(input: Any, size: RegisterSize): String {
 		return when (input) {
-			is Pointer, is Number, is HexNumber -> {
+			is Number, is HexNumber -> {
 				input.toString()
 			}
 			is DBEntry -> {
-				input.pointer.toString()
+				input.pointer.toString(forWindows)
+			}
+			is Pointer -> {
+				input.toString(forWindows)
 			}
 			is RegisterName -> {
 				RegisterName.realName(input, size)
@@ -122,11 +120,15 @@ data class ASMWriter(val out: BitOutputStream, val forWindows: Boolean = false) 
 	}
 
 	fun call(sec: Section) {
-		if (sec is InternalSection) {
-			out.write("call ${sectionName(sec)}\n".encodeToByteArray())
-		} else {
-			out.write("call ${sectionName(sec)} wrt ..plt\n".encodeToByteArray())
+		out.write("call ${sectionName(sec)}".encodeToByteArray())
+		if (sec is ExternalSection) {
+			if (forWindows) {
+				out.write(" wrt ..imagebase".encodeToByteArray())
+			} else {
+				out.write(" wrt ..plt".encodeToByteArray())
+			}
 		}
+		newLine()
 	}
 
 	fun mov(dst: Any, with: Any, size: RegisterSize) {
