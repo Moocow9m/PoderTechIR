@@ -58,7 +58,15 @@ class Huffman {
 		}
 		println(")")
 		println("const val MAX_BITS: Int = ${largest + 1}")
+		//printGoLangMap(finalBin)
 	}
+
+	/*fun printGoLangMap(map: Map<Any, BooleanArray>) {
+		map.forEach { (t, u) ->
+			println("\t\"${u.joinToString("") {if (it) {"1"} else {"0"} }}\": PACKET_${t},")
+		}
+	}*/
+
 
 	@Test
 	fun createReadWriteMap() {

@@ -7,9 +7,7 @@ class BitInputStream(private val realInputStream: InputStream) : InputStream() {
 	var bitBuffer = 0
 
 	fun skipSpareBits() {
-		if (bitPos > 0) {
-			bitPos = 0
-		}
+		bitPos = 0
 	}
 
 	fun readBit(): Boolean {
