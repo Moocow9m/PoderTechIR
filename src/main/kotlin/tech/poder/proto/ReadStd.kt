@@ -30,8 +30,8 @@ object ReadStd {
 		var b: Long
 		do {
 			length++
-			if (length > 5) {
-				throw Exception("VarInt too long")
+			if (length > 9) {
+				throw Exception("VarLong too long")
 			}
 			b = input.read().toLong()
 			if (b == -1L) {
@@ -107,6 +107,42 @@ object ReadStd {
 		}
 	}
 
+	fun <T> read(stream: BitInputStream, type: Packet.Types): T {
+		return when (type) {
+			Packet.Types.VUINT -> readVUInt(stream)
+			Packet.Types.VINT -> readVInt(stream)
+			Packet.Types.STRING -> readString(stream)
+			Packet.Types.PACKET -> {
+				TODO("Remove this")
+				/*val packet = ReadStd.javaClass.classLoader.loadClass(readString(stream))
+					?: throw Exception("Unknown packet class")
+				val objectInstance = packet.getField("Companion").get(null)
+				readPacket(stream, objectInstance)*/
+			}
+			Packet.Types.LIST -> readAnyList(stream)
+			Packet.Types.BOOL -> readBoolean(stream)
+			//Packet.Types.ENUM -> TODO("ENUM")
+			//Packet.Types.UNION -> TODO("UNION")
+			Packet.Types.BYTE -> stream.read().toByte()
+			Packet.Types.UBYTE -> stream.read().toUByte()
+			Packet.Types.VSHORT -> readVInt(stream).toShort()
+			Packet.Types.VUSHORT -> readVUInt(stream).toUShort()
+			Packet.Types.VLONG -> readVLong(stream)
+			Packet.Types.VULONG -> readVULong(stream)
+			else -> throw Exception("Unknown type code: $type")
+		} as T
+	}
+
+	fun <T>readList(stream: BitInputStream, types: Packet.Types): List<T> {
+		return if (readBoolean(stream)) {
+			List(readVUInt(stream).toInt()) {
+				read(stream, types)
+			}
+		} else {
+			emptyList()
+		}
+	}
+
 	fun readAny(stream: BitInputStream): Any {
 		val code = readHuffman(stream, Packet.Types.binToTypes, Packet.Types.MAX_BITS) as Packet.Types
 		if (Packet.countHuffmanFrequency) {
@@ -126,15 +162,15 @@ object ReadStd {
 			}
 			Packet.Types.LIST -> readAnyList(stream)
 			Packet.Types.BOOL -> readBoolean(stream)
-			Packet.Types.ENUM -> TODO("ENUM")
-			Packet.Types.UNION -> TODO("UNION")
+			//Packet.Types.ENUM -> TODO("ENUM")
+			//Packet.Types.UNION -> TODO("UNION")
 			Packet.Types.BYTE -> stream.read().toByte()
 			Packet.Types.UBYTE -> stream.read().toUByte()
 			Packet.Types.VSHORT -> readVInt(stream).toShort()
 			Packet.Types.VUSHORT -> readVUInt(stream).toUShort()
 			Packet.Types.VLONG -> readVLong(stream)
 			Packet.Types.VULONG -> readVULong(stream)
-			Packet.Types.UNKNOWN -> throw Exception("Unknown type code: $code")
+			else -> throw Exception("Unknown type code: $code")
 		}
 	}
 }

@@ -72,9 +72,12 @@ object WriteStd {
 	}
 
 	fun writeList(stream: BitOutputStream, list: List<*>) {//write shortcut(on read, type is known)
-		writeVUInt(stream, list.size.toUInt())
-		list.forEach {
-			writeAnyNoPrefix(stream, it!!)
+		writeBoolean(stream, list.isNotEmpty())
+		if (list.isNotEmpty()) {
+			writeVUInt(stream, list.size.toUInt())
+			list.forEach {
+				writeAnyNoPrefix(stream, it!!)
+			}
 		}
 	}
 
@@ -98,8 +101,9 @@ object WriteStd {
 	fun writeAny(stream: BitOutputStream, any: Any) {
 		when (any) {
 			is Enum<*> -> {
-				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.ENUM]!!)
-				writeVUInt(stream, any.ordinal.toUInt())
+				TODO("Remove this")
+				//writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.ENUM]!!)
+				//writeVUInt(stream, any.ordinal.toUInt())
 			}
 			is UInt -> {
 				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.VUINT]!!)

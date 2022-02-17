@@ -93,10 +93,7 @@ object PTIR {
 		companion object {
 			val DEFAULT = Debug()
 			fun fromBytes(stream: BitInputStream): Debug {
-				val methodLinesIndexes = List(ReadStd.readVUInt(stream).toInt()) {
-					val it0 = ReadStd.readVUInt(stream)
-					it0
-				}
+				val methodLinesIndexes: List<UInt> = ReadStd.readList(stream, Packet.Types.VUINT)
 				val methodLinesText = ReadStd.readString(stream)
 				val breakPoints = ReadStd.readBoolean(stream)
 				return Debug(methodLinesIndexes, methodLinesText, breakPoints)
@@ -104,10 +101,7 @@ object PTIR {
 		}
 
 		override fun toBytes(stream: BitOutputStream) {
-			WriteStd.writeVUInt(stream, methodLinesIndexes.size.toUInt())
-			methodLinesIndexes.forEach { it0 ->
-				WriteStd.writeVUInt(stream, it0)
-			}
+			WriteStd.writeList(stream, methodLinesIndexes)
 			WriteStd.writeString(stream, methodLinesText)
 			WriteStd.writeBoolean(stream, breakPoints)
 		}
@@ -117,19 +111,12 @@ object PTIR {
 		companion object {
 			val DEFAULT = Info()
 			fun fromBytes(stream: BitInputStream): Info {
-				val index = List(ReadStd.readVUInt(stream).toInt()) {
-					val it0 = ReadStd.readVUInt(stream)
-					it0
-				}
-				return Info(index)
+				return Info(ReadStd.readList(stream, Packet.Types.VUINT))
 			}
 		}
 
 		override fun toBytes(stream: BitOutputStream) {
-			WriteStd.writeVUInt(stream, index.size.toUInt())
-			index.forEach { it0 ->
-				WriteStd.writeVUInt(stream, it0)
-			}
+			WriteStd.writeList(stream, index)
 		}
 	}
 
@@ -252,34 +239,56 @@ object PTIR {
 		companion object {
 			val DEFAULT = Method()
 			fun fromBytes(stream: BitInputStream): Method {
-				val bytecode = List(ReadStd.readVUInt(stream).toInt()) {
-					val it0: Expression = ReadStd.readPacket(stream, Expression.Companion)
-					it0
+
+				val bytecode = if (ReadStd.readBoolean(stream)) {
+					List(ReadStd.readVUInt(stream).toInt()) {
+						val it0: Expression = ReadStd.readPacket(stream, Expression.Companion)
+						it0
+					}
+				} else {
+					emptyList()
 				}
-				val extraInfo = List(ReadStd.readVUInt(stream).toInt()) {
-					val it0: Info = ReadStd.readPacket(stream, Info.Companion)
-					it0
+				val extraInfo = if (ReadStd.readBoolean(stream)) {
+					List(ReadStd.readVUInt(stream).toInt()) {
+						val it0: Info = ReadStd.readPacket(stream, Info.Companion)
+						it0
+					}
+				} else {
+					emptyList()
 				}
-				val debugInfo = List(ReadStd.readVUInt(stream).toInt()) {
-					val it0: Debug = ReadStd.readPacket(stream, Debug.Companion)
-					it0
+				val debugInfo = if (ReadStd.readBoolean(stream)) {
+					List(ReadStd.readVUInt(stream).toInt()) {
+						val it0: Debug = ReadStd.readPacket(stream, Debug.Companion)
+						it0
+					}
+				} else {
+					emptyList()
 				}
 				return Method(bytecode, extraInfo, debugInfo)
 			}
 		}
 
 		override fun toBytes(stream: BitOutputStream) {
-			WriteStd.writeVUInt(stream, bytecode.size.toUInt())
-			bytecode.forEach { it0 ->
-				WriteStd.writePacket(stream, it0)
+			WriteStd.writeBoolean(stream, bytecode.isNotEmpty())
+			if (bytecode.isNotEmpty()) {
+				WriteStd.writeVUInt(stream, bytecode.size.toUInt())
+				bytecode.forEach { it0 ->
+					WriteStd.writePacket(stream, it0)
+				}
 			}
-			WriteStd.writeVUInt(stream, extraInfo.size.toUInt())
-			extraInfo.forEach { it0 ->
-				WriteStd.writePacket(stream, it0)
+			WriteStd.writeBoolean(stream, extraInfo.isNotEmpty())
+			if (extraInfo.isNotEmpty()) {
+				WriteStd.writeVUInt(stream, extraInfo.size.toUInt())
+				extraInfo.forEach { it0 ->
+					WriteStd.writePacket(stream, it0)
+				}
 			}
-			WriteStd.writeVUInt(stream, debugInfo.size.toUInt())
-			debugInfo.forEach { it0 ->
-				WriteStd.writePacket(stream, it0)
+			WriteStd.writeBoolean(stream, debugInfo.isNotEmpty())
+			if (debugInfo.isNotEmpty()) {
+				WriteStd.writeVUInt(stream, debugInfo.size.toUInt())
+				debugInfo.forEach { it0 ->
+					WriteStd.writePacket(stream, it0)
+				}
 			}
 		}
 	}
@@ -289,11 +298,12 @@ object PTIR {
 			val DEFAULT = FullType()
 			fun fromBytes(stream: BitInputStream): FullType {
 				val type = Type.values[ReadStd.readVUInt(stream).toInt()]
-				val unsigned = if (type == Type.FLOAT || type == Type.FLOAT32 || type == Type.FLOAT64 || type == Type.ARRAY || type == Type.LIST || type == Type.STRUCT) {
-					false
-				} else {
-					ReadStd.readBoolean(stream)
-				}
+				val unsigned =
+					if (type == Type.FLOAT || type == Type.FLOAT32 || type == Type.FLOAT64 || type == Type.ARRAY || type == Type.LIST || type == Type.STRUCT) {
+						false
+					} else {
+						ReadStd.readBoolean(stream)
+					}
 				return FullType(type, unsigned)
 			}
 		}
@@ -321,12 +331,16 @@ object PTIR {
 					it0
 				}
 				val lastGlobalVarId = ReadStd.readVUInt(stream)
-				val structs = List(ReadStd.readVUInt(stream).toInt()) {
-					val it0 = List(ReadStd.readVUInt(stream).toInt()) {
-						val it1: FullType = ReadStd.readPacket(stream, FullType.Companion)
-						it1
+				val structs = if (ReadStd.readBoolean(stream)) {
+					List(ReadStd.readVUInt(stream).toInt()) {
+						val it0 = List(ReadStd.readVUInt(stream).toInt()) {
+							val it1: FullType = ReadStd.readPacket(stream, FullType.Companion)
+							it1
+						}
+						it0
 					}
-					it0
+				} else {
+					emptyList()
 				}
 				return Code(id, methods, lastGlobalVarId, structs)
 			}
@@ -339,11 +353,14 @@ object PTIR {
 				WriteStd.writePacket(stream, it0)
 			}
 			WriteStd.writeVUInt(stream, lastGlobalVarId)
-			WriteStd.writeVUInt(stream, structs.size.toUInt())
-			structs.forEach { it0 ->
-				WriteStd.writeVUInt(stream, it0.size.toUInt())
-				it0.forEach { it1 ->
-					WriteStd.writePacket(stream, it1)
+			WriteStd.writeBoolean(stream, structs.isNotEmpty())
+			if (structs.isNotEmpty()) {
+				WriteStd.writeVUInt(stream, structs.size.toUInt())
+				structs.forEach { it0 ->
+					WriteStd.writeVUInt(stream, it0.size.toUInt())
+					it0.forEach { it1 ->
+						WriteStd.writePacket(stream, it1)
+					}
 				}
 			}
 		}
