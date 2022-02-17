@@ -289,14 +289,20 @@ object PTIR {
 			val DEFAULT = FullType()
 			fun fromBytes(stream: BitInputStream): FullType {
 				val type = Type.values[ReadStd.readVUInt(stream).toInt()]
-				val unsigned = ReadStd.readBoolean(stream)
+				val unsigned = if (type == Type.FLOAT || type == Type.FLOAT32 || type == Type.FLOAT64 || type == Type.ARRAY || type == Type.LIST || type == Type.STRUCT) {
+					false
+				} else {
+					ReadStd.readBoolean(stream)
+				}
 				return FullType(type, unsigned)
 			}
 		}
 
 		override fun toBytes(stream: BitOutputStream) {
 			WriteStd.writeVUInt(stream, type.ordinal.toUInt())
-			WriteStd.writeBoolean(stream, unsigned)
+			if (type != Type.FLOAT && type != Type.FLOAT32 && type != Type.FLOAT64 && type != Type.ARRAY && type != Type.LIST && type != Type.STRUCT) {
+				WriteStd.writeBoolean(stream, unsigned)
+			}
 		}
 	}
 
