@@ -134,9 +134,10 @@ object WriteStd {
 				writeVULong(stream, any)
 			}
 			is Packet -> {
-				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.PACKET]!!)
+				TODO("Remove this")
+				/*writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.PACKET]!!)
 				writeString(stream, any::class.java.name)
-				writePacket(stream, any)
+				writePacket(stream, any)*/
 			}
 			is String -> {
 				writeHuffman(stream, Packet.Types.typesToBin[Packet.Types.STRING]!!)

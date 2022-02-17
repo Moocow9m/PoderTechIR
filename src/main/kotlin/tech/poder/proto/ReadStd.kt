@@ -118,10 +118,11 @@ object ReadStd {
 			Packet.Types.VINT -> readVInt(stream)
 			Packet.Types.STRING -> readString(stream)
 			Packet.Types.PACKET -> {
-				val packet = ReadStd.javaClass.classLoader.loadClass(readString(stream))
+				TODO("Remove this")
+				/*val packet = ReadStd.javaClass.classLoader.loadClass(readString(stream))
 					?: throw Exception("Unknown packet class")
 				val objectInstance = packet.getField("Companion").get(null)
-				readPacket(stream, objectInstance)
+				readPacket(stream, objectInstance)*/
 			}
 			Packet.Types.LIST -> readAnyList(stream)
 			Packet.Types.BOOL -> readBoolean(stream)
