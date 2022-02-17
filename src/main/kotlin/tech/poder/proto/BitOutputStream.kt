@@ -9,7 +9,7 @@ open class BitOutputStream(internal val realOutputStream: OutputStream) : Output
 	fun flushSpareBits() {
 		if (bitPos > 0) {
 			bitBuffer = bitBuffer shl (8 - bitPos)
-			realOutputStream.write(bitBuffer)
+			realWrite(bitBuffer)
 			bitBuffer = 0
 			bitPos = 0
 		}
@@ -22,7 +22,7 @@ open class BitOutputStream(internal val realOutputStream: OutputStream) : Output
 		}
 		bitPos++
 		if (bitPos == 8) {
-			realOutputStream.write(bitBuffer)
+			realWrite(bitBuffer)
 			bitPos = 0
 			bitBuffer = 0
 		}
@@ -34,7 +34,7 @@ open class BitOutputStream(internal val realOutputStream: OutputStream) : Output
 
 	override fun write(b: Int) {
 		if (bitPos == 0) {
-			realOutputStream.write(b)
+			realWrite(b)
 		} else {
 			writeBit(b and 128 != 0)
 			writeBit(b and 64 != 0)
@@ -51,9 +51,14 @@ open class BitOutputStream(internal val realOutputStream: OutputStream) : Output
 		realOutputStream.flush()
 	}
 
+	private fun realWrite(byte: Int) {
+		realOutputStream.write(byte)
+	}
+
+
 	override fun close() {
 		if (bitPos > 0) {
-			realOutputStream.write(bitBuffer)
+			realWrite(bitBuffer)
 		}
 		bitPos = 0
 		bitBuffer = 0

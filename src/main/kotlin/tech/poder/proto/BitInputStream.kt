@@ -1,5 +1,6 @@
 package tech.poder.proto
 
+import java.io.EOFException
 import java.io.InputStream
 
 class BitInputStream(private val realInputStream: InputStream) : InputStream() {
@@ -12,7 +13,7 @@ class BitInputStream(private val realInputStream: InputStream) : InputStream() {
 
 	fun readBit(): Boolean {
 		if (bitPos == 0) {
-			bitBuffer = realInputStream.read()
+			bitBuffer = readRead()
 			bitPos = 8
 		}
 		bitPos--
@@ -21,7 +22,7 @@ class BitInputStream(private val realInputStream: InputStream) : InputStream() {
 
 	override fun read(): Int {
 		return if (bitPos == 0) {
-			realInputStream.read()
+			readRead()
 		} else {
 			var result = 0
 			repeat(8) {
@@ -32,6 +33,14 @@ class BitInputStream(private val realInputStream: InputStream) : InputStream() {
 			}
 			result
 		}
+	}
+
+	private fun readRead(): Int {
+		val read = realInputStream.read()
+		if (read == -1) {
+			throw EOFException()
+		}
+		return read
 	}
 
 	override fun close() {
