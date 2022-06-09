@@ -58,7 +58,7 @@ class Bench {
 
 			override fun toString(): String {
 				return (
-						"""
+				"""
                 |$name - $subName - $state Average: ${averageNS}ns/op
                 """.trimMargin())
 			}
