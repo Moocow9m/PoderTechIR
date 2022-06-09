@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.6.21"
+    kotlin("jvm") version "1.7.0"
     id("org.graalvm.buildtools.native")
 }
 
@@ -37,8 +37,8 @@ tasks {
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         //dependsOn(clean)
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
+        //sourceCompatibility = javaVersion
+        //targetCompatibility = javaVersion
         kotlinOptions.jvmTarget = javaVersion
         //kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
         //kotlinOptions.languageVersion = "1.6"
