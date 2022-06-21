@@ -13,7 +13,7 @@ repositories {
 dependencies {
     implementation(platform(kotlin("bom")))
     implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
     implementation(kotlin("reflect"))
     implementation(platform(kotlin("bom")))
     testImplementation("org.apiguardian:apiguardian-api:1.1.2") //Fix for JUnit > 1.7.X
