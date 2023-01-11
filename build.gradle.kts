@@ -17,7 +17,7 @@ dependencies {
     implementation(kotlin("reflect"))
     implementation(platform(kotlin("bom")))
     testImplementation("org.apiguardian:apiguardian-api:1.1.2") //Fix for JUnit > 1.7.X
-    testRuntimeOnly("org.junit.platform:junit-platform-commons:1.9.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-commons:1.9.2")
     testImplementation(kotlin("test"))
 }
 
